@@ -2,7 +2,7 @@
 import ContractLink from '@src/features/XIT/CONTS/ContractLink.vue';
 import PartnerLink from '@src/features/XIT/CONTS/PartnerLink.vue';
 
-const { contract, type } = defineProps<{
+const { contract } = defineProps<{
   contract: PrunApi.Contract;
   type: 'borrow' | 'lend';
 }>();

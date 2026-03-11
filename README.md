@@ -17,44 +17,45 @@
 - **代码注释**：约 180 条英文注释全部翻译
 - **合计修改**：285 个文件，1185 处新增，1383 处删除
 
-## 功能亮点 🔥
+## 功能亮点
 
-<table>
-	<tr>
-		<th width="50%">
-			<p>待处理合同条件
-			<p><img src="https://github.com/user-attachments/assets/21e219dd-5923-4a47-831a-3eb527e99f8d">
-		<th width="50%">
-			<p>商品交易所交易记录
-			<p><img src="https://github.com/user-attachments/assets/b0139e1e-153a-4fc7-b88a-f2954add66bf">
-	<tr>
-		<th width="50%">
-			<p>详细资产负债表
-			<p><img src="https://github.com/user-attachments/assets/f0452cf4-2a18-4336-a2f7-0b03ba6ef941">
-		<th width="50%">
-			<p>总部升级计算器
-			<p><img src="https://github.com/user-attachments/assets/3a514d76-85b5-4b58-ba5c-2a1a52a8deff">
-	<tr>
-		<th width="50%">
-			<p>CONTD 合作伙伴搜索结果显示在搜索栏上方
-			<p><img src="https://github.com/user-attachments/assets/2e9864e4-e13f-4f06-893b-701d9687dbf9">
-		<th width="50%">
-			<p>SHPT 与 BLCK 目的地标签
-			<p><img src="https://github.com/user-attachments/assets/d1c2f806-1b14-4a27-b5a7-1466c9dcaee9">
-	<tr>
-		<th width="50%">
-			<p>更优的本地市场广告
-			<p><img src="https://github.com/user-attachments/assets/a33aae8a-972b-4ac5-8389-361f71231250">
-		<th width="50%">
-			<p>改进的单色图标集
-			<p><img src="https://github.com/user-attachments/assets/9fc42ef8-e2c6-43e9-8797-56601389205e">
-</table>
+### 待处理合同条件
+
+![待处理合同条件](https://github.com/user-attachments/assets/21e219dd-5923-4a47-831a-3eb527e99f8d)
+
+### 商品交易所交易记录
+
+![商品交易所交易记录](https://github.com/user-attachments/assets/b0139e1e-153a-4fc7-b88a-f2954add66bf)
+
+### 详细资产负债表
+
+![详细资产负债表](https://github.com/user-attachments/assets/f0452cf4-2a18-4336-a2f7-0b03ba6ef941)
+
+### 总部升级计算器
+
+![总部升级计算器](https://github.com/user-attachments/assets/3a514d76-85b5-4b58-ba5c-2a1a52a8deff)
+
+### CONTD 合作伙伴搜索结果显示在搜索栏上方
+
+![CONTD 合作伙伴搜索](https://github.com/user-attachments/assets/2e9864e4-e13f-4f06-893b-701d9687dbf9)
+
+### SHPT 与 BLCK 目的地标签
+
+![SHPT 与 BLCK 目的地标签](https://github.com/user-attachments/assets/d1c2f806-1b14-4a27-b5a7-1466c9dcaee9)
+
+### 更优的本地市场广告
+
+![更优的本地市场广告](https://github.com/user-attachments/assets/a33aae8a-972b-4ac5-8389-361f71231250)
+
+### 改进的单色图标集
+
+![改进的单色图标集](https://github.com/user-attachments/assets/9fc42ef8-e2c6-43e9-8797-56601389205e)
 
 ---
 
 ## 游戏内预览
 
-<img width="1920" alt="游戏内截图" src="https://github.com/user-attachments/assets/ed442f0e-297e-4f62-b539-7057e4a3b30f">
+![游戏内截图](https://github.com/user-attachments/assets/ed442f0e-297e-4f62-b539-7057e4a3b30f)
 
 ## 构建方式
 
@@ -72,4 +73,3 @@ pnpm build
 ## 致谢
 
 本项目基于 [Refined PrUn](https://github.com/refined-prun/refined-prun) 开发，感谢原作者的出色工作。
-
