@@ -15,6 +15,7 @@ import './FINCH/FINCH';
 import './GIF/GIF';
 import './HEALTH';
 import './LOAN/LOAN';
+import './HAUL/HAUL';
 import './HELP';
 import './HQUC';
 import './MATS';
