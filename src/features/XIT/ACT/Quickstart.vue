@@ -66,14 +66,14 @@ function onCreateClick() {
       {
         name: '购买缺少的材料',
         type: 'CX Buy',
-        group: 'Resupply',
+        group: '补给',
         exchange: cxTicker,
         useCXInv: true,
       },
       {
         name: '在下方"To"字段中选择你的飞船 ↓',
         type: 'MTRA',
-        group: 'Resupply',
+        group: '补给',
         origin: serializeStorage(storage),
         dest: configurableValue,
       },

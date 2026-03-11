@@ -1,63 +1,75 @@
-# Refined PrUn
+# RUNCN — Refined PrUn 中文汉化版
 
-[link-chrome]: https://chromewebstore.google.com/detail/refined-prun/coabeheneafgglpakallmkienlidgaof 'Version published on Chrome Web Store'
+> 基于 [Refined PrUn](https://github.com/refined-prun/refined-prun) 的全面中文汉化分支
 
-[link-firefox]: https://addons.mozilla.org/en-US/firefox/addon/refined-prun/ 'Version published on Mozilla Add-ons'
+浏览器扩展，用于简化 [Prosperous Universe](https://prosperousuniverse.com/) 游戏界面并添加实用功能。本版本将所有英文界面、按钮、提示、描述及代码注释翻译为中文，方便中文玩家使用。
 
-[<img src="https://raw.githubusercontent.com/alrra/browser-logos/90fdf03c/src/chrome/chrome.svg" width="32" alt="Chrome" valign="middle">][link-chrome] [<img valign="middle" src="https://img.shields.io/chrome-web-store/v/coabeheneafgglpakallmkienlidgaof.svg?label=%20">][link-chrome]
-[<img src="https://raw.githubusercontent.com/alrra/browser-logos/90fdf03c/src/firefox/firefox.svg" width="32" alt="Firefox" valign="middle">][link-firefox] [<img valign="middle" src="https://img.shields.io/amo/v/refined-prun.svg?label=%20">][link-firefox]
+## 汉化范围
 
-Browser extension that simplifies the Prosperous Universe interface and adds useful features
+- **功能描述**：全部 120 个功能的名称与说明（基础 84 + 高级 36）
+- **XIT 面板**：START、HELP、CMDS、HEALTH、HQUC、CHAT、BURN、TODO、NOTE、CMDL、SORT 等
+- **设置面板**：SET、FEAT、FIN(SET)、GAME、BFR、PMMG
+- **合同系统**：CONTS/CONTC/CXTS 面板 + 29 个合同条件
+- **财务系统**：FIN 面板（10 个财务指标）、FINBS 资产负债表、FINCH 图表（60+ 标签）
+- **自动化系统**：ACT 面板（补给/维修/加油/交易/转运等 30+ 个操作日志）
+- **通知系统**：18 种通知类型标签
+- **共享组件**：确认弹窗、加载提示、材料图标等
+- **代码注释**：约 180 条英文注释全部翻译
+- **合计修改**：285 个文件，1185 处新增，1383 处删除
 
-## Highlights 🔥
+## 功能亮点 🔥
 
 <table>
 	<tr>
 		<th width="50%">
-			<p>Pending Contract Conditions
+			<p>待处理合同条件
 			<p><img src="https://github.com/user-attachments/assets/21e219dd-5923-4a47-831a-3eb527e99f8d">
 		<th width="50%">
-			<p>Commodity Exchange Trades
+			<p>商品交易所交易记录
 			<p><img src="https://github.com/user-attachments/assets/b0139e1e-153a-4fc7-b88a-f2954add66bf">
 	<tr>
 		<th width="50%">
-			<p>Detailed Balance Statement
+			<p>详细资产负债表
 			<p><img src="https://github.com/user-attachments/assets/f0452cf4-2a18-4336-a2f7-0b03ba6ef941">
 		<th width="50%">
-			<p>HQ Upgrade Calculator
+			<p>总部升级计算器
 			<p><img src="https://github.com/user-attachments/assets/3a514d76-85b5-4b58-ba5c-2a1a52a8deff">
 	<tr>
 		<th width="50%">
-			<p>CONTD partner search results are shown above the search bar
+			<p>CONTD 合作伙伴搜索结果显示在搜索栏上方
 			<p><img src="https://github.com/user-attachments/assets/2e9864e4-e13f-4f06-893b-701d9687dbf9">
 		<th width="50%">
-			<p>SHPT and BLCK destination labels
+			<p>SHPT 与 BLCK 目的地标签
 			<p><img src="https://github.com/user-attachments/assets/d1c2f806-1b14-4a27-b5a7-1466c9dcaee9">
 	<tr>
 		<th width="50%">
-			<p>Better LM ads
+			<p>更优的本地市场广告
 			<p><img src="https://github.com/user-attachments/assets/a33aae8a-972b-4ac5-8389-361f71231250">
 		<th width="50%">
-			<p>Improved monochrome icon set
+			<p>改进的单色图标集
 			<p><img src="https://github.com/user-attachments/assets/9fc42ef8-e2c6-43e9-8797-56601389205e">
 </table>
 
 ---
 
-## In-game preview
+## 游戏内预览
 
-<img width="1920" alt="Screenshot 2024-11-17 at 21 54 03" src="https://github.com/user-attachments/assets/ed442f0e-297e-4f62-b539-7057e4a3b30f">
+<img width="1920" alt="游戏内截图" src="https://github.com/user-attachments/assets/ed442f0e-297e-4f62-b539-7057e4a3b30f">
 
-## Building
+## 构建方式
 
-To build this extension, you will need to install [pnpm](https://pnpm.io/) v9.x
+构建本扩展需要先安装 [pnpm](https://pnpm.io/) v9.x
 
-Then, in the repository root, run
+然后在项目根目录执行：
 
-```
+```bash
 pnpm install
 pnpm build
 ```
 
-The extension will be built in the `dist` folder
+构建产物位于 `dist` 目录。
+
+## 致谢
+
+本项目基于 [Refined PrUn](https://github.com/refined-prun/refined-prun) 开发，感谢原作者的出色工作。
 
