@@ -11,9 +11,9 @@ const v2 = computed(() => userData.balanceHistory.v2.map(deserializeBalanceSheet
 export const balanceHistory = computed(() => v1.value.concat(v2.value));
 
 export const lastBalance = computed(() => {
-  // Touch timestampEachMinute to trigger reactivity,
-  // but use Date.now() instead because the most recent
-  // history entry can be more recent than a minute ago.
+  // 触发 timestampEachMinute 以触发响应式更新，
+  // 但使用 Date.now() 因为最新的
+  // 历史记录可能不到一分钟前。
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const _ = timestampEachMinute.value;
   const now = Date.now();
@@ -35,9 +35,9 @@ export const previousBalance = computed(() => {
   if (!lastBalance.value) {
     return undefined;
   }
-  // Touch timestampEachMinute to trigger reactivity,
-  // but use Date.now() instead because the most recent
-  // history entry can be more recent than a minute ago.
+  // 触发 timestampEachMinute 以触发响应式更新，
+  // 但使用 Date.now() 因为最新的
+  // 历史记录可能不到一分钟前。
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const _ = timestampEachMinute.value;
   const lastTimestamp = lastBalance.value.timestamp;
@@ -65,7 +65,7 @@ export function canCollectFinDataPoint() {
 
 export function trackBalanceHistory() {
   setTimeout(trackBalanceHistory, 1000);
-  // Offset 'now' by 10 minutes in the past to prevent recording on 23:59
+  // 将“当前”时间向前偏移 10 分钟，防止在 23:59 记录
   const now = Date.now() - dayjs.duration(10, 'minutes').asMilliseconds();
   const lastRecording = balanceHistory.value.at(-1);
   const hasRecentBalanceRecording =

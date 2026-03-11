@@ -2,8 +2,8 @@ import FIN from '@src/features/XIT/FIN/FIN.vue';
 
 xit.add({
   command: ['FIN'],
-  name: 'Financial overview',
-  description: 'Basic financial overview and inventory breakdown.',
+  name: '财务概览',
+  description: '基本财务概览和库存明细。',
   contextItems: () => [
     { cmd: 'XIT FINBS' },
     { cmd: 'XIT FINPR' },

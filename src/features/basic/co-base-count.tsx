@@ -21,4 +21,4 @@ function init() {
   tiles.observe('CO', onTileReady);
 }
 
-features.add(import.meta.url, init, 'CO: Adds a "Base Count" row.');
+features.add(import.meta.url, init, 'CO：添加"基地数量"行。');

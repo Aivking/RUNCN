@@ -22,13 +22,13 @@ function onCreateClick() {
 
 <template>
   <div :class="C.DraftConditionEditor.form">
-    <SectionHeader>New Command List</SectionHeader>
+    <SectionHeader>新建命令列表</SectionHeader>
     <form>
-      <Active label="List Name">
+      <Active label="列表名称">
         <TextInput v-model="name" />
       </Active>
       <Commands>
-        <PrunButton primary @click="onCreateClick">CREATE</PrunButton>
+        <PrunButton primary @click="onCreateClick">创建</PrunButton>
       </Commands>
     </form>
   </div>

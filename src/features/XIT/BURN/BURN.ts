@@ -9,13 +9,13 @@ xit.add({
       const site = sitesStore.getByPlanetNaturalIdOrName(parameters[0]);
       if (site) {
         const name = getEntityNameFromAddress(site.address);
-        return `ENHANCED BURN - ${name}`;
+        return `增强燃烧报告 - ${name}`;
       }
     }
 
-    return 'ENHANCED BURN';
+    return '增强燃烧报告';
   },
-  description: 'Shows the number of days of consumables left.',
-  optionalParameters: 'Planet Identifier(s), OVERALL, NOT',
+  description: '显示消耗品剩余天数。',
+  optionalParameters: '星球标识符, OVERALL, NOT',
   component: () => BURN,
 });

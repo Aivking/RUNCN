@@ -82,4 +82,4 @@ function init() {
   tiles.observe('CXOB', onTileReady);
 }
 
-features.add(import.meta.url, init, 'CXOB: Adds market depth bars.');
+features.add(import.meta.url, init, 'CXOB：添加市场深度条。');

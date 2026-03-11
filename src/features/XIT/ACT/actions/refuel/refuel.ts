@@ -16,7 +16,7 @@ import { clamp } from '@src/utils/clamp';
 act.addAction<Config>({
   type: 'Refuel',
   description: action => {
-    return action.origin ? 'Refuel all ships near ' + action.origin : '--';
+    return action.origin ? '为 ' + action.origin + ' 附近所有飞船加油' : '--';
   },
   editComponent: Edit,
   configureComponent: Configure,
@@ -32,7 +32,7 @@ act.addAction<Config>({
 
     const serializedOrigin = data.origin === configurableValue ? config?.origin : data.origin;
     const origin = deserializeStorage(serializedOrigin);
-    assert(origin, 'Invalid origin');
+    assert(origin, '无效的出发点');
 
     const exchangeCode = getExchangeCode(origin);
     const isCX = exchangeCode !== undefined;
@@ -44,7 +44,7 @@ act.addAction<Config>({
       storagesStore.getByType('FTL_FUEL_STORE')?.filter(x => atSameLocation(x, origin)) ?? [];
 
     if (dockedStl.length === 0 && dockedFtl.length === 0) {
-      log.warning('No ships are docked near the origin');
+      log.warning('没有飞船停靠在出发点附近');
       return;
     }
 
@@ -65,7 +65,7 @@ act.addAction<Config>({
     );
 
     if (totalFtlRefuel === 0 && totalStlRefuel === 0) {
-      log.info('No ships need refueling');
+      log.info('没有飞船需要加油');
       return;
     }
 
@@ -87,7 +87,7 @@ act.addAction<Config>({
         );
         presentStlFuel = totalStlRefuel;
       } else {
-        log.warning('Not enough SF at the origin. Some ships will not be refueled.');
+        log.warning('出发点 SF 不足。部分飞船将无法加油。');
       }
     }
 
@@ -109,7 +109,7 @@ act.addAction<Config>({
         );
         presentFtlFuel = totalFtlRefuel;
       } else {
-        log.warning('Not enough FF at the origin. Some ships will not be refueled.');
+        log.warning('出发点 FF 不足。部分飞船将无法加油。');
       }
     }
 
@@ -155,8 +155,8 @@ function getExchangeCode(store: PrunApi.Store) {
 }
 
 function calculateRefuelAmount(store: PrunApi.Store, material: PrunApi.Material) {
-  // Fuel stores have the same volume/weight capacity ratio as the material,
-  // so we can use either one.
+  // 燃料存储的容积/重量容量比与材料相同，
+  // 因此可以使用任一值。
   const freeVolume = store.volumeCapacity - store.volumeLoad;
   return Math.round(freeVolume / material.volume);
 }

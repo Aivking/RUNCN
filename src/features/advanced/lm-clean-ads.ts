@@ -15,7 +15,7 @@ function onTileReady(tile: PrunTile) {
     const quantity = ad.quantity;
 
     if (type === 'COMMODITY_SHIPPING') {
-      // Shorten planet names
+      // 缩短星球名称
       const links = _$$(text, C.Link.link);
       if (links.length === 2) {
         links[0].textContent = extractPlanetName(links[0].textContent);
@@ -62,10 +62,10 @@ function cleanContractType(text: HTMLElement, ad: PrunApi.LocalAd) {
       text.firstChild.textContent = '';
       break;
     case 'COMMODITY_BUYING':
-      text.firstChild.textContent = 'BUY';
+      text.firstChild.textContent = '买入';
       break;
     case 'COMMODITY_SELLING':
-      text.firstChild.textContent = 'SELL';
+      text.firstChild.textContent = '卖出';
       break;
   }
 }
@@ -74,4 +74,4 @@ function init() {
   tiles.observe('LM', onTileReady);
 }
 
-features.add(import.meta.url, init, 'LM: Hides redundant information from ads.');
+features.add(import.meta.url, init, 'LM：隐藏广告中的冗余信息。');

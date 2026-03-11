@@ -38,13 +38,13 @@ defineExpose({ validate, save });
 </script>
 
 <template>
-  <Active label="Material Group">
+  <Active label="材料组">
     <SelectInput v-model="materialGroup" :options="materialGroups" />
   </Active>
-  <Active label="Origin">
+  <Active label="来源">
     <SelectInput v-model="origin" :options="storages" />
   </Active>
-  <Active label="Destination">
+  <Active label="目标">
     <SelectInput v-model="destination" :options="storages" />
   </Active>
 </template>

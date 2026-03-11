@@ -59,28 +59,22 @@ defineExpose({ validate, save });
 </script>
 
 <template>
-  <Active label="Material Group">
+  <Active label="材料组">
     <SelectInput v-model="materialGroup" :options="materialGroups" />
   </Active>
-  <Active label="Exchange">
+  <Active label="交易所">
     <SelectInput v-model="exchange" :options="exchanges" />
   </Active>
-  <Commands label="Price Limits">
-    <PrunButton primary @click="onEditPriceLimitsClick">EDIT</PrunButton>
+  <Commands label="价格限制">
+    <PrunButton primary @click="onEditPriceLimitsClick">编辑</PrunButton>
   </Commands>
-  <Active
-    label="Buy Partial"
-    tooltip="Whether the action will be taken if there is not enough stock on the CX.">
-    <RadioItem v-model="buyPartial">buy partial</RadioItem>
+  <Active label="允许部分购买" tooltip="CX 库存不足时是否仍然执行操作。">
+    <RadioItem v-model="buyPartial">允许部分购买</RadioItem>
   </Active>
-  <Active
-    label="Allow Unfilled"
-    tooltip="Create a full bid order even if there is not enough stock on the CX.">
-    <RadioItem v-model="allowUnfilled">allow unfilled</RadioItem>
+  <Active label="允许未满足" tooltip="即使 CX 库存不足，仍创建完整的买单。">
+    <RadioItem v-model="allowUnfilled">允许未满足</RadioItem>
   </Active>
-  <Active
-    label="Use CX Inventory"
-    tooltip="Whether to use stock in the CX warehouse when calculating how much needs to be bought.">
-    <RadioItem v-model="useCXInv">use cx inventory</RadioItem>
+  <Active label="使用 CX 库存" tooltip="计算需要购买的数量时是否使用 CX 仓库中的库存。">
+    <RadioItem v-model="useCXInv">使用 CX 库存</RadioItem>
   </Active>
 </template>

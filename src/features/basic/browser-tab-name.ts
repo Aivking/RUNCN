@@ -24,4 +24,4 @@ async function init() {
   });
 }
 
-features.add(import.meta.url, init, 'Renames browser tab based on the current screen');
+features.add(import.meta.url, init, '根据当前屏幕重命名浏览器标签页');

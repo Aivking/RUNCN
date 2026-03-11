@@ -26,13 +26,13 @@ function onCreateClick() {
 
 <template>
   <div :class="C.DraftConditionEditor.form">
-    <SectionHeader>Create Action Package</SectionHeader>
+    <SectionHeader>创建操作包</SectionHeader>
     <form>
-      <Active label="Name" :error="nameError">
+      <Active label="名称" :error="nameError">
         <TextInput v-model="name" />
       </Active>
       <Commands>
-        <PrunButton primary @click="onCreateClick">CREATE</PrunButton>
+        <PrunButton primary @click="onCreateClick">创建</PrunButton>
       </Commands>
     </form>
   </div>

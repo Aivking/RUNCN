@@ -23,7 +23,7 @@ const pkg = computed(() => userData.actionPackages.find(x => x.global.name === p
 
 <template>
   <ActionPackageList v-if="parameters.length === 1" />
-  <div v-else-if="!pkg">Action package "{{ pkgName }}" not found.</div>
+  <div v-else-if="!pkg">操作包 "{{ pkgName }}" 未找到。</div>
   <ActionPackageEditor v-else-if="edit" :pkg="pkg" />
   <ExecuteActionPackage v-else :pkg="pkg" />
 </template>

@@ -1,6 +1,6 @@
-// These scripts must execute unconditionally to ensure that APEX can launch even
-// if some other script in rprun fails to load. The code in this place also ensures
-// basic rprun functioning and update handling.
+// 这些脚本必须无条件执行，以确保即使 rprun 中的其他脚本
+// 加载失败，APEX 仍然可以启动。此处的代码还确保
+// rprun 的基本功能和更新处理。
 
 import '@src/infrastructure/shell/deserialize-prun-app';
 import '@src/infrastructure/shell/config';

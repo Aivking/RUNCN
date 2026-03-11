@@ -9,8 +9,4 @@ function init() {
   );
 }
 
-features.add(
-  import.meta.url,
-  init,
-  'Moves the "delete" button to prevent chat message layout shift.',
-);
+features.add(import.meta.url, init, '移动"删除"按钮以防止聊天消息布局偏移。');

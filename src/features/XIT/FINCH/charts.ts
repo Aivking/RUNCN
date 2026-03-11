@@ -13,303 +13,303 @@ export const charts = computed<ChartDef[]>(() => {
   return [
     {
       value: 'EQUITY',
-      label: userData.fullEquityMode ? 'Equity' : 'Equity (Partial)',
+      label: userData.fullEquityMode ? '权益' : '权益（部分）',
       getValue: summary.calcEquity,
     },
 
     // =========================
-    // Assets
+    // 资产
     // =========================
     {
       value: 'TOTAL ASSETS',
-      label: 'Total Assets',
+      label: '总资产',
       getValue: summary.calcTotalAssets,
     },
 
     // =========================
-    // Current Assets
+    // 流动资产
     // =========================
     {
       value: 'CURRENT ASSETS',
-      label: 'Current Assets',
+      label: '流动资产',
       getValue: summary.calcTotalCurrentAssets,
     },
     {
       value: 'CA CASH EQUIVALENTS',
-      label: '- Cash and Cash Equivalents',
+      label: '- 现金及现金等价物',
       getValue: summary.calcTotalCashAndCashEquivalents,
     },
     {
       value: 'CA CASH',
-      label: '-- Cash',
+      label: '-- 现金',
       getValue: x => x.assets?.current?.cashAndCashEquivalents?.cash,
     },
     {
       value: 'CA DEPOSITS',
-      label: '-- Deposits',
+      label: '-- 存款',
       getValue: summary.calcTotalDeposits,
     },
     {
       value: 'CA DEPOSITS CX',
-      label: '--- Deposits: CX',
+      label: '--- 存款：CX',
       getValue: x => x.assets?.current?.cashAndCashEquivalents?.deposits?.cx,
     },
     {
       value: 'CA DEPOSITS FX',
-      label: '--- Deposits: FX',
+      label: '--- 存款：FX',
       getValue: x => x.assets?.current?.cashAndCashEquivalents?.deposits?.fx,
     },
     {
       value: 'CA MM MATERIALS',
-      label: '-- MM Materials',
+      label: '-- MM 材料',
       getValue: x => x.assets?.current?.cashAndCashEquivalents?.mmMaterials,
     },
     {
       value: 'CA ACCOUNTS RECEIVABLE',
-      label: '- Accounts Receivable',
+      label: '- 应收账款',
       getValue: x => x.assets?.current?.accountsReceivable,
     },
     {
       value: 'CA LOANS RECEIVABLE',
-      label: '- Loans Receivable',
+      label: '- 应收贷款',
       getValue: summary.calcTotalLoansReceivable,
     },
     {
       value: 'CA LOANS PRINCIPAL',
-      label: '-- Loans Receivable: Principal',
+      label: '-- 应收贷款：本金',
       getValue: x => x.assets?.current?.loansReceivable?.principal,
     },
     {
       value: 'CA LOANS INTEREST',
-      label: '-- Loans Receivable: Interest',
+      label: '-- 应收贷款：利息',
       getValue: x => x.assets?.current?.loansReceivable?.interest,
     },
     {
       value: 'CA INVENTORY',
-      label: '- Inventory',
+      label: '- 库存',
       getValue: summary.calcTotalInventory,
     },
     {
       value: 'CA CX LISTED MATERIALS',
-      label: '-- CX-Listed Materials',
+      label: '-- CX 挂牌材料',
       getValue: x => x.assets?.current?.inventory?.cxListedMaterials,
     },
     {
       value: 'CA CX INVENTORY',
-      label: '-- CX Inventory',
+      label: '-- CX 库存',
       getValue: x => x.assets?.current?.inventory?.cxInventory,
     },
     {
       value: 'CA MATERIALS IN TRANSIT',
-      label: '-- Materials in Transit',
+      label: '-- 在途材料',
       getValue: x => x.assets?.current?.inventory?.materialsInTransit,
     },
     {
       value: 'CA BASE INVENTORY',
-      label: '-- Base Inventory',
+      label: '-- 基地库存',
       getValue: summary.calcTotalBaseInventory,
     },
     {
       value: 'CA FINISHED GOODS',
-      label: '--- Finished Goods',
+      label: '--- 成品',
       getValue: x => x.assets?.current?.inventory?.baseInventory?.finishedGoods,
     },
     {
       value: 'CA WORK IN PROGRESS',
-      label: '--- Work-in-Progress (WIP)',
+      label: '--- 在制品 (WIP)',
       getValue: x => x.assets?.current?.inventory?.baseInventory?.workInProgress,
     },
     {
       value: 'CA RAW MATERIALS',
-      label: '--- Raw Materials',
+      label: '--- 原材料',
       getValue: x => x.assets?.current?.inventory?.baseInventory?.rawMaterials,
     },
     {
       value: 'CA WORKFORCE CONSUMABLES',
-      label: '--- Workforce Consumables',
+      label: '--- 劳动力消耗品',
       getValue: x => x.assets?.current?.inventory?.baseInventory?.workforceConsumables,
     },
     {
       value: 'CA OTHER ITEMS',
-      label: '--- Other Items',
+      label: '--- 其他物品',
       getValue: x => x.assets?.current?.inventory?.baseInventory?.otherItems,
     },
     {
       value: 'CA FUEL TANKS',
-      label: '-- Fuel Tanks',
+      label: '-- 燃料箱',
       getValue: x => x.assets?.current?.inventory?.fuelTanks,
     },
     {
       value: 'CA MATERIALS RECEIVABLE',
-      label: '-- Materials Receivable',
+      label: '-- 应收材料',
       getValue: x => x.assets?.current?.inventory?.materialsReceivable,
     },
 
     // =========================
-    // Non-Current Assets
+    // 非流动资产
     // =========================
     {
       value: 'NON CURRENT ASSETS',
-      label: 'Non-Current Assets',
+      label: '非流动资产',
       getValue: summary.calcTotalNonCurrentAssets,
     },
     {
       value: 'NCA BUILDINGS',
-      label: '- Buildings, net',
+      label: '- 建筑（净值）',
       getValue: summary.calcTotalBuildings,
     },
     {
       value: 'NCA BUILDINGS VALUE',
-      label: '-- Buildings Market Value',
+      label: '-- 建筑市值',
       getValue: summary.calcTotalBuildingsMarketValue,
     },
     {
       value: 'NCA BUILDINGS INFRASTRUCTURE',
-      label: '--- Buildings: Infrastructure',
+      label: '--- 建筑：基础设施',
       getValue: x => x.assets?.nonCurrent?.buildings?.marketValue?.infrastructure,
     },
     {
       value: 'NCA BUILDINGS RESOURCE EXTRACTION',
-      label: '--- Buildings: Resource Extraction',
+      label: '--- 建筑：资源开采',
       getValue: x => x.assets?.nonCurrent?.buildings?.marketValue?.resourceExtraction,
     },
     {
       value: 'NCA BUILDINGS PRODUCTION',
-      label: '--- Buildings: Production',
+      label: '--- 建筑：生产',
       getValue: x => x.assets?.nonCurrent?.buildings?.marketValue?.production,
     },
     {
       value: 'NCA BUILDINGS DEPRECIATION',
-      label: '-- Buildings Acc. Depreciation',
+      label: '-- 建筑累计折旧',
       less: true,
       getValue: x => x.assets?.nonCurrent?.buildings?.accumulatedDepreciation,
     },
     {
       value: 'NCA SHIPS',
-      label: '- Ships, net',
+      label: '- 飞船（净值）',
       getValue: summary.calcTotalShips,
     },
     {
       value: 'NCA SHIPS VALUE',
-      label: '-- Ships Market Value',
+      label: '-- 飞船市值',
       getValue: x => x.assets?.nonCurrent?.ships?.marketValue,
     },
     {
       value: 'NCA SHIPS DEPRECIATION',
-      label: '-- Ships Acc. Depreciation',
+      label: '-- 飞船累计折旧',
       less: true,
       getValue: x => x.assets?.nonCurrent?.ships?.accumulatedDepreciation,
     },
     {
       value: 'NCA LONG TERM RECEIVABLES',
-      label: '- Long-Term Receivables',
+      label: '- 长期应收款',
       getValue: summary.calcTotalLongTermReceivables,
     },
     {
       value: 'NCA ACCOUNTS RECEIVABLE',
-      label: '-- LTR: Accounts Receivable',
+      label: '-- 长期应收账款',
       getValue: x => x.assets?.nonCurrent?.longTermReceivables?.accountsReceivable,
     },
     {
       value: 'NCA MATERIALS IN TRANSIT',
-      label: '-- LTR: Materials in Transit',
+      label: '-- 长期在途材料',
       getValue: x => x.assets?.nonCurrent?.longTermReceivables?.materialsInTransit,
     },
     {
       value: 'NCA MATERIALS RECEIVABLE',
-      label: '-- LTR: Materials Receivable',
+      label: '-- 长期应收材料',
       getValue: x => x.assets?.nonCurrent?.longTermReceivables?.materialsReceivable,
     },
     {
       value: 'NCA LOANS PRINCIPAL',
-      label: '-- LTR: Loans Principal',
+      label: '-- 长期贷款本金',
       getValue: x => x.assets?.nonCurrent?.longTermReceivables?.loansPrincipal,
     },
     {
       value: 'NCA INTANGIBLE ASSETS',
-      label: '- Intangible Assets',
+      label: '- 无形资产',
       getValue: summary.calcTotalIntangibleAssets,
     },
     {
       value: 'NCA HQ UPGRADES',
-      label: '-- HQ Upgrades',
+      label: '-- 总部升级',
       getValue: x => x.assets?.nonCurrent?.intangibleAssets?.hqUpgrades,
     },
     {
       value: 'NCA ARC',
-      label: '-- APEX Representation Center',
+      label: '-- APEX 代表中心',
       getValue: x => x.assets?.nonCurrent?.intangibleAssets?.arc,
     },
 
     // =========================
-    // Liabilities
+    // 负债
     // =========================
     {
       value: 'TOTAL LIABILITIES',
-      label: 'Total Liabilities',
+      label: '总负债',
       getValue: summary.calcTotalLiabilities,
     },
 
     // =========================
-    // Current Liabilities
+    // 流动负债
     // =========================
     {
       value: 'CURRENT LIABILITIES',
-      label: 'Current Liabilities',
+      label: '流动负债',
       getValue: summary.calcTotalCurrentLiabilities,
     },
     {
       value: 'CL ACCOUNTS PAYABLE',
-      label: '- Accounts Payable',
+      label: '- 应付账款',
       getValue: x => x.liabilities?.current?.accountsPayable,
     },
     {
       value: 'CL MATERIALS PAYABLE',
-      label: '- Materials Payable',
+      label: '- 应付材料',
       getValue: x => x.liabilities?.current?.materialsPayable,
     },
     {
       value: 'CL LOANS PAYABLE',
-      label: '- Loans Payable',
+      label: '- 应付贷款',
       getValue: summary.calcTotalLoansPayable,
     },
     {
       value: 'CL LOANS PRINCIPAL',
-      label: '-- Loans Payable: Principal',
+      label: '-- 应付贷款：本金',
       getValue: x => x.liabilities?.current?.loansPayable?.principal,
     },
     {
       value: 'CL LOANS INTEREST',
-      label: '-- Loans Payable: Interest',
+      label: '-- 应付贷款：利息',
       getValue: x => x.liabilities?.current?.loansPayable?.interest,
     },
 
     // =========================
-    // Non-Current Liabilities
+    // 非流动负债
     // =========================
     {
       value: 'NON CURRENT LIABILITIES',
-      label: 'Non-Current Liabilities',
+      label: '非流动负债',
       getValue: summary.calcTotalNonCurrentLiabilities,
     },
     {
       value: 'NCL LONG TERM PAYABLES',
-      label: '- Long-Term Payables',
+      label: '- 长期应付款',
       getValue: summary.calcTotalLongTermPayables,
     },
     {
       value: 'NCL ACCOUNTS PAYABLE',
-      label: '-- Long-Term Accounts Payable',
+      label: '-- 长期应付账款',
       getValue: x => x.liabilities?.nonCurrent?.longTermPayables?.accountsPayable,
     },
     {
       value: 'NCL MATERIALS PAYABLE',
-      label: '-- Long-Term Materials Payable',
+      label: '-- 长期应付材料',
       getValue: x => x.liabilities?.nonCurrent?.longTermPayables?.materialsPayable,
     },
     {
       value: 'NCL LOANS PRINCIPAL',
-      label: '-- Long-Term Loans Principal',
+      label: '-- 长期贷款本金',
       getValue: x => x.liabilities?.nonCurrent?.longTermPayables?.loansPrincipal,
     },
   ];

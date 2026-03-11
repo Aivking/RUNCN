@@ -12,22 +12,22 @@ import {
 </script>
 
 <template>
-  <SectionHeader>Import PMMG files</SectionHeader>
+  <SectionHeader>导入 PMMG 文件</SectionHeader>
   <form>
     <Commands label="pmmg-settings.json">
-      <PrunButton primary @click="importPmmgSettings">Import Settings</PrunButton>
+      <PrunButton primary @click="importPmmgSettings">导入设置</PrunButton>
     </Commands>
     <Commands label="pmmg-finance.json">
-      <PrunButton primary @click="importPmmgFinancialHistory">Import Finances</PrunButton>
+      <PrunButton primary @click="importPmmgFinancialHistory">导入财务</PrunButton>
     </Commands>
     <Commands label="pmmg-notes.json">
-      <PrunButton primary @click="importPmmgNotes">Import Notes</PrunButton>
+      <PrunButton primary @click="importPmmgNotes">导入笔记</PrunButton>
     </Commands>
     <Commands label="pmmg-action.json">
-      <PrunButton primary @click="importPmmgActions">Import Actions</PrunButton>
+      <PrunButton primary @click="importPmmgActions">导入操作</PrunButton>
     </Commands>
     <Commands label="pmmg-lists.json">
-      <PrunButton primary @click="importPmmgCommandLists">Import Command Lists</PrunButton>
+      <PrunButton primary @click="importPmmgCommandLists">导入命令列表</PrunButton>
     </Commands>
   </form>
 </template>

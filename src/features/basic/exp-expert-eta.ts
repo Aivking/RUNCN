@@ -27,7 +27,7 @@ function onTileReady(tile: PrunTile) {
   subscribe($$(tile.anchor, 'tr'), tr => {
     if (_$(tr, 'th')) {
       const header = document.createElement('th');
-      header.textContent = 'ETA';
+      header.textContent = '预计时间';
       tr.append(header);
       return;
     }
@@ -114,7 +114,7 @@ function calculateEta(entry: PrunApi.ExpertFieldEntry, lines: PrunApi.Production
     return undefined;
   }
 
-  // If we can finish the current expert with the orders already in progress, return that time.
+  // 如果当前进行中的订单能完成该专家升级，则返回该时间
   let accumulatedExperience = 0;
   for (const order of inProgressOrders) {
     accumulatedExperience += order.experience;
@@ -126,7 +126,7 @@ function calculateEta(entry: PrunApi.ExpertFieldEntry, lines: PrunApi.Production
     }
   }
 
-  // Otherwise, estimate the remaining number of days.
+  // 否则，估算剩余天数
   let experiencePerMs = 0;
   for (const line of lines) {
     experiencePerMs += line.capacity * line.efficiency;
@@ -157,4 +157,4 @@ function init() {
   tiles.observe('EXP', onTileReady);
 }
 
-features.add(import.meta.url, init, 'EXP: Displays ETA for the next expert to appear.');
+features.add(import.meta.url, init, 'EXP：显示下一位专家出现的预计时间。');

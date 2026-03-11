@@ -18,7 +18,7 @@ const buildings = computed(() => {
 </script>
 
 <template>
-  <h2 :class="[C.Site.header, C.ui.header2, C.fonts.fontRegular]">Buildings</h2>
+  <h2 :class="[C.Site.header, C.ui.header2, C.fonts.fontRegular]">建筑</h2>
   <div :class="$style.list">
     <BuildingIcon
       v-for="building in buildings"

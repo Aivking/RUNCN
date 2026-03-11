@@ -30,8 +30,8 @@ const loading = ref(true);
 </script>
 
 <template>
-  <div v-if="!url">Invalid parameters!</div>
-  <div v-else-if="!isValidUrl(url)">Url {{ url }} is invalid!</div>
+  <div v-if="!url">无效的参数！</div>
+  <div v-else-if="!isValidUrl(url)">网址 {{ url }} 无效！</div>
   <template v-else>
     <LoadingSpinner v-if="loading" />
     <iframe

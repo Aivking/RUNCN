@@ -9,7 +9,7 @@ const contract = computed(() => contractsStore.getByLocalId(contractLocalId));
 </script>
 
 <template>
-  <div v-if="!contract" :class="$style.label">Unknown</div>
+  <div v-if="!contract" :class="$style.label">未知</div>
   <PrunLink
     v-else-if="isFactionContract(contract)"
     :command="`FA ${contract.partner.countryCode}`"
@@ -26,8 +26,8 @@ const contract = computed(() => contractsStore.getByLocalId(contractLocalId));
     v-else-if="contract.partner.code"
     :command="`CO ${contract.partner.code}`"
     :class="$style.label" />
-  <div v-else-if="contract.partner.currency" :class="$style.label">Planetary Government</div>
-  <div v-else :class="$style.label">Unknown</div>
+  <div v-else-if="contract.partner.currency" :class="$style.label">星球政府</div>
+  <div v-else :class="$style.label">未知</div>
 </template>
 
 <style module>

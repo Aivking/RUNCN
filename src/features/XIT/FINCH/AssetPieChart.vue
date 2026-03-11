@@ -5,7 +5,7 @@ import { liveBalanceSummary } from '@src/core/balance/balance-sheet-live';
 
 <template>
   <PieChart
-    :label-data="['Current', 'Non-Current']"
+    :label-data="['流动', '非流动']"
     :numerical-data="[
       liveBalanceSummary.currentAssets ?? 0,
       liveBalanceSummary.nonCurrentAssets ?? 0,

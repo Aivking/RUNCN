@@ -2,7 +2,7 @@ import { refAnimationFrame } from '@src/utils/reactive-dom';
 import { isEmpty } from 'ts-extras';
 
 function onTileReady(tile: PrunTile) {
-  // Only process BS tiles with parameter
+  // 仅处理带参数的 BS 磁贴
   if (!tile.parameter) {
     return;
   }
@@ -29,8 +29,4 @@ function init() {
   tiles.observe('BS', onTileReady);
 }
 
-features.add(
-  import.meta.url,
-  init,
-  'BS: Adds a workforce satisfaction percentage label to the satisfaction progress bar.',
-);
+features.add(import.meta.url, init, 'BS：在满意度进度条上添加劳动力满意度百分比标签。');

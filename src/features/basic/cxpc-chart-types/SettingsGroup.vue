@@ -26,8 +26,8 @@ const raw = createToggleModel('RAW');
 
 <template>
   <RadioGroupContainer horizontal>
-    <RadioItem v-model="smooth" horizontal>smooth</RadioItem>
-    <RadioItem v-model="aligned" horizontal>aligned</RadioItem>
-    <RadioItem v-model="raw" horizontal>raw</RadioItem>
+    <RadioItem v-model="smooth" horizontal>平滑</RadioItem>
+    <RadioItem v-model="aligned" horizontal>对齐</RadioItem>
+    <RadioItem v-model="raw" horizontal>原始</RadioItem>
   </RadioGroupContainer>
 </template>

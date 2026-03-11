@@ -2,7 +2,7 @@ import HQUC from '@src/features/XIT/HQUC.vue';
 
 xit.add({
   command: ['HQUC'],
-  name: 'HQ UPGRADE CALCULATOR',
-  description: 'HQ upgrade calculator.',
+  name: '总部升级计算器',
+  description: '总部升级计算器。',
   component: () => HQUC,
 });

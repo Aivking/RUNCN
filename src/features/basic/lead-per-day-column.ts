@@ -29,7 +29,7 @@ async function onTileReady(tile: PrunTile) {
             return;
           }
           const th = document.createElement('th');
-          th.textContent = 'Per Day';
+          th.textContent = '每日';
           watchEffectWhileNodeAlive(tr, () => {
             if (appliedType.value === 'PRODUCTION') {
               tr.children[1].after(th);
@@ -73,8 +73,4 @@ function init() {
   tiles.observe('LEAD', onTileReady);
 }
 
-features.add(
-  import.meta.url,
-  init,
-  'LEAD: Adds a "Per Day" column to the "Commodity Production" leaderboard.',
-);
+features.add(import.meta.url, init, 'LEAD：在"商品生产"排行榜中添加"每日"列。');

@@ -63,16 +63,16 @@ function smooth(data: PrunApi.CXBrokerPrices) {
       continue;
     }
 
-    // Perform the Heikin-Ashi transformation.
+    // 执行 Heikin-Ashi 变换
     const ha = [] as typeof interval.prices;
     interval.prices.forEach((c, i) => {
-      // 1. HA-Close: mean of raw OHLC.
+      // 1. HA-收盘价：原始 OHLC 的均值
       const haClose = (c.open + c.high + c.low + c.close) / 4;
 
-      // 2. HA-Open: mean of previous HA open & close (seeded on first bar).
+      // 2. HA-开盘价：前一周期 HA 开盘/收盘均值（首根K线用种子值）
       const haOpen = i === 0 ? (c.open + c.close) / 2 : (ha[i - 1].open + ha[i - 1].close) / 2;
 
-      // 3. HA-High / HA-Low: extremes among high, open, close.
+      // 3. HA-最高/最低价：最高价、开盘价、收盘价中的极值
       const haHigh = Math.max(c.high, haOpen, haClose);
       const haLow = Math.min(c.low, haOpen, haClose);
 
@@ -94,7 +94,7 @@ function aligned(data: PrunApi.CXBrokerPrices) {
       continue;
     }
 
-    // Perform a volume-weighted open/close price transformation.
+    // 执行成交量加权的开盘/收盘价变换
     const vwap = [] as typeof interval.prices;
     vwap.push({ ...interval.prices[0] });
     let previous = vwap[0];
@@ -124,4 +124,4 @@ function init() {
   applyCssRule('CXPC', `.${C.ChartContainer.settings}`, $style.settings);
 }
 
-features.add(import.meta.url, init, 'CXPC: Adds "Smooth" and "Aligned" chart types.');
+features.add(import.meta.url, init, 'CXPC：添加"平滑"和"对齐"图表类型。');

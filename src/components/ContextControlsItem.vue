@@ -16,7 +16,7 @@ const itemClasses = [C.ContextControls.item, C.fonts.fontRegular, C.type.typeSma
 </script>
 
 <template>
-  <!-- The node structure is fully replicated from PrUn, don't mind unnecessary nodes. -->
+  <!-- 节点结构完全复制自 PrUn，不用在意冗余节点。 -->
   <div :class="itemClasses" @click="() => showBuffer(cmd)">
     <span>
       <span :class="C.ContextControls.cmd">{{ commandParts[0] }}</span>

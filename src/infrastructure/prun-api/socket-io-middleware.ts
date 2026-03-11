@@ -52,7 +52,7 @@ export default function socketIOMiddleware<T>(middleware: Middleware<T>) {
     },
   });
 
-  // I don't remember what this override is for, lol. Probably some FIO compatibility issues.
+  // 我不记得这个覆写是做什么的了，哈哈。可能是一些 FIO 兼容性问题。
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   WebSocket.prototype.addEventListener = function (type: any, listener: any, options: any) {
     return this.addEventListener(type, listener, options);

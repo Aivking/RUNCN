@@ -31,4 +31,4 @@ function init() {
   tiles.observe(['COMG', 'COMP', 'COMU'], onTileReady);
 }
 
-features.add(import.meta.url, init, 'Adds images to chat messages containing image URLs.');
+features.add(import.meta.url, init, '在包含图片链接的聊天消息中显示图片。');

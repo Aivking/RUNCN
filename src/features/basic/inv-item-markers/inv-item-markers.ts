@@ -70,4 +70,4 @@ function init() {
   tiles.observe(['INV', 'SHPI'], onTileReady);
 }
 
-features.add(import.meta.url, init, 'INV/SHPI: Adds bottom-left item markers.');
+features.add(import.meta.url, init, 'INV/SHPI：添加左下角物品标记。');

@@ -35,4 +35,4 @@ function init() {
   void patchSectorNames();
 }
 
-features.add(import.meta.url, init, 'MU: Fixes sector names, for example LE => LS.');
+features.add(import.meta.url, init, 'MU：修正星区名称，例如 LE => LS。');

@@ -24,10 +24,10 @@ function sumOrders(orders: PrunApi.CXBrokerOrder[]) {
 
 <template>
   <div v-if="orderBook">
-    <div :class="$style.demand" data-tooltip="Pre-MM Demand" data-tooltip-position="right">
+    <div :class="$style.demand" data-tooltip="预处理前需求" data-tooltip-position="right">
       {{ fixed0(demand) }}
     </div>
-    <div :class="$style.supply" data-tooltip="Pre-MM Supply" data-tooltip-position="left">
+    <div :class="$style.supply" data-tooltip="预处理前供给" data-tooltip-position="left">
       {{ fixed0(supply) }}
     </div>
   </div>

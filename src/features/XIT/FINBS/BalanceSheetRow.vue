@@ -54,12 +54,12 @@ function calculateChange(selector: (x: PartialBalanceSheet) => number | undefine
         <RowExpandButton v-for="i in indent" :key="i" :class="$style.hidden" />
       </template>
       <RowExpandButton v-model="expanded" :class="!row.children ? $style.hidden : null" />
-      <template v-if="row.less"> Less:</template>
+      <template v-if="row.less"> 减项：</template>
       {{ row.name }}
       <Tooltip
         v-if="row.excluded"
-        tooltip="This entry is not included in the Equity calculation.
-         To include it, turn on the full equity mode in XIT SET FIN."
+        tooltip="此条目未包含在权益计算中。
+         要包含它，请在 XIT SET FIN 中开启完整权益模式。"
         :class="$style.tooltip" />
       <Tooltip v-else-if="row.tooltip" :tooltip="row.tooltip" :class="$style.tooltip" />
     </td>

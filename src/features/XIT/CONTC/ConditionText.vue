@@ -7,56 +7,54 @@ defineProps<{ condition: PrunApi.ContractCondition }>();
 
 <template>
   <template v-if="condition.type === 'PAYMENT'">
-    Pay {{ fixed02(condition.amount!.amount) }} {{ condition.amount!.currency }}
+    支付 {{ fixed02(condition.amount!.amount) }} {{ condition.amount!.currency }}
   </template>
   <template v-else-if="condition.type === 'LOAN_PAYOUT'">
-    Pay {{ fixed02(condition.amount!.amount) }} {{ condition.amount!.currency }}
+    支付 {{ fixed02(condition.amount!.amount) }} {{ condition.amount!.currency }}
   </template>
   <template v-else-if="condition.type === 'LOAN_INSTALLMENT'">
-    Pay {{ fixed02(condition.repayment!.amount + condition.interest!.amount) }}
-    {{ condition.repayment!.currency }} (auto)
+    支付 {{ fixed02(condition.repayment!.amount + condition.interest!.amount) }}
+    {{ condition.repayment!.currency }}（自动）
   </template>
   <template v-else-if="condition.type === 'DELIVERY_SHIPMENT'">
-    Deliver SHPT @
+    交付货物 @
     <AddressLink :address="condition.destination!" />
   </template>
   <template v-else-if="condition.type === 'DELIVERY'">
-    Deliver {{ condition.quantity!.amount }} {{ condition.quantity!.material.ticker }} @
+    交付 {{ condition.quantity!.amount }} {{ condition.quantity!.material.ticker }} @
     <AddressLink :address="condition.address!" />
   </template>
   <template v-else-if="condition.type === 'PICKUP_SHIPMENT'">
-    Pick up SHPT @
+    提取货物 @
     <AddressLink :address="condition.address!" />
   </template>
   <template v-else-if="condition.type === 'PROVISION_SHIPMENT'">
-    Provision {{ condition.quantity!.amount }} {{ condition.quantity!.material.ticker }} @
+    供应 {{ condition.quantity!.amount }} {{ condition.quantity!.material.ticker }} @
     <AddressLink :address="condition.address!" />
   </template>
   <template v-else-if="condition.type === 'PROVISION'">
-    Provision {{ condition.quantity!.amount }} {{ condition.quantity!.material.ticker }} @
+    供应 {{ condition.quantity!.amount }} {{ condition.quantity!.material.ticker }} @
     <AddressLink :address="condition.address!" />
   </template>
   <template v-else-if="condition.type === 'EXPLORATION'">
-    Explore
+    探索
     <AddressLink :address="condition.address!" />
   </template>
   <template v-else-if="condition.type === 'COMEX_PURCHASE_PICKUP'">
-    Pick up {{ condition.quantity!.amount - condition.pickedUp!.amount }}
+    提取 {{ condition.quantity!.amount - condition.pickedUp!.amount }}
     {{ condition.quantity!.material.ticker }} @
     <AddressLink :address="condition.address!" />
   </template>
-  <template v-else-if="condition.type === 'HEADQUARTERS_UPGRADE'">Upgrade HQ</template>
-  <template v-else-if="condition.type === 'BASE_CONSTRUCTION'">Construct Base</template>
-  <template v-else-if="condition.type === 'FINISH_FLIGHT'">Finish Flight</template>
-  <template v-else-if="condition.type === 'PLACE_ORDER'">Place Order</template>
-  <template v-else-if="condition.type === 'PRODUCTION_ORDER_COMPLETED'">
-    Complete Production Order
-  </template>
-  <template v-else-if="condition.type === 'PRODUCTION_RUN'">Run Production</template>
-  <template v-else-if="condition.type === 'START_FLIGHT'">Start Flight</template>
-  <template v-else-if="condition.type === 'POWER'">Become Governor</template>
-  <template v-else-if="condition.type === 'REPAIR_SHIP'">Repair Ship</template>
-  <template v-else-if="condition.type === 'CONTRIBUTION'">Contribution</template>
+  <template v-else-if="condition.type === 'HEADQUARTERS_UPGRADE'">升级总部</template>
+  <template v-else-if="condition.type === 'BASE_CONSTRUCTION'">建造基地</template>
+  <template v-else-if="condition.type === 'FINISH_FLIGHT'">完成飞行</template>
+  <template v-else-if="condition.type === 'PLACE_ORDER'">下单</template>
+  <template v-else-if="condition.type === 'PRODUCTION_ORDER_COMPLETED'"> 完成生产订单 </template>
+  <template v-else-if="condition.type === 'PRODUCTION_RUN'">运行生产</template>
+  <template v-else-if="condition.type === 'START_FLIGHT'">开始飞行</template>
+  <template v-else-if="condition.type === 'POWER'">成为总督</template>
+  <template v-else-if="condition.type === 'REPAIR_SHIP'">修复飞船</template>
+  <template v-else-if="condition.type === 'CONTRIBUTION'">贡献</template>
   <template v-else>
     {{ condition.type }}
   </template>

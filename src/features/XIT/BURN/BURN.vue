@@ -17,7 +17,7 @@ import { convertToPlanetNaturalId } from '@src/core/planet-natural-id';
 
 const parameters = useXitParameters();
 
-// Fake site for overall burn.
+// 用于整体消耗的虚拟基地。
 const overall: PrunApi.Site = {} as PrunApi.Site;
 
 const queryResult = computed(() => {
@@ -123,7 +123,7 @@ const planetBurn = computed(() => {
     }
   }
 
-  const overallSection = { burn: overallBurn, planetName: 'Overall', naturalId: '', storeId: '' };
+  const overallSection = { burn: overallBurn, planetName: '总览', naturalId: '', storeId: '' };
   if (queryResult.value.overallOnly) {
     return [overallSection];
   }
@@ -168,10 +168,10 @@ function onExpandAllClick() {
   <LoadingSpinner v-if="planetBurn === undefined" />
   <template v-else>
     <div :class="C.ComExOrdersPanel.filter">
-      <RadioItem v-model="red" horizontal>RED</RadioItem>
-      <RadioItem v-model="yellow" horizontal>YELLOW</RadioItem>
-      <RadioItem v-model="green" horizontal>GREEN</RadioItem>
-      <RadioItem v-model="inf" horizontal>INF</RadioItem>
+      <RadioItem v-model="red" horizontal>红色</RadioItem>
+      <RadioItem v-model="yellow" horizontal>黄色</RadioItem>
+      <RadioItem v-model="green" horizontal>绿色</RadioItem>
+      <RadioItem v-model="inf" horizontal>无限</RadioItem>
     </div>
     <table>
       <thead>
@@ -180,23 +180,21 @@ function onExpandAllClick() {
             {{ anyExpanded ? '-' : '+' }}
           </th>
           <th v-else />
-          <th>Inv</th>
+          <th>库存</th>
           <th>
             <InlineFlex>
-              Burn
-              <Tooltip position="bottom" tooltip="How much of a material is consumed per day." />
+              消耗
+              <Tooltip position="bottom" tooltip="每天消耗的材料量。" />
             </InlineFlex>
           </th>
           <th>
             <InlineFlex>
-              Need
-              <Tooltip
-                position="bottom"
-                tooltip="How much of a material needs to be delivered to be fully supplied." />
+              需要
+              <Tooltip position="bottom" tooltip="需要补给的材料量以实现完全供应。" />
             </InlineFlex>
           </th>
-          <th>Days</th>
-          <th>CMD</th>
+          <th>天数</th>
+          <th>命令</th>
         </tr>
       </thead>
       <tbody :class="$style.fakeRow">

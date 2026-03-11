@@ -46,7 +46,7 @@ const truncatedLabelData = computed(() => {
   let truncatedLabelData = [...labelData];
 
   for (let i = 20; i < truncatedLabelData.length; i++) {
-    truncatedLabelData[i] = 'Other';
+    truncatedLabelData[i] = '其他';
   }
 
   return truncatedLabelData;

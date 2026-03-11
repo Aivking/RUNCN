@@ -4,4 +4,4 @@ function init() {
   applyCssRule('table', $style.table);
 }
 
-features.add(import.meta.url, init, 'Colors even rows in lighter color in all tables.');
+features.add(import.meta.url, init, '在所有表格中将偶数行着浅色。');

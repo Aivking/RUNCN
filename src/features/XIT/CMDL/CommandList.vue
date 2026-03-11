@@ -16,7 +16,7 @@ const edit = ref(false);
 function addCommand() {
   list.commands.push({
     id: createId(),
-    label: 'Help',
+    label: '帮助',
     command: 'XIT HELP',
   });
 }
@@ -31,12 +31,12 @@ function deleteCommand(command: UserData.Command) {
     <table>
       <thead>
         <tr>
-          <th>Commands</th>
+          <th>命令</th>
         </tr>
       </thead>
       <tbody>
         <tr v-if="list.commands.length === 0">
-          <td>No commands.</td>
+          <td>没有命令。</td>
         </tr>
         <template v-else>
           <tr v-for="command in list.commands" :key="command.id">
@@ -48,7 +48,7 @@ function deleteCommand(command: UserData.Command) {
       </tbody>
     </table>
     <ActionBar>
-      <PrunButton primary @click="edit = true">EDIT</PrunButton>
+      <PrunButton primary @click="edit = true">编辑</PrunButton>
     </ActionBar>
   </template>
   <template v-else>
@@ -56,15 +56,15 @@ function deleteCommand(command: UserData.Command) {
       <thead>
         <tr>
           <GripHeaderCell />
-          <th>Label</th>
-          <th>Command</th>
+          <th>标签</th>
+          <th>命令</th>
           <th />
         </tr>
       </thead>
       <template v-if="list.commands.length === 0">
         <tbody>
           <tr>
-            <td>No commands.</td>
+            <td>没有命令。</td>
           </tr>
         </tbody>
       </template>
@@ -83,15 +83,15 @@ function deleteCommand(command: UserData.Command) {
               </div>
             </td>
             <td>
-              <PrunButton danger @click="deleteCommand(command)">DELETE</PrunButton>
+              <PrunButton danger @click="deleteCommand(command)">删除</PrunButton>
             </td>
           </tr>
         </tbody>
       </template>
     </table>
     <ActionBar>
-      <PrunButton primary @click="addCommand">ADD COMMAND</PrunButton>
-      <PrunButton primary @click="edit = false">DONE</PrunButton>
+      <PrunButton primary @click="addCommand">添加命令</PrunButton>
+      <PrunButton primary @click="edit = false">完成</PrunButton>
     </ActionBar>
   </template>
 </template>

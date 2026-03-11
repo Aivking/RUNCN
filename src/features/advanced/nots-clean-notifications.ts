@@ -25,8 +25,8 @@ async function processNotification(container: HTMLElement) {
     return;
   }
 
-  // We need to replace the text content VERY carefully,
-  // since it's all text nodes which can be updated by React at any time.
+  // 我们需要非常小心地替换文本内容，
+  // 因为这些都是文本节点，React 可能随时更新它们。
   for (const node of Array.from(textSpan.childNodes)) {
     if (node.nodeType !== Node.TEXT_NODE) {
       continue;
@@ -125,4 +125,4 @@ function init() {
   tiles.observe('NOTS', onTileReady);
 }
 
-features.add(import.meta.url, init, 'NOTS: Hides redundant information from notifications.');
+features.add(import.meta.url, init, 'NOTS：隐藏通知中的冗余信息。');

@@ -22,7 +22,7 @@ if (!config.planet) {
 
 <template>
   <form>
-    <Active label="Planet">
+    <Active label="星球">
       <SelectInput v-model="config.planet" :options="planets" />
     </Active>
   </form>

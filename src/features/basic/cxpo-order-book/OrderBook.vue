@@ -108,8 +108,8 @@ function getCumulativeOrders(targetOrder: PrunApi.CXBrokerOrder) {
     <table>
       <thead>
         <tr>
-          <th>Amt.</th>
-          <th>Price</th>
+          <th>数量</th>
+          <th>价格</th>
         </tr>
       </thead>
       <tbody>
@@ -124,13 +124,13 @@ function getCumulativeOrders(targetOrder: PrunApi.CXBrokerOrder) {
             :on-click="onClick" />
         </template>
         <tr v-else>
-          <td :class="C.ComExOrderBookPanel.empty" colSpan="2">No offers.</td>
+          <td :class="C.ComExOrderBookPanel.empty" colSpan="2">暂无卖单</td>
         </tr>
       </tbody>
       <tbody ref="spread">
         <tr>
           <td colSpan="2" :class="[C.ComExOrderBookPanel.spread, $style.spread]">
-            Spread: <span :style="{ color: '#eee' }">{{ spread }}</span>
+            价差：<span :style="{ color: '#eee' }">{{ spread }}</span>
           </td>
         </tr>
       </tbody>
@@ -147,7 +147,7 @@ function getCumulativeOrders(targetOrder: PrunApi.CXBrokerOrder) {
             :on-click="onClick" />
         </template>
         <tr v-else>
-          <td :class="C.ComExOrderBookPanel.empty" colSpan="2">No requests.</td>
+          <td :class="C.ComExOrderBookPanel.empty" colSpan="2">暂无买单</td>
         </tr>
       </tbody>
     </table>

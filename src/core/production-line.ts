@@ -18,13 +18,13 @@ export function calcCompletionDate(line: PrunApi.ProductionLine, order: PrunApi.
       return undefined;
     }
     if (lineOrder.completion) {
-      // Order has started
+      // 订单已开始
       queue.push(lineOrder.completion.timestamp);
     } else if (queue.length < capacity) {
-      // Order has not started but there's capacity to start it
+      // 订单未开始但有容量启动
       queue.push(Date.now() + lineOrder.duration.millis);
     } else {
-      // Order has not started
+      // 订单未开始
       queue.sort();
       queue.push(queue.shift()! + lineOrder.duration.millis);
     }

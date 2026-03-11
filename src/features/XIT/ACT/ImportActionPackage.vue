@@ -16,11 +16,11 @@ type ImportType = 'TEXT' | 'FILE';
 
 const typeOptions: { label: string; value: ImportType }[] = [
   {
-    label: 'Paste JSON',
+    label: '粘贴 JSON',
     value: 'TEXT',
   },
   {
-    label: 'Upload JSON',
+    label: '上传 JSON',
     value: 'FILE',
   },
 ];
@@ -66,17 +66,17 @@ function validateJson(json: any) {
 
 <template>
   <div :class="C.DraftConditionEditor.form">
-    <SectionHeader>Import Action Package</SectionHeader>
+    <SectionHeader>导入操作包</SectionHeader>
     <form>
-      <Active label="Type">
+      <Active label="类型">
         <SelectInput v-model="type" :options="typeOptions" />
       </Active>
       <Active v-if="type === 'TEXT'" label="JSON" :error="error">
         <TextInput v-model="text" focus-on-mount />
       </Active>
       <Commands>
-        <PrunButton v-if="type === 'FILE'" primary @click="onUploadClick">UPLOAD</PrunButton>
-        <PrunButton v-if="type === 'TEXT'" primary @click="onImportClick">IMPORT</PrunButton>
+        <PrunButton v-if="type === 'FILE'" primary @click="onUploadClick">上传</PrunButton>
+        <PrunButton v-if="type === 'TEXT'" primary @click="onImportClick">导入</PrunButton>
       </Commands>
     </form>
   </div>

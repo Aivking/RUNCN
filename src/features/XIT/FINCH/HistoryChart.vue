@@ -33,7 +33,7 @@ const selectedChartDef = computed(
 const yLabel = computed(() => {
   let label = selectedChartDef.value?.label;
   if (!label) {
-    return 'Value';
+    return '数值';
   }
   while (label.startsWith('-') || label.startsWith(' ')) {
     label = label.slice(1);
@@ -82,13 +82,13 @@ function onChartClick() {
 
 <template>
   <form>
-    <Passive v-if="chartDef" label="Chart">
+    <Passive v-if="chartDef" label="图表">
       <span>{{ yLabel }}</span>
     </Passive>
-    <Active v-else label="Chart">
+    <Active v-else label="图表">
       <SelectInput v-model="selectedChart" :options="charts" />
     </Active>
-    <Active :label="`Smoothing: ${percent0(averageFactor)}`">
+    <Active :label="`平滑：${percent0(averageFactor)}`">
       <RangeInput v-model="averageFactorText" :class="$style.wide" :min="0" :max="1" :step="0.01" />
     </Active>
   </form>

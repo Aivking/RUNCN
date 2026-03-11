@@ -163,12 +163,12 @@ function mapPmmgFeature(feature: string) {
     case 'CXPOOrderBook':
       return ['cxpo-order-book'];
     case 'ChatDeleteButton':
-      // RPrUn equivalent is align-chat-delete-button which works better.
+      // RPrUn 的等效功能是 align-chat-delete-button，效果更好。
       return undefined;
     case 'CommandCorrecter':
       return ['correct-commands'];
     case 'CompactUI':
-      // Map only features that conform to 'CompactUI' definition.
+      // 仅映射符合 'CompactUI' 定义的功能。
       return [
         'bbl-collapsible-categories',
         'bbl-hide-book-value',

@@ -3,9 +3,9 @@ import removeArrayElement from '@src/utils/remove-array-element';
 import { tilesStore } from '@src/infrastructure/prun-api/data/tiles';
 import { getInvStore } from '@src/core/store-id';
 
-// This is an old migration system that used a version number.
-// It is left here for old user data that was created before the named migrations were implemented.
-// New migrations should not use this approach. See user-data-migrations.ts.
+// 这是一个使用版本号的旧迁移系统。
+// 它保留在这里是为了在命名迁移实现之前创建的旧用户数据。
+// 新的迁移不应使用此方式。参见 user-data-migrations.ts。
 export function migrateVersionedUserData(userData: any) {
   if (userData.version < 10) {
     userData.tabs = {
@@ -18,7 +18,7 @@ export function migrateVersionedUserData(userData: any) {
     function convertDueDate(task: any) {
       if (task.dueDate) {
         const [year, month, day] = task.dueDate.split('-').map(x => parseInt(x, 10));
-        // Month is 0-based
+        // 月份从 0 开始
         const date = new Date(year, month - 1, day);
         task.dueDate = date.getTime();
       }

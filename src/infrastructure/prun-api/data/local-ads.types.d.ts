@@ -7,7 +7,7 @@ declare namespace PrunApi {
     localMarketId: string;
     naturalId: number;
     status: string;
-    // This is not ExchangeOperator, but oh well
+    // 这不是 ExchangeOperator，但无所谓了
     creator: ExchangeOperator;
     type: LocalAdType;
     address: Address;

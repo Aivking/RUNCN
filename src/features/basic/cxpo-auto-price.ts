@@ -159,4 +159,4 @@ function init() {
   tiles.observe('CXPO', onTileReady);
 }
 
-features.add(import.meta.url, init, 'CXPO: Adds automatic price calculation.');
+features.add(import.meta.url, init, 'CXPO：添加自动价格计算。');

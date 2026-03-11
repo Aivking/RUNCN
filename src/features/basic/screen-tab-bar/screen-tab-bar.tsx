@@ -77,4 +77,4 @@ function init() {
   applyCssRule(`.${C.ScreenControls.container}`, $style.screenControls);
 }
 
-features.add(import.meta.url, init, 'Adds a tab bar for user screens.');
+features.add(import.meta.url, init, '为用户屏幕添加标签栏。');

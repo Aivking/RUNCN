@@ -20,21 +20,21 @@ function onAddClick() {
 
 <template>
   <div :class="C.DraftConditionEditor.form">
-    <SectionHeader>Edit Price Limits</SectionHeader>
+    <SectionHeader>编辑价格限制</SectionHeader>
     <form>
       <template v-for="(pair, i) in priceLimits" :key="objectId(pair)">
-        <Active :label="`Material Ticker #${i + 1}`">
+        <Active :label="`材料代码 #${i + 1}`">
           <TextInput v-model="pair[0]" />
         </Active>
-        <Active :label="`Price Limit #${i + 1}`">
+        <Active :label="`价格限制 #${i + 1}`">
           <NumberInput v-model="pair[1]" />
         </Active>
       </template>
       <Commands>
-        <PrunButton primary @click="onAddClick">ADD</PrunButton>
+        <PrunButton primary @click="onAddClick">添加</PrunButton>
       </Commands>
       <Commands>
-        <PrunButton primary @click="emit('close')">CLOSE</PrunButton>
+        <PrunButton primary @click="emit('close')">关闭</PrunButton>
       </Commands>
     </form>
   </div>

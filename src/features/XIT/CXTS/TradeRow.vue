@@ -34,7 +34,7 @@ const onTickerClick = () => showBuffer(`CXOB ${fullTicker.value}`);
       </span>
     </td>
     <td>
-      <span :class="typeClass">{{ order.type === 'SELLING' ? 'SELL' : 'BUY' }}</span>
+      <span :class="typeClass">{{ order.type === 'SELLING' ? '卖出' : '买入' }}</span>
     </td>
     <td>
       <span :class="C.Link.link" @click="onTickerClick">

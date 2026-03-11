@@ -6,8 +6,4 @@ function init() {
   applyCssRule(`.${C.Window.body} > ${selector}`, css.hidden);
 }
 
-features.add(
-  import.meta.url,
-  init,
-  'Hides the close button on single tile windows where it does nothing.',
-);
+features.add(import.meta.url, init, '隐藏单磁贴窗口中无功能的关闭按钮。');

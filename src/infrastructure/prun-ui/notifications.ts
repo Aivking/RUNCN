@@ -2,7 +2,7 @@ import oneMutation from 'one-mutation';
 
 export async function waitNotificationLoaded(container: HTMLElement) {
   const content = await $(container, C.AlertListItem.content);
-  // Don't mess with loading notifications
+  // 不要处理加载中的通知
   const isLoaded = () => !content.textContent?.includes('…');
   if (!isLoaded()) {
     await oneMutation(content, {

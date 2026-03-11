@@ -21,8 +21,4 @@ function init() {
   tiles.observe(['COMG', 'COMP', 'COMU'], onTileReady);
 }
 
-features.add(
-  import.meta.url,
-  init,
-  'Makes the "delete" button in chats work only when shift is held down.',
-);
+features.add(import.meta.url, init, '使聊天中的"删除"按钮仅在按住 Shift 时生效。');

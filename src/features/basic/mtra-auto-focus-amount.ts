@@ -14,4 +14,4 @@ function init() {
   tiles.observe('MTRA', onTileReady);
 }
 
-features.add(import.meta.url, init, 'MTRA: Automatically focuses the amount input on buffer open.');
+features.add(import.meta.url, init, 'MTRA：打开缓冲区时自动聚焦数量输入框。');

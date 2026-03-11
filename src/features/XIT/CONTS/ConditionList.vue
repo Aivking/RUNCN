@@ -25,5 +25,5 @@ const loanFilled = computed(
     :key="condition.id"
     :condition="condition"
     :contract="contract" />
-  <div v-if="loanTotal !== 0">{{ loanFilled }}/{{ loanTotal }} Loan Installment</div>
+  <div v-if="loanTotal !== 0">{{ loanFilled }}/{{ loanTotal }} 贷款分期</div>
 </template>

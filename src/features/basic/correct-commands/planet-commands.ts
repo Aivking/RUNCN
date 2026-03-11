@@ -35,11 +35,11 @@ export function correctPlanetCommand(parts: string[]) {
 
   const args = parts.slice(1);
   if (args.length === 1) {
-    // For example, `LM VH-331a`
+    // 例如：`LM VH-331a`
     if (planetsStore.getByNaturalId(args[0])) {
       return;
     }
-    // For example, `LM HRT`
+    // 例如：`LM HRT`
     if (stationCommands.has(command) && stationsStore.getByNaturalId(args[0])) {
       return;
     }

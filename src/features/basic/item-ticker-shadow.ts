@@ -5,4 +5,4 @@ function init() {
   applyCssRule(`.${C.BuildingIcon.ticker}`, $style.shadow);
 }
 
-features.add(import.meta.url, init, 'Adds a shadow to item tickers.');
+features.add(import.meta.url, init, '为物品代码添加阴影效果。');

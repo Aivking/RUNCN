@@ -8,4 +8,4 @@ function init() {
   );
 }
 
-features.add(import.meta.url, init, 'CXPO: Makes "Buy" and "Sell" buttons bigger.');
+features.add(import.meta.url, init, 'CXPO：增大"买入"和"卖出"按钮。');

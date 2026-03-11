@@ -15,8 +15,4 @@ function init() {
   tiles.observe('CXPO', onTileReady);
 }
 
-features.add(
-  import.meta.url,
-  init,
-  'CXPO: Replaces values of "Exchange" and "Material" fields with corresponding tickers.',
-);
+features.add(import.meta.url, init, 'CXPO：将"交易所"和"材料"字段的值替换为对应的代码。');

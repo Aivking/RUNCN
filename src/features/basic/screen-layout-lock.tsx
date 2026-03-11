@@ -64,4 +64,4 @@ function init() {
   applyCssRule(`.${C.TileDivider.handle}`, $style.handle);
 }
 
-features.add(import.meta.url, init, 'Adds screen locking.');
+features.add(import.meta.url, init, '添加屏幕锁定功能。');

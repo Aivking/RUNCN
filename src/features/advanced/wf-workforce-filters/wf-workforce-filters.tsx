@@ -52,7 +52,7 @@ function onTileReady(tile: PrunTile) {
       const rows = _$$(table, 'tr');
       for (const row of rows) {
         const isHeader = _$(row, 'th') !== undefined;
-        // The first row has a <th> with colspan=2 that messes up the element index.
+        // 第一行有一个 colspan=2 的 <th>，会影响元素索引。
         const startingColumn = isHeader ? 5 : 6;
         for (let i = 0; i < workforceTypes.length; i++) {
           const workforceType = workforceTypes[i];
@@ -75,8 +75,4 @@ function init() {
   tiles.observe('WF', onTileReady);
 }
 
-features.add(
-  import.meta.url,
-  init,
-  'WF: Adds filters to hide zero workforce types and consumables.',
-);
+features.add(import.meta.url, init, 'WF：添加过滤器以隐藏零劳动力类型和消耗品。');

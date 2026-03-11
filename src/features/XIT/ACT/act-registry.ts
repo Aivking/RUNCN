@@ -75,8 +75,8 @@ function addActionStep<T>(info: ActionStepInfo<T>) {
 }
 
 function getActionStepInfo(type: string) {
-  // Use ! operator here because there is a runtime guarantee
-  // that all action steps have existing type (see addActionStep).
+  // 这里使用 ! 操作符，因为运行时保证
+  // 所有操作步骤都有对应的类型（参见 addActionStep）。
   return actionSteps.find(x => x.type === type)!;
 }
 

@@ -39,4 +39,4 @@ function init() {
   tiles.observe('PRODQ', onTileReady);
 }
 
-features.add(import.meta.url, init, 'PRODQ: Adds a daily load percentage label to queued orders.');
+features.add(import.meta.url, init, 'PRODQ：为排队订单添加每日负载百分比标签。');

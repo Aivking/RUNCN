@@ -48,4 +48,4 @@ function init() {
   subscribe($$(document, C.Tile.selector), onSelectorReady);
 }
 
-features.add(import.meta.url, init, 'Corrects tile commands.');
+features.add(import.meta.url, init, '修正磁贴命令。');

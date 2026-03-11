@@ -57,21 +57,19 @@ function downloadPrunStyles() {
 
 <template>
   <div :style="{ paddingTop: '4px' }">
-    <SectionHeader>Warning: Messing with these can lead to unexpected behavior</SectionHeader>
+    <SectionHeader>警告：修改这些内容可能导致意外行为</SectionHeader>
     <form>
-      <Active label="Relay">
+      <Active label="中继">
         <TextInput v-model="relayUrl" />
       </Active>
     </form>
-    <DebugButton v-if="!isRecordingPrunLog" @click="recordPrunLog">Record PrUn Log</DebugButton>
-    <DebugButton v-else @click="stopRecordingPrunLog">Stop Recording</DebugButton>
-    <DebugButton @click="switchPrunDebug">
-      {{ prunDebug ? 'Disable' : 'Enable' }} pu-debug
-    </DebugButton>
-    <DebugButton @click="logUserData">Log User Data</DebugButton>
-    <DebugButton @click="downloadCssDefinition">Export prun-css.types.d.ts</DebugButton>
+    <DebugButton v-if="!isRecordingPrunLog" @click="recordPrunLog">录制 PrUn 日志</DebugButton>
+    <DebugButton v-else @click="stopRecordingPrunLog">停止录制</DebugButton>
+    <DebugButton @click="switchPrunDebug"> {{ prunDebug ? '禁用' : '启用' }} pu-debug </DebugButton>
+    <DebugButton @click="logUserData">记录用户数据</DebugButton>
+    <DebugButton @click="downloadCssDefinition">导出 prun-css.types.d.ts</DebugButton>
     <DebugButton @click="downloadPrunStyles">
-      Export prun.css <span v-if="prunStyleUpdated">(new!)</span>
+      导出 prun.css <span v-if="prunStyleUpdated">(新!)</span>
     </DebugButton>
   </div>
 </template>

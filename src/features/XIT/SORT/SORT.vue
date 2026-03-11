@@ -42,7 +42,7 @@ function deleteSortingMode(ev: Event, sorting: UserData.SortingMode) {
       removeArrayElement(sortingData.value.modes, sorting);
     },
     {
-      message: `Are you sure you want to delete ${sorting.label}?`,
+      message: `确定要删除 ${sorting.label} 吗？`,
     },
   );
 }
@@ -65,18 +65,18 @@ async function pasteSortingMode(ev: Event) {
 </script>
 
 <template>
-  <div v-if="!storage">Invalid inventory ID</div>
+  <div v-if="!storage">无效的库存 ID</div>
   <template v-else>
     <ActionBar>
-      <PrunButton primary @click="createSortingMode">CREATE NEW</PrunButton>
-      <PrunButton primary @click="pasteSortingMode">PASTE</PrunButton>
+      <PrunButton primary @click="createSortingMode">新建</PrunButton>
+      <PrunButton primary @click="pasteSortingMode">粘贴</PrunButton>
     </ActionBar>
     <table>
       <thead>
         <tr>
           <GripHeaderCell />
-          <th>Name</th>
-          <th>Categories</th>
+          <th>名称</th>
+          <th>分类</th>
           <th />
         </tr>
       </thead>
@@ -86,15 +86,15 @@ async function pasteSortingMode(ev: Event) {
           <td>{{ mode.label }}</td>
           <td>{{ mode.categories.map(x => x.name).join(', ') }}</td>
           <td>
-            <PrunButton primary @click="editSortingMode($event, mode)">edit</PrunButton>
-            <PrunButton primary @click="copySortingMode(mode)">copy</PrunButton>
-            <PrunButton danger @click="deleteSortingMode($event, mode)">delete</PrunButton>
+            <PrunButton primary @click="editSortingMode($event, mode)">编辑</PrunButton>
+            <PrunButton primary @click="copySortingMode(mode)">复制</PrunButton>
+            <PrunButton danger @click="deleteSortingMode($event, mode)">删除</PrunButton>
           </td>
         </tr>
       </tbody>
       <tbody v-else>
         <tr>
-          <td colspan="3">No Sorting Options</td>
+          <td colspan="3">没有排序选项</td>
         </tr>
       </tbody>
     </table>

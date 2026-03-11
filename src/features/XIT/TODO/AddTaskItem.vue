@@ -24,7 +24,7 @@ function onAddClick(ev: Event) {
       <div :class="$style.plus">+</div>
       <div :class="$style.plusHover">{{ '\uf055' }}</div>
     </div>
-    <div :class="[$style.content]">Add task</div>
+    <div :class="[$style.content]">添加任务</div>
   </div>
 </template>
 

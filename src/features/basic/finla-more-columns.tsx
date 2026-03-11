@@ -76,4 +76,4 @@ function init() {
   tiles.observe('FINLA', onTileReady);
 }
 
-features.add(import.meta.url, init, 'FINLA: Adds columns for additional liquid asset types.');
+features.add(import.meta.url, init, 'FINLA：为更多流动资产类型添加列。');

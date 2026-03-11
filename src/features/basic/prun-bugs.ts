@@ -34,28 +34,28 @@ function init() {
   removeMobileCssRules();
   fixZOrder();
 
-  // Prevents top-right user info from shrinking.
+  // 防止右上角用户信息缩小。
   applyCssRule(`.${C.Head.container}`, $style.head);
 
-  // Item sub-labels are missing word-break.
+  // 项目子标签缺少 word-break。
   applyCssRule(`.${C.ColoredIcon.subLabel}`, $style.subLabel);
 
-  // Removes GridItemView background color.
+  // 移除 GridItemView 背景色。
   applyCssRule(`.${C.GridItemView.container}`, $style.gridItem);
 
-  // Adds text centering to GridItemView name.
+  // 为 GridItemView 名称添加文本居中。
   applyCssRule(`.${C.GridItemView.name}`, $style.gridItemName);
 
-  // The overlay stops materials from being clickable.
+  // 覆盖层会阻止材料被点击。
   applyCssRule(['PROD', 'PRODQ'], `.${C.OrderTile.overlay}`, $style.disablePointerEvents);
 
-  // Prevent PROD buffer vertical scroll bar gutter from being always visible.
+  // 防止 PROD 缓冲区垂直滚动条槽始终可见。
   applyCssRule('PROD', `.${C.SiteProductionLines.container}`, $style.containerScrollbarGutter);
 
-  // User search results box in GIFT is too big to fit in the tile.
+  // GIFT 中的用户搜索结果框太大，无法适应磁贴。
   applyCssRule('GIFT', `.${C.UserSelector.suggestionsContainer}`, $style.giftSearchResults);
 
-  // Fixes the dot / arrow in system info being left skewed
+  // 修复系统信息中的点/箭头左偏问题
   applyCssRule(
     'SYSI',
     `.${C.EnvironmentTable.gridContainer} .${C.ColoredValue.positive}`,
@@ -67,9 +67,9 @@ function init() {
     $style.centerText,
   );
 
-  // Fix the tooltip arrow position.
+  // 修复工具提示箭头位置。
   applyCssRule('[data-tooltip-position="bottom"]', $style.tooltipBottom);
   applyCssRule('[data-tooltip-position="right"]', $style.tooltipRight);
 }
 
-features.add(import.meta.url, init, 'Fixes PrUn bugs.');
+features.add(import.meta.url, init, '修复 PrUn 的 bug。');

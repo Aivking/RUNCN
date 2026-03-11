@@ -22,4 +22,4 @@ function init() {
   tiles.observe('PROD', onTileReady);
 }
 
-features.add(import.meta.url, init, 'PROD: Adds a XIT BURN link to the context bar.');
+features.add(import.meta.url, init, 'PROD：在上下文栏中添加 XIT BURN 链接。');

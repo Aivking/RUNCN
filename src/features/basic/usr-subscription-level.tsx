@@ -31,4 +31,4 @@ function init() {
   tiles.observe('USR', onTileReady);
 }
 
-features.add(import.meta.url, init, 'USR: Adds user license info.');
+features.add(import.meta.url, init, 'USR：添加用户许可证信息。');

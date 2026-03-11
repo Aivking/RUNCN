@@ -13,8 +13,4 @@ function init() {
   });
 }
 
-features.add(
-  import.meta.url,
-  init,
-  'Adds a volume slider to the game settings in the top-right corner of the screen.',
-);
+features.add(import.meta.url, init, '在屏幕右上角的游戏设置中添加音量滑块。');

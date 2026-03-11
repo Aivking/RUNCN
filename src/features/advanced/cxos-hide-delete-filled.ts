@@ -1,14 +1,10 @@
 import css from '@src/utils/css-utils.module.css';
 
 function init() {
-  // This selector will only trigger when the filters are hidden, since there will be
-  // no other elements between the "clear material filters" button and
-  // the action bar with the "Delete Filled" button.
+  // 此选择器仅在过滤器隐藏时触发，因为此时
+  // “清除材料过滤器”按钮和
+  // 带有“删除已成交”按钮的操作栏之间没有其他元素。
   applyCssRule('CXOS', `.${C.Button.btn} + .${C.ActionBar.container}`, css.hidden);
 }
 
-features.add(
-  import.meta.url,
-  init,
-  'CXOS: Hides the "Delete Filled" button when filters are hidden.',
-);
+features.add(import.meta.url, init, 'CXOS：当过滤器隐藏时隐藏"删除已成交"按钮。');

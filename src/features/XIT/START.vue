@@ -21,46 +21,49 @@ async function onFullClick() {
 
 <template>
   <div :class="$style.container">
-    <h1 :class="$style.title">Thank you for using Refined PrUn!</h1>
+    <h1 :class="$style.title">感谢使用 Refined PrUn！</h1>
     <p>
-      You can find a list of all of the XIT commands using
+      你可以通过
       <PrunLink inline command="XIT CMDS" />
+      查看所有 XIT 命令列表
     </p>
     <p>
-      You can change settings using
+      你可以通过
       <PrunLink inline command="XIT SET" />
+      更改设置
     </p>
     <p>
-      For additional help, check
+      获取更多帮助，请查看
       <PrunLink inline command="XIT HELP" />
     </p>
     <template v-if="needsToChoose">
       <p>
-        Please select a feature set (you can change it later using
+        请选择功能集（你可以稍后通过
         <PrunLink inline command="XIT SET FEAT" />
-        )
+        更改）
       </p>
       <div :class="$style.features">
         <PrunButton primary :class="$style.feature" @click="onBasicClick">
           <div :class="$style.featureTitle">
-            <div :class="$style.title">BASIC</div>
+            <div :class="$style.title">基础</div>
           </div>
-          <div :class="$style.featureDescription">Includes features to enhance the APEX UI</div>
+          <div :class="$style.featureDescription">包含增强 APEX UI 的功能</div>
         </PrunButton>
         <PrunButton primary :class="$style.feature" @click="onFullClick">
           <div :class="$style.featureTitle">
-            <div :class="$style.title">FULL</div>
-            <div>(requires restart)</div>
+            <div :class="$style.title">完整</div>
+            <div>（需要重启）</div>
           </div>
           <div :class="$style.featureDescription">
-            Includes all Basic features plus additional UI refinements for experienced players
+            包含所有基础功能，以及面向资深玩家的额外 UI 优化
           </div>
         </PrunButton>
       </div>
     </template>
     <p v-else>
-      You can change the feature set at any time using
+      你可以随时通过
       <PrunLink inline command="XIT SET FEAT" />
+      更改功能集
     </p>
   </div>
 </template>

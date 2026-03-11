@@ -4,4 +4,4 @@ function init() {
   applyCssRule('CONTD', `.${C.UserSelector.suggestionsContainer}`, $style.suggestions);
 }
 
-features.add(import.meta.url, init, 'CONTD: Moves the search bar results above the search bar.');
+features.add(import.meta.url, init, 'CONTD：将搜索栏结果移至搜索栏上方。');

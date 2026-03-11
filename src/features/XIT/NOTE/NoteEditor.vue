@@ -13,12 +13,12 @@ function processText(text?: string) {
     return '';
   }
 
-  // Account for final new lines
+  // 处理末尾换行符
   if (text[text.length - 1] == '\n') {
     text += ' ';
   }
 
-  // Allow for HTML tags
+  // 允许 HTML 标签
   text = text.replaceAll('&', '&amp;').replaceAll('<', '&lt;');
 
   const regexp = /\b(?:[a-zA-Z0-9]{1,3}\.(?:CI1|IC1|AI1|NC1|CI2|NC2))(?!<)/g;

@@ -23,7 +23,7 @@ const getByTicker = (() => {
       return undefined;
     }
 
-    // Extract ticker from MAT.CX
+    // 从 MAT.CX 中提取代码
     const dotIndex = value.indexOf('.');
     if (dotIndex >= 0) {
       return getter(value.substring(0, dotIndex));

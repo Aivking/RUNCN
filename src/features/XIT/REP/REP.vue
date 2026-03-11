@@ -81,26 +81,26 @@ function calculateAge(lastRepair: number) {
   <LoadingSpinner v-if="materials === undefined" />
   <template v-else>
     <form>
-      <Active label="Age Threshold">
+      <Active label="年龄阈值">
         <NumberInput v-model="userData.settings.repair.threshold" />
       </Active>
-      <Active label="Time Offset">
+      <Active label="时间偏移">
         <NumberInput v-model="userData.settings.repair.offset" />
       </Active>
     </form>
-    <SectionHeader>Shopping Cart</SectionHeader>
+    <SectionHeader>购物车</SectionHeader>
     <MaterialPurchaseTable
       :collapsible="isMultiTarget"
       :collapsed-by-default="true"
       :materials="materials" />
-    <SectionHeader>Buildings</SectionHeader>
+    <SectionHeader>建筑</SectionHeader>
     <table>
       <thead>
         <tr>
-          <th>Ticker</th>
-          <th v-if="isMultiTarget">Target</th>
-          <th>Age (days)</th>
-          <th>Condition</th>
+          <th>代码</th>
+          <th v-if="isMultiTarget">目标</th>
+          <th>年龄（天）</th>
+          <th>状况</th>
         </tr>
       </thead>
       <tbody>
@@ -113,7 +113,7 @@ function calculateAge(lastRepair: number) {
           <td>{{ percent1(entry.condition) }}</td>
         </tr>
         <tr v-for="entry in visibleShips" :key="objectId(entry)">
-          <td>(Ship)</td>
+          <td>（飞船）</td>
           <td>{{ entry.target }}</td>
           <td>{{ fixed1(calculateAge(entry.lastRepair)) }}</td>
           <td>{{ percent1(entry.condition) }}</td>

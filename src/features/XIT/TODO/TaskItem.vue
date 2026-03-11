@@ -60,7 +60,7 @@ function onCheckmarkClick() {
         <TaskText :text="task.text" />
         <div v-if="task.dueDate" :class="$style.dueDate">
           {{ ddmmyyyy(task.dueDate) }}
-          <span v-if="task.recurring">(every {{ task.recurring }}d)</span>
+          <span v-if="task.recurring">(每 {{ task.recurring }} 天)</span>
         </div>
       </div>
     </div>

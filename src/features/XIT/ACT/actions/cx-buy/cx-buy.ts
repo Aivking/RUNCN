@@ -12,7 +12,7 @@ act.addAction({
       return '--';
     }
 
-    return 'Buying group ' + action.group + ' from ' + action.exchange;
+    return '从 ' + action.exchange + ' 购买组 ' + action.group;
   },
   editComponent: Edit,
   generateSteps: async ctx => {
@@ -22,28 +22,28 @@ act.addAction({
     const buyPartial = data.buyPartial ?? false;
 
     const materials = await getMaterialGroup(data.group);
-    assert(materials, 'Invalid material group');
+    assert(materials, '无效的材料组');
 
     const exchange = data.exchange;
-    assert(exchange, 'Missing exchange');
+    assert(exchange, '缺少交易所');
 
-    // Take out materials in CX inventory if requested
+    // 如果请求了，从 CX 库存中取出材料
     if ((data.useCXInv ?? true) && data.exchange) {
       for (const mat of Object.keys(materials)) {
         for (const CXMat of Object.keys(state.WAR[data.exchange])) {
           if (CXMat === mat) {
-            // Amount of material used (minimum of needed and had on hand)
+            // 使用的材料数量（所需量与持有量的最小值）
             const used = Math.min(materials[mat], state.WAR[data.exchange][CXMat]);
             materials[mat] -= used;
             state.WAR[data.exchange][CXMat] -= used;
             if (state.WAR[data.exchange][mat] <= 0) {
-              // Remove material from CX Inv is already allocated
+              // 从已分配的 CX 库存中移除材料
               delete state.WAR[data.exchange][CXMat];
             }
           }
         }
         if (materials[mat] <= 0) {
-          // Remove material from list if you already have enough on the CX
+          // 如果 CX 上已有足够材料，则从列表中移除
           delete materials[mat];
         }
       }
@@ -53,7 +53,7 @@ act.addAction({
       const amount = materials[ticker];
       const priceLimit = data.priceLimits?.[ticker] ?? Infinity;
       if (isNaN(priceLimit)) {
-        log.error('Non-numerical price limit on ' + ticker);
+        log.error(ticker + ' 的价格限制不是数字');
         continue;
       }
 
@@ -63,7 +63,7 @@ act.addAction({
 
       if (filled && filled.amount < amount && !allowUnfilled) {
         if (!buyPartial) {
-          let message = `Not enough materials on ${exchange} to buy ${fixed0(amount)} ${ticker}`;
+          let message = `${exchange} 上没有足够的材料购买 ${fixed0(amount)} ${ticker}`;
           if (isFinite(priceLimit)) {
             message += ` with price limit ${fixed02(priceLimit)}/u`;
           }
@@ -73,8 +73,8 @@ act.addAction({
 
         const leftover = amount - filled.amount;
         let message =
-          `${fixed0(leftover)} ${ticker} will not be bought on ${exchange} ` +
-          `(${fixed0(filled.amount)} of ${fixed0(amount)} available`;
+          `${fixed0(leftover)} ${ticker} 将不会在 ${exchange} 上购买 ` +
+          `（${fixed0(filled.amount)}/${fixed0(amount)} 可用`;
         if (isFinite(priceLimit)) {
           message += ` with price limit ${fixed02(priceLimit)}/u`;
         }

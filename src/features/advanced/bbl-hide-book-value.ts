@@ -8,4 +8,4 @@ function init() {
   );
 }
 
-features.add(import.meta.url, init, 'BBL: Hides the "Book value" row.');
+features.add(import.meta.url, init, 'BBL：隐藏"账面价值"行。');

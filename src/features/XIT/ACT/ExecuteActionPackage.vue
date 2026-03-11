@@ -163,41 +163,41 @@ function clearLog() {
       :class="$style.mainWindow" />
     <LogWindow v-else :messages="log" :scrolling="logScrolling" :class="$style.mainWindow" />
     <div :class="$style.status">
-      <span>Status: </span>
+      <span>状态：</span>
       <span v-if="status">{{ status }}</span>
-      <span v-else-if="shouldShowConfigure">Configure group parameters ↑</span>
-      <span v-else>Press Execute to start</span>
+      <span v-else-if="shouldShowConfigure">请配置材料组参数 ↑</span>
+      <span v-else>按执行开始</span>
     </div>
     <ActionBar :class="$style.actionBar">
       <template v-if="shouldShowConfigure">
         <PrunButton primary :disabled="!isValidConfig" @click="onConfigureApplyClick">
-          APPLY
+          应用
         </PrunButton>
       </template>
       <template v-else-if="isPreviewing">
-        <PrunButton v-if="needsConfigure" primary @click="onConfigureClick">CONFIGURE</PrunButton>
-        <PrunButton disabled>PREVIEW</PrunButton>
-        <PrunButton disabled>EXECUTE</PrunButton>
+        <PrunButton v-if="needsConfigure" primary @click="onConfigureClick">配置</PrunButton>
+        <PrunButton disabled>预览</PrunButton>
+        <PrunButton disabled>执行</PrunButton>
       </template>
       <template v-else-if="!isRunning">
-        <PrunButton v-if="needsConfigure" primary @click="onConfigureClick">CONFIGURE</PrunButton>
-        <PrunButton primary @click="onPreviewClick">PREVIEW</PrunButton>
+        <PrunButton v-if="needsConfigure" primary @click="onConfigureClick">配置</PrunButton>
+        <PrunButton primary @click="onPreviewClick">预览</PrunButton>
         <PrunButton primary :class="$style.executeButton" @click="onExecuteClick">
-          EXECUTE
+          执行
         </PrunButton>
       </template>
       <template v-else>
-        <PrunButton v-if="needsConfigure" primary disabled>CONFIGURE</PrunButton>
-        <PrunButton primary disabled>PREVIEW</PrunButton>
+        <PrunButton v-if="needsConfigure" primary disabled>配置</PrunButton>
+        <PrunButton primary disabled>预览</PrunButton>
         <PrunButton
           danger
           :disabled="!actReady"
           :class="$style.executeButton"
           @click="onCancelClick">
-          CANCEL
+          取消
         </PrunButton>
-        <PrunButton primary :disabled="!actReady" @click="onActClick">ACT</PrunButton>
-        <PrunButton neutral :disabled="!actReady" @click="onSkipClick">SKIP</PrunButton>
+        <PrunButton primary :disabled="!actReady" @click="onActClick">执行步骤</PrunButton>
+        <PrunButton neutral :disabled="!actReady" @click="onSkipClick">跳过</PrunButton>
       </template>
     </ActionBar>
   </div>
@@ -229,7 +229,7 @@ function clearLog() {
   user-select: none;
 }
 
-/* Use the same width for cancel and execute buttons to keep layout stable. */
+/* 使取消和执行按钮宽度相同，保持布局稳定。 */
 .executeButton {
   width: 68px;
 }

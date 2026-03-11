@@ -27,7 +27,7 @@ function onTileReady(tile: PrunTile) {
 
   const command = parameters[0];
   if (command.toUpperCase() == 'FIO' || command.toUpperCase() == 'COL') {
-    // Exception for FIO and PrUn-Collector to use XIT
+    // FIO 和 PrUn-Collector 使用 XIT 的例外情况
     return;
   }
   const xitCommand = xit.get(command);
@@ -47,8 +47,8 @@ function onTileReady(tile: PrunTile) {
   }
 
   subscribe($$(tile.anchor, C.ScrollView.view), scrollView => {
-    // XIT command produces a tile with full-size green screen as its content.
-    // Custom XIT tiles are just mounted inside this green screen.
+    // XIT 命令生成一个包含全尺寸绿色屏幕的磁贴。
+    // 自定义 XIT 磁贴就是挂载在这个绿色屏幕内部的。
     const container = scrollView.children[0] as HTMLDivElement;
     if (container === undefined) {
       return;
@@ -59,7 +59,7 @@ function onTileReady(tile: PrunTile) {
     container.style.height = '100%';
 
     if (!xitCommand) {
-      container.textContent = 'Error! No Matching Function!';
+      container.textContent = '错误！没有匹配的功能！';
       return;
     }
 

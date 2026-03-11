@@ -18,12 +18,12 @@ defineProps<{ contract: PrunApi.Contract }>();
   <PrunLink v-else-if="contract.partner.code" :command="`CO ${contract.partner.code}`" />
   <div
     v-else-if="contract.partner.currency"
-    data-tooltip="Refined PrUn is unable to fetch government information. Check the contract info for more details."
+    data-tooltip="Refined PrUn 无法获取政府信息。请查看合同详情了解更多。"
     data-tooltip-position="down"
     :class="$style.overrideTooltipStyle">
-    Planetary Government
+    星球政府
   </div>
-  <div v-else>Unknown</div>
+  <div v-else>未知</div>
 </template>
 
 <style module>

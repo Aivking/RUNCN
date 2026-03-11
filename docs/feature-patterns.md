@@ -89,7 +89,7 @@ The command should be short. Refer to `docs/game/commands.csv` for an example of
 ## Auto-Imports (no explicit import needed)
 
 | Symbol | Source |
-|--------|--------|
+| -------- | -------- |
 | Vue composables (`ref`, `computed`, `reactive`, `watch`, …) | `vue` |
 | `$`, `$$`, `_$`, `_$$` | `@src/utils/select-dom` |
 | `C` | `@src/infrastructure/prun-ui/prun-css` |
@@ -122,7 +122,7 @@ applyCssRule(`.${C.Frame.logo}`, $style.logo);
 Four auto-imported functions for finding elements by CSS class name (`C.X.y`) or HTML tag name.
 
 | Function | Returns | Mechanism | Use When |
-|----------|---------|-----------|----------|
+| ---------- | --------- | ----------- | ---------- |
 | `$` | `Promise<Element>` | MutationObserver — resolves when first match appears | Waiting for element to render (gate pattern) |
 | `$$` | `AsyncIterable<Element>` | MutationObserver — yields existing + future matches | Processing current and dynamically added elements |
 | `_$` | `Element \| undefined` | Sync `getElementsByClassName` / `getElementsByTagName` | Element is guaranteed to exist already |
@@ -133,6 +133,7 @@ Four auto-imported functions for finding elements by CSS class name (`C.X.y`) or
 Selectors are **not CSS selector strings**. Internally they resolve to `getElementsByClassName` or `getElementsByTagName`.
 
 Valid selectors:
+
 - `C.ComponentName.className` — a PrUn CSS class name (preferred)
 - HTML tag names: `'div'`, `'tr'`, `'td'`, etc
 
@@ -208,7 +209,7 @@ subscribe($$(tile.anchor, C.InventoriesListContainer.filter), async filter => {
 
 ### Choosing the Right Function
 
-```
+```text
 Need to wait for element? → $ (async single) or $$ (async iterable)
 Element already exists?   → _$ (sync single) or _$$ (sync all)
 Processing one element?   → $ or _$
@@ -473,7 +474,7 @@ All formatters are locale-aware (use `Intl.DateTimeFormat` / `Intl.NumberFormat`
 Signature: `(date?: number | Date | undefined) => string`
 
 | Formatter | Output | Example |
-|-----------|--------|---------|
+| ----------- | -------- | --------- |
 | `ddmm` | Month + day | `"03/09"` |
 | `ddmmyyyy` | Month + day + year | `"03/09/2026"` |
 | `hhmm` | Hours + minutes (respects user's 12H/24H setting) | `"14:30"` |
@@ -484,7 +485,7 @@ Signature: `(date?: number | Date | undefined) => string`
 Signature: `(value: number) => string`. Do **not** accept `undefined`.
 
 | Formatter | Decimals | Example | Use For |
-|-----------|----------|---------|---------|
+| ----------- | ---------- | --------- | --------- |
 | `fixed0` | 0 | `"1,235"` | Integer amounts, large values |
 | `fixed01` | 0–1 | `"1,234"`, `"1,234.5"` | Mid-range values |
 | `fixed02` | 0–2 | `"1,234"`, `"1,234.56"` | Values where trailing zeros are noise |

@@ -40,13 +40,13 @@ const sortedConditions = computed(() => {
 
 function calculateDeadline(contract: PrunApi.Contract, condition: PrunApi.ContractCondition) {
   if (condition.type === 'COMEX_PURCHASE_PICKUP') {
-    // The COMEX_PURCHASE_PICKUP condition has unique handling:
-    // Once all its dependencies are fulfilled,
-    // the player needs to pick up the materials using this condition.
-    // For determining the deadline of the COMEX_PURCHASE_PICKUP condition,
-    // we will use the latest deadline among its dependencies.
-    // This is because the materials can be picked up at any time,
-    // making the COMEX_PURCHASE_PICKUP's own deadline irrelevant.
+    // COMEX_PURCHASE_PICKUP 条件有特殊处理：
+    // 当所有依赖条件满足后，
+    // 玩家需要通过该条件提取材料。
+    // 为了确定 COMEX_PURCHASE_PICKUP 条件的截止日期，
+    // 我们使用其依赖条件中最晚的截止日期。
+    // 这是因为材料可以随时提取，
+    // 使得 COMEX_PURCHASE_PICKUP 本身的截止日期不相关。
     return getLatestDependencyDeadline(contract, condition);
   }
 
@@ -141,8 +141,8 @@ export function sumProvisions(conditions: MaybeConditions) {
 }
 
 export function sumFactionProvisions(conditions: MaybeConditions) {
-  // Faction Logistics contracts request materials via PROVISION_SHIPMENT
-  // contract conditions. Count them as liabilities.
+  // 派系物流合同通过 PROVISION_SHIPMENT
+  // 合同条件请求材料。将其计为负债。
   const filtered = conditions.value?.filter(
     x => isFactionContract(x.contract) && x.condition.type === 'PROVISION_SHIPMENT',
   );

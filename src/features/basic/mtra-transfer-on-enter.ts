@@ -28,8 +28,4 @@ function init() {
   tiles.observe('MTRA', onTileReady);
 }
 
-features.add(
-  import.meta.url,
-  init,
-  'MTRA: Triggers transfer on Enter and closes the buffer on success.',
-);
+features.add(import.meta.url, init, 'MTRA：按 Enter 触发转移，成功后关闭缓冲区。');

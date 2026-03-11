@@ -4,4 +4,4 @@ function init() {
   applyCssRule(`.${C.MaterialIcon.typeVerySmall}`, $style.indicator);
 }
 
-features.add(import.meta.url, init, 'Makes the item count label font bigger.');
+features.add(import.meta.url, init, '增大物品数量标签的字体。');

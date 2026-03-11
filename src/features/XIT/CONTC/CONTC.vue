@@ -22,19 +22,19 @@ const nonCurrent = computed(() =>
   <table v-else>
     <thead>
       <tr>
-        <th>Contract</th>
-        <th>Deadline</th>
-        <th>Condition</th>
+        <th>合同</th>
+        <th>截止时间</th>
+        <th>条件</th>
       </tr>
     </thead>
     <thead>
       <tr>
-        <th colspan="3">Current Conditions</th>
+        <th colspan="3">当前条件</th>
       </tr>
     </thead>
     <tbody>
       <tr v-if="isEmpty(current)">
-        <td colspan="3">No pending conditions</td>
+        <td colspan="3">没有待处理条件</td>
       </tr>
       <template v-else>
         <ConditionRow
@@ -47,12 +47,12 @@ const nonCurrent = computed(() =>
     </tbody>
     <thead>
       <tr>
-        <th colspan="3">Non-Current Conditions</th>
+        <th colspan="3">非当前条件</th>
       </tr>
     </thead>
     <tbody>
       <tr v-if="isEmpty(nonCurrent)">
-        <td colspan="3">No pending conditions</td>
+        <td colspan="3">没有待处理条件</td>
       </tr>
       <template v-else>
         <ConditionRow

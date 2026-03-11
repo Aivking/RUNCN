@@ -3,9 +3,9 @@ import { migrateVersionedUserData } from '@src/store/user-data-versioned-migrati
 import removeArrayElement from '@src/utils/remove-array-element';
 
 type Migration = [id: string, migration: (userData: any) => void];
-// A checkpoint marks that all migrations before it are applied.
-// If a user's data contains a checkpoint ID, preceding individual IDs can be pruned.
-// New checkpoints subsume older ones.
+// 检查点标记表示其之前的所有迁移已应用。
+// 如果用户数据包含检查点 ID，则可以裁剪之前的单独 ID。
+// 新的检查点会替代旧的检查点。
 type Checkpoint = [id: string];
 type MigrationEntry = Migration | Checkpoint;
 
@@ -13,8 +13,8 @@ function isCheckpoint(entry: MigrationEntry): entry is Checkpoint {
   return entry.length === 1;
 }
 
-// New migrations should be added to the top of the list.
-// The date is for reference only, and it does not affect migration order.
+// 新的迁移应添加到列表顶部。
+// 日期仅供参考，不影响迁移顺序。
 const migrations: MigrationEntry[] = [
   ['10.03.2026 Checkpoint'],
   [
@@ -64,17 +64,17 @@ function renameFeature(userData: any, oldName: string, newName: string) {
 }
 
 export function migrateUserData(userData: any) {
-  // The migrations are ordered from newest to oldest, but we want to run them in order.
+  // 迁移按从新到旧排序，但我们需要按顺序执行。
   const orderedMigrations = migrations.slice().reverse();
   if (userData.version !== undefined) {
     migrateVersionedUserData(userData);
     delete userData.version;
-    // After the versioned migration, we should run all the named migrations.
-    // Setting the migration list to an empty array will trigger that.
+    // 版本迁移后，应运行所有命名迁移。
+    // 将迁移列表设为空数组会触发此操作。
     userData.migrations = [];
   }
   if (userData.migrations === undefined) {
-    // The initial user data is already migrated, so just add all migrations to the list.
+    // 初始用户数据已经迁移过，因此只需将所有迁移添加到列表。
     userData.migrations = compactIds(
       orderedMigrations,
       orderedMigrations.map(x => x[0]),
@@ -112,8 +112,8 @@ export function migrateUserData(userData: any) {
 function compactIds(orderedEntries: MigrationEntry[], appliedIds: string[]): string[] {
   const applied = new Set(appliedIds);
 
-  // Find the latest checkpoint where all preceding entries are applied.
-  // An applied older checkpoint means everything before it is implicitly applied.
+  // 查找所有前置条目均已应用的最新检查点。
+  // 已应用的旧检查点表示其之前的所有内容都已隐式应用。
   let latestCheckpointIndex = -1;
   for (let i = orderedEntries.length - 1; i >= 0; i--) {
     const entry = orderedEntries[i];

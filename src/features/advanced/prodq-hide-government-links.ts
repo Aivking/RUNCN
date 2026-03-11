@@ -8,4 +8,4 @@ function init() {
   );
 }
 
-features.add(import.meta.url, init, 'PRODQ: Hides fee collector links.');
+features.add(import.meta.url, init, 'PRODQ：隐藏费用收取方链接。');

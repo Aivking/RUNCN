@@ -12,4 +12,4 @@ function init() {
   tiles.observe(['FLT', 'FLTS', 'FLTP'], onTileReady);
 }
 
-features.add(import.meta.url, init, 'FLT: Shortens addresses in "Location" and "Destination".');
+features.add(import.meta.url, init, 'FLT：缩短"位置"和"目的地"中的地址。');

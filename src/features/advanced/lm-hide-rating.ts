@@ -6,4 +6,4 @@ function init() {
   applyCssRule('LM', `.${C.CommodityAd.text}`, $style.text);
 }
 
-features.add(import.meta.url, init, 'LM: Hides rating icon from ads.');
+features.add(import.meta.url, init, 'LM：隐藏广告中的评级图标。');

@@ -1,4 +1,4 @@
-// Parse storage payload into inventory name (not MTRA inventory name)
+// 将存储数据解析为库存名称（非 MTRA 库存名称）
 import { sitesStore } from '@src/infrastructure/prun-api/data/sites';
 import {
   getEntityNameFromAddress,
@@ -67,7 +67,7 @@ function extractName(name: string, suffix: string) {
   return name.endsWith(suffix) ? name.replace(' ' + suffix, '') : undefined;
 }
 
-// Sort storages into an order based on type
+// 根据类型对存储进行排序
 export function storageSort(a: PrunApi.Store, b: PrunApi.Store) {
   const storagePriorityMap = {
     FTL_FUEL_STORE: 5,

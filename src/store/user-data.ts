@@ -70,7 +70,7 @@ export const initialUserData = deepFreeze({
   },
   commandLists: [] as UserData.CommandList[],
 
-  // Used in user-data-migrations.ts
+  // 在 user-data-migrations.ts 中使用
   migrations: undefined,
 });
 

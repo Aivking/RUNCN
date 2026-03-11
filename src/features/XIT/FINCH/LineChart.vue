@@ -123,7 +123,7 @@ const chartOptions = computed<ChartOptions<'line'>>(() => ({
       type: 'time',
       title: {
         display: true,
-        text: 'Date',
+        text: '日期',
         color: '#eeeeee',
         font: {
           family: '"Droid Sans", sans-serif',

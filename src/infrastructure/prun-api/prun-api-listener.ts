@@ -56,8 +56,8 @@ async function processEvent(message: Message | undefined) {
         data: message.payload,
       };
       const result = dispatch(storeAction);
-      // Block the COMPANY_DATA message until the initial loading is complete
-      // so refined prun could load before the base game.
+      // 阻止 COMPANY_DATA 消息直到初始加载完成，
+      // 这样 refined prun 可以在基础游戏之前加载。
       if (message.messageType === 'COMPANY_DATA' && !initialApiLoadingComplete.value) {
         await watchUntil(() => initialApiLoadingComplete.value);
       }

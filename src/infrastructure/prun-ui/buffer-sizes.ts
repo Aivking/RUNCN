@@ -11,7 +11,7 @@ export function matchBufferSize(command: string): [number, number] | undefined {
     matchers = userData.settings.buffers
       .filter(x => !!x[0] && typeof x[1] === 'number' && typeof x[2] === 'number')
       .map(x => {
-        // '*' is not a valid regex.
+        // '*' 不是有效的正则表达式。
         const rule = x[0] === '*' ? '.*' : x[0];
         return [new RegExp(rule.toUpperCase()), x[1], x[2]];
       });
@@ -25,7 +25,7 @@ export function matchBufferSize(command: string): [number, number] | undefined {
   }
 
   if (commandUpper === 'PLI' || commandUpper === 'SYSI') {
-    // PLI and SYSI without parameters have the default buffer size.
+    // PLI 和 SYSI 没有参数时使用默认缓冲区大小。
     return defaultSize.slice() as [number, number];
   }
   const commandParts = commandUpper.split(' ');

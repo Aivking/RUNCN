@@ -107,7 +107,7 @@ export function computedTileState<T extends TileState, K extends keyof T>(
 ) {
   return computed({
     get: () => {
-      // Touch property to trigger reactivity
+      // 触发属性以触发响应式更新
       const value = state.value[key];
       return Object.hasOwn(state.value, key) ? value : defaultValue;
     },

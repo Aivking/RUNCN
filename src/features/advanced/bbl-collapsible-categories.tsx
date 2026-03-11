@@ -4,7 +4,7 @@ import $style from './bbl-collapsible-categories.module.css';
 function onTileReady(tile: PrunTile) {
   subscribe($$(tile.anchor, C.SectionList.container), container => {
     for (const divider of _$$(container, C.SectionList.divider)) {
-      // Hide Infrastructure (which is the first category) by default
+      // 默认隐藏基础设施（即第一个分类）
       const enabled = ref(container.firstChild !== divider);
       divider.addEventListener('click', e => {
         enabled.value = !enabled.value;
@@ -31,8 +31,4 @@ function init() {
   tiles.observe('BBL', onTileReady);
 }
 
-features.add(
-  import.meta.url,
-  init,
-  'BBL: Makes categories collapsible and collapses the "Infrastructure" category by default.',
-);
+features.add(import.meta.url, init, 'BBL：使类别可折叠，并默认折叠"基础设施"类别。');

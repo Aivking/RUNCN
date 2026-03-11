@@ -27,7 +27,7 @@ function createNewList(ev: Event) {
 
 function confirmDelete(ev: Event, list: UserData.TaskList) {
   showConfirmationOverlay(ev, () => removeArrayElement(userData.todo, list), {
-    message: `Are you sure you want to delete the task list "${list.name}"?`,
+    message: `确定要删除任务列表 "${list.name}" 吗？`,
   });
 }
 
@@ -58,15 +58,15 @@ function getDueDate(list: UserData.TaskList) {
 
 <template>
   <ActionBar>
-    <PrunButton primary @click="createNewList">CREATE NEW</PrunButton>
+    <PrunButton primary @click="createNewList">新建</PrunButton>
   </ActionBar>
   <table>
     <thead>
       <tr>
         <GripHeaderCell />
-        <th>Name</th>
-        <th>Tasks</th>
-        <th>Due Date</th>
+        <th>名称</th>
+        <th>任务</th>
+        <th>截止日期</th>
         <th />
       </tr>
     </thead>
@@ -85,7 +85,7 @@ function getDueDate(list: UserData.TaskList) {
           <span>{{ getDueDate(list) }}</span>
         </td>
         <td>
-          <PrunButton danger @click="confirmDelete($event, list)">DELETE</PrunButton>
+          <PrunButton danger @click="confirmDelete($event, list)">删除</PrunButton>
         </td>
       </tr>
     </tbody>

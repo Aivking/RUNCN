@@ -31,11 +31,11 @@ function calculateVolume(amount: PrunApi.MaterialAmount) {
     <thead>
       <tr>
         <th />
-        <th>Count</th>
-        <th>Cost</th>
-        <th>Weight</th>
-        <th>Volume</th>
-        <th>Actions</th>
+        <th>数量</th>
+        <th>费用</th>
+        <th>重量</th>
+        <th>体积</th>
+        <th>操作</th>
       </tr>
     </thead>
     <tbody>
@@ -44,7 +44,7 @@ function calculateVolume(amount: PrunApi.MaterialAmount) {
           {{ collapsed ? '+' : '-' }}
         </td>
         <td v-else />
-        <td :class="$style.total">Total</td>
+        <td :class="$style.total">合计</td>
         <td>{{ formatCurrency(sumBy(sorted, calcMaterialAmountPrice)) }}</td>
         <td>{{ fixed2(sumBy(sorted, calculateWeight)) }}t</td>
         <td>{{ fixed2(sumBy(sorted, calculateVolume)) }}m³</td>

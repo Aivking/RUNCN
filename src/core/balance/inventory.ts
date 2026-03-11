@@ -207,7 +207,7 @@ const baseInventory = computed(() => {
   let rawMaterials = 0;
   let workforceConsumables = 0;
   let otherItems = 0;
-  // Pre-warm all planet burns.
+  // 预加载所有星球的消耗数据。
   sites.map(getPlanetBurn);
   for (const site of sites) {
     let stores = storagesStore.getByAddressableId(site.siteId);

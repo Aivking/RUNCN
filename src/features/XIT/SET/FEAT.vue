@@ -95,26 +95,26 @@ async function onChangeModeClick() {
 <template>
   <div>
     <form :class="$style.form">
-      <Commands label="Change feature set">
+      <Commands label="切换功能集">
         <PrunButton primary @click="onChangeModeClick">
-          SWITCH TO {{ isFullMode ? 'BASIC' : 'FULL' }}
+          切换到 {{ isFullMode ? '基础模式' : '完整模式' }}
         </PrunButton>
       </Commands>
-      <Active :class="$style.warningRoot" label="Search">
+      <Active :class="$style.warningRoot" label="搜索">
         <TextInput v-model="searchQuery" />
         <PrunButton
           v-if="!isEmpty(Object.keys(changed))"
           primary
           :class="$style.warning"
           @click="onReloadClick">
-          RESTART THE GAME TO APPLY CHANGES
+          重启游戏以应用更改
         </PrunButton>
       </Active>
     </form>
     <SectionHeader>
-      Features: {{ sorted.length }}
-      <span v-if="disabledFeatures.size > 0">({{ disabledFeatures.size }} off) </span>
-      <span v-if="!isFullMode">(+{{ advanced.length }} more available in full mode)</span>
+      功能: {{ sorted.length }}
+      <span v-if="disabledFeatures.size > 0">({{ disabledFeatures.size }} 已关闭) </span>
+      <span v-if="!isFullMode">(+{{ advanced.length }} 个完整模式可用功能)</span>
     </SectionHeader>
     <table>
       <tbody>
@@ -130,7 +130,7 @@ async function onChangeModeClick() {
       </tbody>
     </table>
     <template v-if="!isFullMode">
-      <SectionHeader>Full Mode Features</SectionHeader>
+      <SectionHeader>完整模式功能</SectionHeader>
       <table>
         <tbody>
           <tr v-for="feature in advanced" :key="feature.id">

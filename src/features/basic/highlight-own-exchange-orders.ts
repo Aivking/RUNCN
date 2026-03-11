@@ -68,4 +68,4 @@ function init() {
   tiles.observe('FXOB', x => onTileReady(x, getOwnForexOrders, 'FXO'));
 }
 
-features.add(import.meta.url, init, 'Highlights own orders in CXOB and FXOB.');
+features.add(import.meta.url, init, '在 CXOB 和 FXOB 中高亮显示自己的订单。');

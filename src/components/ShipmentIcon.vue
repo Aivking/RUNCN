@@ -33,7 +33,7 @@ const onClick = () => {
     <ColoredIcon
       :data-prun-id="shipmentId"
       label="SHPT"
-      title="Shipment"
+      title="货物"
       :sub-label="resolvedDestination"
       :background="background"
       :color="color"

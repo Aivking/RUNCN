@@ -56,8 +56,8 @@ const needAmt = computed(() => {
     return 0;
   }
   let need = Math.ceil((days.value - resupply) * production.value);
-  // This check is needed to prevent a "-0" value that can happen
-  // in situations like: 0 * -0.25 => -0.
+  // 这个检查是为了防止出现 "-0" 值，
+  // 例如：0 * -0.25 => -0 这种情况。
   need = need === 0 ? 0 : need;
   return need;
 });

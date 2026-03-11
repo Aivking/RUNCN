@@ -30,7 +30,7 @@ const chartDef = computed(() => charts.value.find(x => x.value === parameter));
       <div :style="{ marginTop: '5px' }" :class="$style.clickable">
         <HistoryChart />
       </div>
-      <FinHeader>Asset Breakdown</FinHeader>
+      <FinHeader>资产分布</FinHeader>
       <div :style="{ marginTop: '5px' }">
         <AssetPieChart :class="$style.clickable" @click="() => showBuffer('XIT FINCH ASSETS')" />
         <LocationsPieChart
@@ -44,7 +44,7 @@ const chartDef = computed(() => charts.value.find(x => x.value === parameter));
     <template v-else>
       <AssetPieChart v-if="parameter === 'ASSETS'" />
       <LocationsPieChart v-else-if="parameter === 'LOCATIONS'" />
-      <span v-else>Error: Not a valid chart type</span>
+      <span v-else>错误：无效的图表类型</span>
     </template>
   </div>
 </template>

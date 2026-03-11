@@ -21,7 +21,7 @@ act.addMaterialGroup<Config>({
       return '--';
     }
 
-    return `Resupply ${data.planet} with ${data.days} day${data.days == 1 ? '' : 's'} of supplies`;
+    return `为 ${data.planet} 补给 ${data.days} 天的物资`;
   },
   editComponent: Edit,
   configureComponent: Configure,
@@ -29,17 +29,17 @@ act.addMaterialGroup<Config>({
   isValidConfig: (data, config) => data.planet !== configurableValue || config.planet !== undefined,
   generateMaterialBill: async ({ data, config, log, setStatus }) => {
     if (!data.planet) {
-      log.error('Missing resupply planet');
+      log.error('缺少补给星球');
     }
     if (data.days === undefined) {
-      log.error('Missing resupply days');
+      log.error('缺少补给天数');
     }
 
     const exclusions = data.exclusions ?? [];
     const planet = data.planet === configurableValue ? config.planet : data.planet;
     const site = sitesStore.getByPlanetNaturalIdOrName(planet);
     if (!site) {
-      log.error(`Base is not present on ${data.planet}`);
+      log.error(`${data.planet} 上没有基地`);
     }
 
     if (!site || data.days === undefined) {

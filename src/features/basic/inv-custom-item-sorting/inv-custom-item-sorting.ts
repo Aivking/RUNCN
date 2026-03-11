@@ -41,10 +41,10 @@ async function applyCustomSorting(tile: PrunTile, container: HTMLElement) {
   const sortOptions = await $(container, C.InventorySortControls.controls);
   const inventory = await $(container, C.InventoryView.grid);
 
-  // Enumerate children in advance because we will modify the collection in the loop.
+  // 提前枚举子元素，因为循环中会修改集合。
   const criterion = Array.from(sortOptions.children);
 
-  // Skip the first sorting option because it is the grid/list view switch.
+  // 跳过第一个排序选项，因为它是网格/列表视图切换。
   for (let i = 1; i < criterion.length; i++) {
     const option = criterion[i] as HTMLElement;
     option.addEventListener('click', () => {
@@ -130,7 +130,7 @@ async function applyCustomSorting(tile: PrunTile, container: HTMLElement) {
   const observer = new MutationObserver(runSort);
   let first = true;
   watchEffectWhileNodeAlive(inventory, () => {
-    // Touch reactive values.
+    // 触发响应式值。
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const _ = [sortingData.reverse, sortingData.active, sortingData.cat, burn.value];
     if (first) {
@@ -222,7 +222,7 @@ function sortInventory(
   }
 
   if (addedItems.size > 0) {
-    createFragmentApp(CategoryHeader, { label: 'Other' }).appendTo(inventory);
+    createFragmentApp(CategoryHeader, { label: '其他' }).appendTo(inventory);
   }
   let otherItems = [...remainingItems].map(x => ({
     div: x.div,
@@ -256,11 +256,11 @@ function init() {
   tiles.observe(['INV', 'SHPI'], onTileReady);
   xit.add({
     command: 'SORT',
-    name: 'SORTING MODES',
-    description: 'Sorting mode editor.',
-    mandatoryParameters: 'Inventory Identifier',
+    name: '排序模式',
+    description: '排序模式编辑器。',
+    mandatoryParameters: '库存标识符',
     component: () => SORT,
   });
 }
 
-features.add(import.meta.url, init, 'INV/SHPI: Adds custom sorting modes to inventories.');
+features.add(import.meta.url, init, 'INV/SHPI：为库存添加自定义排序模式。');

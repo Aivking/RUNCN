@@ -6,7 +6,7 @@ import { isEmpty } from 'ts-extras';
 import { PrunI18N } from '@src/infrastructure/prun-ui/i18n';
 
 function onTileReady(tile: PrunTile) {
-  // Only process BS {base} tiles
+  // 仅处理 BS {base} 磁贴
   if (!tile.parameter) {
     return;
   }
@@ -40,4 +40,4 @@ function init() {
   tiles.observe('BS', onTileReady);
 }
 
-features.add(import.meta.url, init, 'BS: Hides workforce rows with zero current workforce.');
+features.add(import.meta.url, init, 'BS：隐藏当前劳动力为零的劳动力行。');

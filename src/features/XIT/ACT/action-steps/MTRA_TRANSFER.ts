@@ -22,7 +22,7 @@ export const MTRA_TRANSFER = act.addActionStep<Data>({
     const to = storagesStore.getById(data.to);
     const fromName = from ? serializeStorage(from) : 'NOT FOUND';
     const toName = to ? serializeStorage(to) : 'NOT FOUND';
-    return `Transfer ${fixed0(data.amount)} ${data.ticker} from ${fromName} to ${toName}`;
+    return `从 ${fromName} 转移 ${fixed0(data.amount)} ${data.ticker} 到 ${toName}`;
   },
   execute: async ctx => {
     const { data, log, setStatus, requestTile, waitAct, waitActionFeedback, complete, skip, fail } =
@@ -35,13 +35,13 @@ export const MTRA_TRANSFER = act.addActionStep<Data>({
     assert(to, 'Destination inventory not found');
 
     if (!from.items.find(x => x.quantity?.material.ticker === ticker)) {
-      log.warning(`No ${ticker} was transferred (not present in origin)`);
+      log.warning(`${ticker} 未转移（出发点中不存在）`);
       skip();
       return;
     }
 
     if (amount <= 0) {
-      log.warning(`No ${ticker} was transferred (target amount is 0)`);
+      log.warning(`${ticker} 未转移（目标数量为 0）`);
       skip();
       return;
     }
@@ -49,12 +49,12 @@ export const MTRA_TRANSFER = act.addActionStep<Data>({
     const material = materialsStore.getByTicker(ticker);
     assert(material, `Unknown material ${ticker}`);
 
-    // Check if we can fit a single unit. MTRA will be unusable otherwise.
+    // 检查是否能容纳一个单位。否则 MTRA 将无法使用。
     const epsilon = 0.000001;
     const canFitWeight = to.weightCapacity - to.weightLoad - material.weight + epsilon >= 0;
     const canFitVolume = to.volumeCapacity - to.volumeLoad - material.volume + epsilon >= 0;
     if (!canFitWeight || !canFitVolume) {
-      log.warning(`No ${ticker} was transferred (no space)`);
+      log.warning(`${ticker} 未转移（没有空间）`);
       skip();
       return;
     }
@@ -66,7 +66,7 @@ export const MTRA_TRANSFER = act.addActionStep<Data>({
       return;
     }
 
-    setStatus('Setting up MTRA buffer...');
+    setStatus('正在设置 MTRA 缓冲区...');
     const container = await $(tile.anchor, C.MaterialSelector.container);
     const input = await $(container, 'input');
 
@@ -82,7 +82,7 @@ export const MTRA_TRANSFER = act.addActionStep<Data>({
 
     if (!match) {
       suggestionsContainer.style.display = '';
-      fail(`Ticker ${ticker} not found in the material selector`);
+      fail(`在材料选择器中未找到 ${ticker}`);
       return;
     }
 
@@ -99,8 +99,8 @@ export const MTRA_TRANSFER = act.addActionStep<Data>({
     if (amount > maxAmount) {
       const leftover = amount - maxAmount;
       log.warning(
-        `${fixed0(leftover)} ${ticker} not transferred ` +
-          `(${fixed0(maxAmount)} of ${fixed0(amount)} transferred)`,
+        `${fixed0(leftover)} ${ticker} 未转移 ` +
+          `（已转移 ${fixed0(maxAmount)}/${fixed0(amount)}）`,
       );
       if (maxAmount === 0) {
         skip();
@@ -124,7 +124,7 @@ export const MTRA_TRANSFER = act.addActionStep<Data>({
     const currentAmount = destinationAmount.value;
     await clickElement(transferButton);
     await waitActionFeedback(tile);
-    setStatus('Waiting for storage update...');
+    setStatus('等待存储更新...');
     await watchWhile(() => destinationAmount.value === currentAmount);
 
     complete();

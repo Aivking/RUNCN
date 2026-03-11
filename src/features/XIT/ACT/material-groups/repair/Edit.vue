@@ -49,19 +49,16 @@ defineExpose({ validate, save });
 </script>
 
 <template>
-  <Active label="Planet" :error="planetError">
+  <Active label="星球" :error="planetError">
     <SelectInput v-model="planet" :options="planets" />
   </Active>
   <Active
-    label="Day Threshold"
-    tooltip="All buildings older than this threshold will be repaired.
-     If no number is provided all buildings are repaired.">
+    label="天数阈值"
+    tooltip="所有超过此阈值的建筑将被维修。
+     如果未提供数字，则修复所有建筑。">
     <NumberInput v-model="days" optional />
   </Active>
-  <Active
-    label="Time Offset"
-    tooltip="The number of days in the future this repair will be conducted."
-    :error="advanceDaysError">
+  <Active label="时间偏移" tooltip="未来多少天后进行此维修。" :error="advanceDaysError">
     <NumberInput v-model="advanceDays" />
   </Active>
 </template>

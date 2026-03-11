@@ -43,4 +43,4 @@ function init() {
   tiles.observe('PRODQ', onTileReady);
 }
 
-features.add(import.meta.url, init, 'PRODQ: Adds a finish ETA label to orders.');
+features.add(import.meta.url, init, 'PRODQ：为订单添加完成预计时间标签。');

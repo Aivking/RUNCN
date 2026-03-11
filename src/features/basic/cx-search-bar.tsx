@@ -34,10 +34,10 @@ async function onComExPanelReady(comExPanel: HTMLElement) {
     triggerRef(searchText);
   }
 
-  // If CX loads a category it hasn't fetched from the server yet, a new tbody will be generated.
+  // 如果 CX 加载了一个尚未从服务器获取的分类，会生成一个新的 tbody
   subscribe($$(comExPanel, 'tbody'), loadMaterialRows);
 
-  // If CX loads a category it's already seen, it loads the data from memory and only tr's will be changed.
+  // 如果 CX 加载的是已缓存的分类，则从内存加载数据，仅 tr 会变化
   watch(selectValue, loadMaterialRows);
 
   const resetMatches = (value: HTMLElement) => {
@@ -46,7 +46,7 @@ async function onComExPanelReady(comExPanel: HTMLElement) {
     }
   };
 
-  // Main search loop.
+  // 主搜索循环
   watchEffectWhileNodeAlive(comExPanel, () => {
     const searchTerm = searchText.value.toUpperCase();
 
@@ -89,4 +89,4 @@ function init() {
   tiles.observe('CX', onTileReady);
 }
 
-features.add(import.meta.url, init, 'CX: Adds a search bar for materials.');
+features.add(import.meta.url, init, 'CX：添加材料搜索栏。');

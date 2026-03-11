@@ -9,4 +9,4 @@ function init() {
   tiles.observe('BBL', onTileReady);
 }
 
-features.add(import.meta.url, init, 'BBL: Applies the "danger" style to the "Demolish" button.');
+features.add(import.meta.url, init, 'BBL：将"危险"样式应用于"拆除"按钮。');

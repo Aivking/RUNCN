@@ -34,12 +34,10 @@ defineExpose({ validate, save });
 </script>
 
 <template>
-  <Active label="Origin">
+  <Active label="来源">
     <SelectInput v-model="origin" :options="storages" />
   </Active>
-  <Active
-    label="Buy Missing Fuel"
-    tooltip="Whether the fuel will be bought if there is not enough stock (CX warehouse only).">
-    <RadioItem v-model="buyMissingFuel">buy fuel</RadioItem>
+  <Active label="购买缺少的燃料" tooltip="库存不足时是否购买燃料（仅限 CX 仓库）。">
+    <RadioItem v-model="buyMissingFuel">购买燃料</RadioItem>
   </Active>
 </template>

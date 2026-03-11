@@ -4,4 +4,4 @@ function init() {
   applyCssRule('CXOS', 'tr > :first-child', css.hidden);
 }
 
-features.add(import.meta.url, init, 'CXOS: Hides the "Exchange" column.');
+features.add(import.meta.url, init, 'CXOS：隐藏"交易所"列。');

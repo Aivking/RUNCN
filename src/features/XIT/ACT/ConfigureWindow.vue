@@ -28,7 +28,7 @@ const blocks = computed(() => {
       continue;
     }
     blocks.push({
-      name: `[${name}]: ${info.type} Material Group`,
+      name: `[${name}]: ${info.type} 材料组`,
       component: info.configureComponent,
       data: group,
       config: groupConfig,
@@ -45,7 +45,7 @@ const blocks = computed(() => {
       continue;
     }
     blocks.push({
-      name: `[${name}]: ${info.type} Action`,
+      name: `[${name}]: ${info.type} 操作`,
       component: info.configureComponent,
       data: action,
       config: actionConfig,

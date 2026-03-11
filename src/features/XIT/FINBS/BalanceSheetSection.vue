@@ -60,7 +60,7 @@ const totalClass = computed(() => {
       :indent="0"
       :excluded="row.excluded" />
     <tr :class="C.IncomeStatementPanel.totals">
-      <td :class="C.IncomeStatementPanel.number">Total</td>
+      <td :class="C.IncomeStatementPanel.number">合计</td>
       <td>{{ formatCurrency(calculate(current, section.value)) }}</td>
       <td>{{ formatCurrency(calculate(last, section.value)) }}</td>
       <td>{{ formatCurrency(calculate(previous, section.value)) }}</td>

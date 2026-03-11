@@ -57,7 +57,7 @@ export async function getGifUrl(query?: string) {
   if (cache.nextUrls.length === 0) {
     cache.nextUrls = cache.urls.slice();
     shuffleArray(cache.nextUrls);
-    // Show the most relevant GIF on the first request.
+    // 首次请求时显示最相关的 GIF。
     if (isFirst) {
       cache.nextUrls = cache.nextUrls.filter(x => x !== cache.urls[0]);
       return cache.urls[0];

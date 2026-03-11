@@ -67,7 +67,7 @@ export class StepMachine {
     if (!this.ensureRunning()) {
       return;
     }
-    this.log.cancel('Action Package execution canceled');
+    this.log.cancel('操作包执行已取消');
     this.stop();
   }
 
@@ -79,7 +79,7 @@ export class StepMachine {
 
   private startNext() {
     if (this.steps.length === 0) {
-      this.log.success('Action Package execution completed');
+      this.log.success('操作包执行完成');
       this.stop();
       return;
     }
@@ -98,12 +98,12 @@ export class StepMachine {
           await this.waitAct(status);
         },
         waitActionFeedback: async tile => {
-          this.options.onStatusChanged('Waiting for action feedback...');
+          this.options.onStatusChanged('等待操作反馈...');
           const error = await waitActionFeedback(tile);
           if (error) {
             log.error(error);
             log.error(description ?? info.description(next));
-            log.error('Action Package execution failed');
+            log.error('操作包执行失败');
             this.stop();
             return;
           }
@@ -113,7 +113,7 @@ export class StepMachine {
           this.options.onStatusChanged(description, true);
         },
         complete: async () => {
-          // Wait a moment to allow data to update.
+          // 等待片刻以便数据更新。
           await sleep(0);
           log.success(description ?? info.description(next));
           this.startNext();
@@ -123,7 +123,7 @@ export class StepMachine {
           if (message) {
             log.error(message);
           }
-          log.error('Action Package execution failed');
+          log.error('操作包执行失败');
           this.stop();
           return;
         },
@@ -148,11 +148,11 @@ export class StepMachine {
     if (tile !== undefined) {
       return tile;
     }
-    await this.waitAct(`Open ${command}`);
-    this.options.onStatusChanged(`Opening ${command}...`);
+    await this.waitAct(`打开 ${command}`);
+    this.options.onStatusChanged(`正在打开 ${command}...`);
     tile = await this.options.tileAllocator.requestTile(command);
     if (tile === undefined) {
-      this.log.error(`Failed to open ${command}`);
+      this.log.error(`无法打开 ${command}`);
       this.stop();
     }
     return tile;
@@ -166,7 +166,7 @@ export class StepMachine {
 
   private ensureRunning() {
     if (!this.isRunning) {
-      this.log.error('Action Package is not running');
+      this.log.error('操作包未在运行');
     }
     return this.isRunning;
   }
@@ -178,7 +178,7 @@ async function waitActionFeedback(tile: PrunTile) {
   if (overlay.classList.contains(C.ActionConfirmationOverlay.container)) {
     const confirm = _$$(overlay, C.Button.btn)[1];
     if (confirm === undefined) {
-      return 'Confirmation overlay is missing confirm button';
+      return '确认覆盖层缺少确认按钮';
     }
     await clickElement(confirm);
     await waitActionProgress(overlay);
@@ -193,7 +193,7 @@ async function waitActionFeedback(tile: PrunTile) {
     return dismiss ? message?.replace(dismiss, '') : message;
   }
 
-  return 'Unknown action feedback overlay';
+  return '未知的操作反馈覆盖层';
 }
 
 async function waitActionProgress(overlay: HTMLElement) {

@@ -14,7 +14,7 @@ async function onFooterReady(footer: HTMLElement) {
       <div class={[C.HeadItem.indicator, C.HeadItem.indicatorSuccess]} />
       <div
         class={[$style.label, C.HeadItem.label]}
-        data-tooltip="Refined PrUn version."
+        data-tooltip="Refined PrUn 版本"
         data-tooltip-position="top">
         v. {config.version}
       </div>
@@ -27,4 +27,4 @@ function init() {
   subscribe($$(document, C.Frame.foot), onFooterReady);
 }
 
-features.add(import.meta.url, init, 'Adds a bottom-right "Refined PrUn version" label.');
+features.add(import.meta.url, init, '在右下角添加"Refined PrUn 版本"标签。');

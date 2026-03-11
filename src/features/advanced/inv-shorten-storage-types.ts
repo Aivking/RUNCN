@@ -46,7 +46,7 @@ function shortenTableLabels(tile: PrunTile) {
       return storage ? map.get(storage?.type) : undefined;
     });
     watchEffectWhileNodeAlive(row, () => {
-      // tr -> td -> span
+      // tr -> td -> span（DOM 结构）
       const typeLabel = row.firstChild?.firstChild;
       if (typeLabel && name.value !== undefined) {
         typeLabel.textContent = name.value;
@@ -67,4 +67,4 @@ function init() {
   tiles.observe('INV', onTileReady);
 }
 
-features.add(import.meta.url, init, 'INV: Shortens storage type names in the table and filters.');
+features.add(import.meta.url, init, 'INV：缩短表格和过滤器中的存储类型名称。');

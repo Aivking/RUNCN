@@ -8,22 +8,22 @@ import { lastBalance, previousBalance } from '@src/store/user-data-balance';
 import { userData } from '@src/store/user-data';
 
 const currentAssets = computed<SectionData>(() => ({
-  name: 'Current Assets',
+  name: '流动资产',
   chartId: 'CURRENT ASSETS',
   value: summary.calcTotalCurrentAssets,
   children: [
     {
-      name: 'Cash and Cash Equivalents',
+      name: '现金及现金等价物',
       chartId: 'CA CASH EQUIVALENTS',
       value: summary.calcTotalCashAndCashEquivalents,
       children: [
         {
-          name: 'Cash',
+          name: '现金',
           chartId: 'CA CASH',
           value: x => x.assets?.current?.cashAndCashEquivalents?.cash,
         },
         {
-          name: 'Deposits',
+          name: '存款',
           chartId: 'CA DEPOSITS',
           value: summary.calcTotalDeposits,
           children: [
@@ -40,97 +40,97 @@ const currentAssets = computed<SectionData>(() => ({
           ],
         },
         {
-          name: 'MM Materials',
+          name: 'MM 材料',
           chartId: 'CA MM MATERIALS',
           tooltip:
-            'Market Maker materials currently stored in CX warehouses. You can customize the list of' +
-            ' these materials using XIT SET FIN. Since these materials can be converted into cash' +
-            ' immediately, they are considered Cash Equivalents.',
+            '当前存放在 CX 仓库中的做市商材料。你可以通过 XIT SET FIN 自定义' +
+            '这些材料的列表。由于这些材料可以立即转换为现金，' +
+            '因此被视为现金等价物。',
           value: x => x.assets?.current?.cashAndCashEquivalents?.mmMaterials,
         },
       ],
     },
     {
-      name: 'Accounts Receivable',
+      name: '应收账款',
       chartId: 'CA ACCOUNTS RECEIVABLE',
       value: x => x.assets?.current?.accountsReceivable,
     },
     {
-      name: 'Loans Receivable',
+      name: '应收贷款',
       chartId: 'CA LOANS RECEIVABLE',
       value: summary.calcTotalLoansReceivable,
       children: [
         {
-          name: 'Principal',
+          name: '本金',
           chartId: 'CA LOANS PRINCIPAL',
           value: x => x.assets?.current?.loansReceivable?.principal,
         },
         {
-          name: 'Interest',
+          name: '利息',
           chartId: 'CA LOANS INTEREST',
           value: x => x.assets?.current?.loansReceivable?.interest,
         },
       ],
     },
     {
-      name: 'Inventory',
+      name: '库存',
       chartId: 'CA INVENTORY',
       value: summary.calcTotalInventory,
       children: [
         {
-          name: 'CX-Listed Materials',
+          name: 'CX 上市材料',
           chartId: 'CA CX LISTED MATERIALS',
           value: x => x.assets?.current?.inventory?.cxListedMaterials,
         },
         {
-          name: 'CX Inventory',
+          name: 'CX 库存',
           chartId: 'CA CX INVENTORY',
           value: x => x.assets?.current?.inventory?.cxInventory,
         },
         {
-          name: 'Materials in Transit',
+          name: '在途材料',
           chartId: 'CA MATERIALS IN TRANSIT',
           value: x => x.assets?.current?.inventory?.materialsInTransit,
         },
         {
-          name: 'Base Inventory',
+          name: '基地库存',
           chartId: 'CA BASE INVENTORY',
           value: summary.calcTotalBaseInventory,
           children: [
             {
-              name: 'Finished Goods',
+              name: '产成品',
               chartId: 'CA FINISHED GOODS',
               value: x => x.assets?.current?.inventory?.baseInventory?.finishedGoods,
             },
             {
-              name: 'Work-in-Progress (WIP)',
+              name: '在制品 (WIP)',
               chartId: 'CA WORK IN PROGRESS',
               value: x => x.assets?.current?.inventory?.baseInventory?.workInProgress,
             },
             {
-              name: 'Raw Materials',
+              name: '原材料',
               chartId: 'CA RAW MATERIALS',
               value: x => x.assets?.current?.inventory?.baseInventory?.rawMaterials,
             },
             {
-              name: 'Workforce Consumables',
+              name: '劳动力消耗品',
               chartId: 'CA WORKFORCE CONSUMABLES',
               value: x => x.assets?.current?.inventory?.baseInventory?.workforceConsumables,
             },
             {
-              name: 'Other Items',
+              name: '其他物品',
               chartId: 'CA OTHER ITEMS',
               value: x => x.assets?.current?.inventory?.baseInventory?.otherItems,
             },
           ],
         },
         {
-          name: 'Fuel Tanks',
+          name: '燃料箱',
           chartId: 'CA FUEL TANKS',
           value: x => x.assets?.current?.inventory?.fuelTanks,
         },
         {
-          name: 'Materials Receivable',
+          name: '应收材料',
           chartId: 'CA MATERIALS RECEIVABLE',
           value: x => x.assets?.current?.inventory?.materialsReceivable,
         },
@@ -140,39 +140,39 @@ const currentAssets = computed<SectionData>(() => ({
 }));
 
 const nonCurrentAssets = computed<SectionData>(() => ({
-  name: 'Non-Current Assets',
+  name: '非流动资产',
   chartId: 'NON CURRENT ASSETS',
   value: summary.calcTotalNonCurrentAssets,
   children: [
     {
-      name: 'Buildings, net',
+      name: '建筑物（净值）',
       chartId: 'NCA BUILDINGS',
       value: summary.calcTotalBuildings,
       children: [
         {
-          name: 'Market Value',
+          name: '市场价值',
           chartId: 'NCA BUILDINGS VALUE',
           value: summary.calcTotalBuildingsMarketValue,
           children: [
             {
-              name: 'Infrastructure',
+              name: '基础设施',
               chartId: 'NCA BUILDINGS INFRASTRUCTURE',
               value: x => x.assets?.nonCurrent?.buildings?.marketValue?.infrastructure,
             },
             {
-              name: 'Resource Extraction',
+              name: '资源开采',
               chartId: 'NCA BUILDINGS RESOURCE EXTRACTION',
               value: x => x.assets?.nonCurrent?.buildings?.marketValue?.resourceExtraction,
             },
             {
-              name: 'Production',
+              name: '生产',
               chartId: 'NCA BUILDINGS PRODUCTION',
               value: x => x.assets?.nonCurrent?.buildings?.marketValue?.production,
             },
           ],
         },
         {
-          name: 'Acc. Depreciation',
+          name: '累计折旧',
           chartId: 'NCA BUILDINGS DEPRECIATION',
           less: true,
           value: x => x.assets?.nonCurrent?.buildings?.accumulatedDepreciation,
@@ -180,18 +180,18 @@ const nonCurrentAssets = computed<SectionData>(() => ({
       ],
     },
     {
-      name: 'Ships, net',
+      name: '船舶（净值）',
       chartId: 'NCA SHIPS',
       value: summary.calcTotalShips,
       excluded: !userData.fullEquityMode,
       children: [
         {
-          name: 'Market Value',
+          name: '市场价值',
           chartId: 'NCA SHIPS VALUE',
           value: x => x.assets?.nonCurrent?.ships?.marketValue,
         },
         {
-          name: 'Acc. Depreciation',
+          name: '累计折旧',
           chartId: 'NCA SHIPS DEPRECIATION',
           less: true,
           value: x => x.assets?.nonCurrent?.ships?.accumulatedDepreciation,
@@ -199,45 +199,45 @@ const nonCurrentAssets = computed<SectionData>(() => ({
       ],
     },
     {
-      name: 'Long-Term Receivables',
+      name: '长期应收款',
       chartId: 'NCA LONG TERM RECEIVABLES',
       value: summary.calcTotalLongTermReceivables,
       children: [
         {
-          name: 'Accounts Receivable',
+          name: '应收账款',
           chartId: 'NCA ACCOUNTS RECEIVABLE',
           value: x => x.assets?.nonCurrent?.longTermReceivables?.accountsReceivable,
         },
         {
-          name: 'Materials in Transit',
+          name: '在途材料',
           chartId: 'NCA MATERIALS IN TRANSIT',
           value: x => x.assets?.nonCurrent?.longTermReceivables?.materialsInTransit,
         },
         {
-          name: 'Materials Receivable',
+          name: '应收材料',
           chartId: 'NCA MATERIALS RECEIVABLE',
           value: x => x.assets?.nonCurrent?.longTermReceivables?.materialsReceivable,
         },
         {
-          name: 'Loans Principal',
+          name: '贷款本金',
           chartId: 'NCA LOANS PRINCIPAL',
           value: x => x.assets?.nonCurrent?.longTermReceivables?.loansPrincipal,
         },
       ],
     },
     {
-      name: 'Intangible Assets',
+      name: '无形资产',
       chartId: 'NCA INTANGIBLE ASSETS',
       value: summary.calcTotalIntangibleAssets,
       excluded: !userData.fullEquityMode,
       children: [
         {
-          name: 'HQ Upgrades',
+          name: '总部升级',
           chartId: 'NCA HQ UPGRADES',
           value: x => x.assets?.nonCurrent?.intangibleAssets?.hqUpgrades,
         },
         {
-          name: 'APEX Representation Center',
+          name: 'APEX 代表中心',
           chartId: 'NCA ARC',
           value: x => x.assets?.nonCurrent?.intangibleAssets?.arc,
         },
@@ -247,32 +247,32 @@ const nonCurrentAssets = computed<SectionData>(() => ({
 }));
 
 const currentLiabilities = computed<SectionData>(() => ({
-  name: 'Current Liabilities',
+  name: '流动负债',
   chartId: 'CURRENT LIABILITIES',
   value: summary.calcTotalCurrentLiabilities,
   children: [
     {
-      name: 'Accounts Payable',
+      name: '应付账款',
       chartId: 'CL ACCOUNTS PAYABLE',
       value: x => x.liabilities?.current?.accountsPayable,
     },
     {
-      name: 'Materials Payable',
+      name: '应付材料',
       chartId: 'CL MATERIALS PAYABLE',
       value: x => x.liabilities?.current?.materialsPayable,
     },
     {
-      name: 'Loans Payable',
+      name: '应付贷款',
       chartId: 'CL LOANS PAYABLE',
       value: summary.calcTotalLoansPayable,
       children: [
         {
-          name: 'Principal',
+          name: '本金',
           chartId: 'CL LOANS PRINCIPAL',
           value: x => x.liabilities?.current?.loansPayable?.principal,
         },
         {
-          name: 'Interest',
+          name: '利息',
           chartId: 'CL LOANS INTEREST',
           value: x => x.liabilities?.current?.loansPayable?.interest,
         },
@@ -282,27 +282,27 @@ const currentLiabilities = computed<SectionData>(() => ({
 }));
 
 const nonCurrentLiabilities = computed<SectionData>(() => ({
-  name: 'Non-Current Liabilities',
+  name: '非流动负债',
   chartId: 'NON CURRENT LIABILITIES',
   value: summary.calcTotalNonCurrentLiabilities,
   children: [
     {
-      name: 'Long-Term Payables',
+      name: '长期应付款',
       chartId: 'NCL LONG TERM PAYABLES',
       value: summary.calcTotalLongTermPayables,
       children: [
         {
-          name: 'Accounts Payable',
+          name: '应付账款',
           chartId: 'NCL ACCOUNTS PAYABLE',
           value: x => x.liabilities?.nonCurrent?.longTermPayables?.accountsPayable,
         },
         {
-          name: 'Materials Payable',
+          name: '应付材料',
           chartId: 'NCL MATERIALS PAYABLE',
           value: x => x.liabilities?.nonCurrent?.longTermPayables?.materialsPayable,
         },
         {
-          name: 'Loans Principal',
+          name: '贷款本金',
           chartId: 'NCL LOANS PRINCIPAL',
           value: x => x.liabilities?.nonCurrent?.longTermPayables?.loansPrincipal,
         },
@@ -312,18 +312,18 @@ const nonCurrentLiabilities = computed<SectionData>(() => ({
 }));
 
 const equity = computed<SectionData>(() => ({
-  name: 'Equity',
+  name: '权益',
   chartId: 'EQUITY',
   coloredChange: true,
   value: summary.calcEquity,
   children: [
     {
-      name: 'Total Assets',
+      name: '总资产',
       chartId: 'TOTAL ASSETS',
       value: summary.calcTotalAssets,
     },
     {
-      name: 'Total Liabilities',
+      name: '总负债',
       chartId: 'TOTAL LIABILITIES',
       less: true,
       value: summary.calcTotalLiabilities,
@@ -345,16 +345,16 @@ const sections = [
     <thead>
       <tr>
         <th>&nbsp;</th>
-        <th>Current Period</th>
+        <th>当前期间</th>
         <th>
           <template v-if="lastBalance">{{ ddmmyyyy(lastBalance.timestamp) }}</template>
-          <template v-else>Last Period</template>
+          <template v-else>上一期间</template>
         </th>
         <th>
           <template v-if="previousBalance">{{ ddmmyyyy(previousBalance.timestamp) }}</template>
-          <template v-else>Previous Period</template>
+          <template v-else>前一期间</template>
         </th>
-        <th>Change</th>
+        <th>变化</th>
         <th />
       </tr>
     </thead>

@@ -23,7 +23,7 @@ import { serializeStorage } from '@src/features/XIT/ACT/actions/utils';
 const emit = defineEmits<{ (e: 'close'): void }>();
 
 const days = ref(userData.settings.burn.resupply);
-const name = ref(`Base Resupply ${days.value}d`);
+const name = ref(`基地补给 ${days.value}天`);
 const planets = computed(() =>
   (sitesStore.all.value ?? [])
     .map(x => getEntityNameFromAddress(x.address))
@@ -55,7 +55,7 @@ function onCreateClick() {
     global: { name: name.value },
     groups: [
       {
-        name: 'Resupply',
+        name: '补给',
         type: 'Resupply',
         planet: planet.value,
         days: days.value,
@@ -64,14 +64,14 @@ function onCreateClick() {
     ],
     actions: [
       {
-        name: 'Buy Missing Materials',
+        name: '购买缺少的材料',
         type: 'CX Buy',
         group: 'Resupply',
         exchange: cxTicker,
         useCXInv: true,
       },
       {
-        name: 'Select your ship in the "To" field ↓',
+        name: '在下方"To"字段中选择你的飞船 ↓',
         type: 'MTRA',
         group: 'Resupply',
         origin: serializeStorage(storage),
@@ -95,34 +95,31 @@ const ExchangeTickers = {
 
 <template>
   <div :class="C.DraftConditionEditor.form">
-    <SectionHeader>Quickstart</SectionHeader>
+    <SectionHeader>快速开始</SectionHeader>
     <div :class="$style.description">
-      This prefilled action package will resupply your base with materials for a given number of
-      days.
+      此预填操作包将为你的基地补充指定天数的材料。
       <br />
-      The created action package will have two actions: buy missing materials from the CX, then
-      transfer them to the configured (next step) ship.
+      创建的操作包将包含两个操作：从 CX 购买缺少的材料，然后将它们转移到配置的（下一步）飞船上。
       <br />
-      After clicking "Create", you will be taken to the action package runner. Once there, first
-      configure the target ship, then press "Execute" and press "Act" until the package is done.
+      点击“创建”后，你将被引导到操作包运行器。到达后，先配置目标飞船，然后按“执行”并持续按“执行步骤”直到完成。
       <br />
-      <mark>Note: You need a ship parked at the selected CX for this to work.</mark>
+      <mark>注意：你需要一艘停泊在选定 CX 的飞船才能使用此功能。</mark>
     </div>
     <form>
-      <Active label="Name">
+      <Active label="名称">
         <TextInput v-model="name" />
       </Active>
-      <Active label="CX to Resupply From">
+      <Active label="补给来源 CX">
         <SelectInput v-model="cx" :options="cxes" />
       </Active>
-      <Active label="Planet to Resupply">
+      <Active label="补给星球">
         <SelectInput v-model="planet" :options="planets" />
       </Active>
-      <Active label="Resupply Days">
+      <Active label="补给天数">
         <NumberInput v-model="days" />
       </Active>
       <Commands>
-        <PrunButton primary @click="onCreateClick">CREATE</PrunButton>
+        <PrunButton primary @click="onCreateClick">创建</PrunButton>
       </Commands>
     </form>
   </div>

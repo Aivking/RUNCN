@@ -7,8 +7,8 @@ export async function* streamHtmlCollection<T extends Element>(
 ) {
   const seenElements = new WeakSet<T>();
 
-  // Enumerate elements via Array.from to prevent
-  // bugs when the HTMLCollection is modified during yield.
+  // 通过 Array.from 枚举元素以防止
+  // 在 yield 期间修改 HTMLCollection 导致的错误。
   for (const element of Array.from(elements)) {
     seenElements.add(element);
     yield element;

@@ -75,4 +75,4 @@ function init() {
   tiles.observe('SFC', onTileReady);
 }
 
-features.add(import.meta.url, init, 'SFC: Adds an arrival date to the "Duration" column.');
+features.add(import.meta.url, init, 'SFC：在"持续时间"列中添加到达日期。');

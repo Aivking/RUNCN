@@ -18,4 +18,4 @@ function init() {
   tiles.observe('LM', onTileReady);
 }
 
-features.add(import.meta.url, init, 'LM: Highlights own ads.');
+features.add(import.meta.url, init, 'LM：高亮显示自己的广告。');

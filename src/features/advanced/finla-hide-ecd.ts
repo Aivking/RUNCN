@@ -9,8 +9,8 @@ function onTileReady(tile: PrunTile) {
       row.style.display = currency.value === 'ECD' ? 'none' : '';
     });
   });
-  // Move the ECD column to the end to avoid breaking
-  // the alternating table row colors.
+  // 将 ECD 列移到末尾以避免破坏
+  // 表格行交替色。
   subscribe($$(tile.anchor, 'tbody'), tbody => {
     observeDescendantListChanged(tbody, () => {
       const rows = _$$(tbody, 'tr');
@@ -32,4 +32,4 @@ function init() {
   tiles.observe('FINLA', onTileReady);
 }
 
-features.add(import.meta.url, init, 'FINLA: Hides the ECD row.');
+features.add(import.meta.url, init, 'FINLA：隐藏 ECD 行。');

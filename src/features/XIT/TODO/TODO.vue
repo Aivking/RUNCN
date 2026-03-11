@@ -31,7 +31,7 @@ function onCreateClick() {
   <TaskList v-else-if="list" :list="list" />
   <div v-else :class="$style.create">
     <span>Task list "{{ name }}" not found.</span>
-    <PrunButton primary :class="$style.button" @click="onCreateClick">CREATE</PrunButton>
+    <PrunButton primary :class="$style.button" @click="onCreateClick">创建</PrunButton>
   </div>
 </template>
 

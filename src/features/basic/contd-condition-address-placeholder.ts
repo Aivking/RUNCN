@@ -37,8 +37,4 @@ function init() {
   tiles.observe('CONTD', onTileReady);
 }
 
-features.add(
-  import.meta.url,
-  init,
-  'CONTD: Sets the current address as the placeholder for the address field of the condition editor.',
-);
+features.add(import.meta.url, init, 'CONTD：将当前地址设置为条件编辑器地址字段的占位符。');

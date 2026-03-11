@@ -40,14 +40,14 @@ defineExpose({ validate, save });
 
 <template>
   <template v-for="(pair, i) in materials" :key="objectId(pair)">
-    <Active :label="`Material Ticker #${i + 1}`">
+    <Active :label="`材料代码 #${i + 1}`">
       <TextInput v-model="pair[0]" />
     </Active>
-    <Active :label="`Material Amount #${i + 1}`">
+    <Active :label="`材料数量 #${i + 1}`">
       <NumberInput v-model="pair[1]" />
     </Active>
   </template>
   <Commands>
-    <PrunButton primary @click="onAddClick">ADD MATERIAL</PrunButton>
+    <PrunButton primary @click="onAddClick">添加材料</PrunButton>
   </Commands>
 </template>

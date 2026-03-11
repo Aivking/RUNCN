@@ -3,7 +3,7 @@ export default function getBrowserVersion() {
   let browserName: string;
   let fullVersion: string;
 
-  // Detect browser name and version
+  // 检测浏览器名称和版本
   if (userAgent.indexOf('Firefox') > -1) {
     browserName = 'Firefox';
     fullVersion = userAgent.substring(userAgent.indexOf('Firefox') + 8);
@@ -14,7 +14,7 @@ export default function getBrowserVersion() {
       fullVersion = userAgent.substring(userAgent.indexOf('OPR') + 4);
     }
   } else if (userAgent.indexOf('Trident') > -1) {
-    // For Internet Explorer
+    // 用于 Internet Explorer
     browserName = 'Microsoft Internet Explorer';
     fullVersion = userAgent.substring(userAgent.indexOf('rv:') + 3);
   } else if (userAgent.indexOf('Edge') > -1) {
@@ -34,7 +34,7 @@ export default function getBrowserVersion() {
     fullVersion = 'Unknown';
   }
 
-  // Trim the version string
+  // 截断版本字符串
   if (fullVersion.indexOf(' ') > -1) {
     fullVersion = fullVersion.substring(0, fullVersion.indexOf(' '));
   }

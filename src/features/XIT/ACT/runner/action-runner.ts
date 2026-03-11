@@ -36,17 +36,17 @@ export class ActionRunner {
 
   async preview(pkg: UserData.ActionPackageData, config: ActionPackageConfig) {
     if (this.isRunning) {
-      this.log.error('Action Package is already running');
+      this.log.error('操作包已在运行中');
       return;
     }
-    // Create a copy to prevent changes during execution.
+    // 创建副本以防止执行期间的修改。
     const copy = structuredClone(deepToRaw(pkg));
     const { steps, fail } = await this.stepGenerator.generateSteps(copy, config);
     if (steps.length === 0) {
       return;
     }
     if (fail) {
-      this.log.info('Generated steps for valid actions:');
+      this.log.info('已为有效操作生成步骤：');
     }
     for (const step of steps) {
       const stepInfo = act.getActionStepInfo(step.type);
@@ -56,17 +56,17 @@ export class ActionRunner {
 
   async execute(pkg: UserData.ActionPackageData, config: ActionPackageConfig) {
     if (this.isRunning) {
-      this.log.error('Action Package is already running');
+      this.log.error('操作包已在运行中');
       return;
     }
-    // Create a copy to prevent changes during execution.
+    // 创建副本以防止执行期间的修改。
     const copy = structuredClone(deepToRaw(pkg));
     const { steps, fail } = await this.stepGenerator.generateSteps(copy, config);
     if (fail) {
-      this.log.error('Action Package execution failed');
+      this.log.error('操作包执行失败');
       return;
     }
-    this.log.info('Action Package execution started');
+    this.log.info('操作包开始执行');
     this.stepMachine = new StepMachine(steps, {
       ...this.options,
       tileAllocator: this.tileAllocator,

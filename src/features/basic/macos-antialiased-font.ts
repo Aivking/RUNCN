@@ -4,4 +4,4 @@ function init() {
   applyCssRule('body', $style.body);
 }
 
-features.add(import.meta.url, init, 'Applies antialiased smoothing to all fonts on macOS.');
+features.add(import.meta.url, init, '在 macOS 上对所有字体应用抗锯齿平滑。');

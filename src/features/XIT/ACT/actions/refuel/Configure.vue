@@ -20,7 +20,7 @@ if (data.origin === configurableValue && !config.origin && originStorages.value.
   config.origin = serializeStorage(originStorages.value[0]);
 }
 
-// Autofill and autofix selections on storage list change.
+// 当存储列表变化时自动填充和修正选择。
 watchEffect(() => {
   if (data.origin === configurableValue) {
     if (config.origin) {
@@ -39,7 +39,7 @@ watchEffect(() => {
 function getOptions(storages: PrunApi.Store[]) {
   const options = storages.map(serializeStorage).map(x => ({ label: x, value: x }));
   if (options.length === 0) {
-    options.push({ label: 'No locations available', value: undefined! });
+    options.push({ label: '没有可用位置', value: undefined! });
   }
   return options;
 }
@@ -47,7 +47,7 @@ function getOptions(storages: PrunApi.Store[]) {
 
 <template>
   <form>
-    <Active label="From">
+    <Active label="从">
       <SelectInput v-model="config.origin" :options="originOptions" />
     </Active>
   </form>

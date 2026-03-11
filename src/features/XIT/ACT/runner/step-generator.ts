@@ -65,7 +65,7 @@ export class StepGenerator {
       }
     }
     if (steps.length === 0) {
-      this.log.error('No actions were generated');
+      this.log.error('未生成任何操作');
       fail = true;
     }
     return { steps, fail };
@@ -77,21 +77,21 @@ export class StepGenerator {
     name: string | undefined,
   ) {
     if (!name) {
-      this.log.error('Missing material group');
+      this.log.error('缺少材料组');
     }
     const group = pkg.groups.find(x => x.name === name);
     if (!group) {
-      this.log.error('Unrecognized material group');
+      this.log.error('无法识别的材料组');
       return undefined;
     }
 
     const info = act.getMaterialGroupInfo(group.type);
     if (!info) {
-      this.log.error('Unrecognized material group type');
+      this.log.error('无法识别的材料组类型');
       return undefined;
     }
 
-    this.options.onStatusChanged(`Generating material bill for ${group.name}...`);
+    this.options.onStatusChanged(`正在为 ${group.name} 生成材料清单...`);
     const groupConfig = config.materialGroups[name!] ?? {};
     return await info.generateMaterialBill({
       data: group,

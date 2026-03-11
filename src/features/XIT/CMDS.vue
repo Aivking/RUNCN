@@ -14,10 +14,10 @@ const sorted = xit.registry.sort((a, b) => {
   <table>
     <thead>
       <tr>
-        <th>Command</th>
-        <th>Description</th>
-        <th>Mandatory parameters</th>
-        <th>Optional parameters</th>
+        <th>命令</th>
+        <th>描述</th>
+        <th>必选参数</th>
+        <th>可选参数</th>
       </tr>
     </thead>
     <tbody>

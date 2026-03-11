@@ -38,8 +38,8 @@ function onEditMaterialGroupClick(e: Event, group: UserData.MaterialGroupData) {
 
 function onDeleteMaterialGroupClick(e: Event, group: UserData.MaterialGroupData) {
   showConfirmationOverlay(e, () => removeArrayElement(pkg.groups, group), {
-    message: `Are you sure you want to delete the material group "${group.name || '--'}"?`,
-    confirmLabel: 'DELETE',
+    message: `确定要删除材料组 "${group.name || '--'}" 吗？`,
+    confirmLabel: '删除',
   });
 }
 
@@ -62,8 +62,8 @@ function onEditActionClick(e: Event, action: UserData.ActionData) {
 
 function onDeleteActionClick(e: Event, action: UserData.ActionData) {
   showConfirmationOverlay(e, () => removeArrayElement(pkg.actions, action), {
-    message: `Are you sure you want to delete the action "${action.name || '--'}"?`,
-    confirmLabel: 'DELETE',
+    message: `确定要删除操作 "${action.name || '--'}" 吗？`,
+    confirmLabel: '删除',
   });
 }
 
@@ -96,20 +96,20 @@ function onExportClick() {
 
 <template>
   <Header v-model="pkg.global.name" editable :class="$style.header" />
-  <SectionHeader>Material Groups</SectionHeader>
+  <SectionHeader>材料组</SectionHeader>
   <table>
     <thead>
       <tr>
         <GripHeaderCell />
-        <th>Type</th>
-        <th>Name</th>
-        <th>Content</th>
+        <th>类型</th>
+        <th>名称</th>
+        <th>内容</th>
         <th />
       </tr>
     </thead>
     <tbody v-if="pkg.groups.length === 0">
       <tr>
-        <td colspan="4" :class="$style.emptyRow">No groups yet.</td>
+        <td colspan="4" :class="$style.emptyRow">还没有材料组。</td>
       </tr>
     </tbody>
     <tbody v-else v-draggable="[pkg.groups, grip.draggable]">
@@ -120,10 +120,10 @@ function onExportClick() {
         <td>{{ getMaterialGroupDescription(group) }}</td>
         <td>
           <PrunButton dark inline @click="onEditMaterialGroupClick($event, group)">
-            edit
+            编辑
           </PrunButton>
           <PrunButton dark inline @click="onDeleteMaterialGroupClick($event, group)">
-            delete
+            删除
           </PrunButton>
         </td>
       </tr>
@@ -131,23 +131,23 @@ function onExportClick() {
   </table>
   <form :class="$style.sectionCommands">
     <Commands>
-      <PrunButton primary @click="onAddMaterialGroupClick">ADD</PrunButton>
+      <PrunButton primary @click="onAddMaterialGroupClick">添加</PrunButton>
     </Commands>
   </form>
-  <SectionHeader>Actions</SectionHeader>
+  <SectionHeader>操作</SectionHeader>
   <table>
     <thead>
       <tr>
         <GripHeaderCell />
-        <th>Type</th>
-        <th>Name</th>
-        <th>Content</th>
+        <th>类型</th>
+        <th>名称</th>
+        <th>内容</th>
         <th />
       </tr>
     </thead>
     <tbody v-if="pkg.actions.length === 0">
       <tr>
-        <td colspan="4" :class="$style.emptyRow">No actions yet.</td>
+        <td colspan="4" :class="$style.emptyRow">还没有操作。</td>
       </tr>
     </tbody>
     <tbody v-else v-draggable="[pkg.actions, grip.draggable]">
@@ -157,27 +157,27 @@ function onExportClick() {
         <td>{{ action.name || '--' }}</td>
         <td>{{ getActionDescription(action) }}</td>
         <td>
-          <PrunButton dark inline @click="onEditActionClick($event, action)">edit</PrunButton>
-          <PrunButton dark inline @click="onDeleteActionClick($event, action)">delete</PrunButton>
+          <PrunButton dark inline @click="onEditActionClick($event, action)">编辑</PrunButton>
+          <PrunButton dark inline @click="onDeleteActionClick($event, action)">删除</PrunButton>
         </td>
       </tr>
     </tbody>
   </table>
   <form :class="$style.sectionCommands">
     <Commands>
-      <PrunButton primary @click="onAddActionClick">ADD</PrunButton>
+      <PrunButton primary @click="onAddActionClick">添加</PrunButton>
     </Commands>
   </form>
-  <SectionHeader>Commands</SectionHeader>
+  <SectionHeader>命令</SectionHeader>
   <form>
-    <Commands label="Remame">
-      <PrunButton primary @click="onRenameClick">RENAME</PrunButton>
+    <Commands label="重命名">
+      <PrunButton primary @click="onRenameClick">重命名</PrunButton>
     </Commands>
-    <Commands label="Execute">
-      <PrunButton primary @click="onExecuteClick">EXECUTE</PrunButton>
+    <Commands label="执行">
+      <PrunButton primary @click="onExecuteClick">执行</PrunButton>
     </Commands>
-    <Commands label="Export">
-      <PrunButton primary @click="onExportClick">EXPORT</PrunButton>
+    <Commands label="导出">
+      <PrunButton primary @click="onExportClick">导出</PrunButton>
     </Commands>
   </form>
 </template>

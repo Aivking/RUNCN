@@ -59,28 +59,19 @@ defineExpose({ validate, save });
 </script>
 
 <template>
-  <Active label="Planet" :error="planetError">
+  <Active label="星球" :error="planetError">
     <SelectInput v-model="planet" :options="planets" />
   </Active>
-  <Active
-    label="Days"
-    tooltip="The number of days of supplies to refill the planet with."
-    :error="daysError">
+  <Active label="天数" tooltip="补充该星球所需的供应天数。" :error="daysError">
     <NumberInput v-model="days" />
   </Active>
-  <Active
-    label="Material Exclusions"
-    tooltip="Materials to be excluded from the group. List material tickers separated by commas.">
+  <Active label="材料排除" tooltip="要从组中排除的材料。用逗号分隔材料代码。">
     <TextInput v-model="exclusions" />
   </Active>
-  <Active
-    label="Use Base Inv"
-    tooltip="Whether to count the materials currently in the base towards the totals.">
-    <RadioItem v-model="useBaseInventory">use base inv</RadioItem>
+  <Active label="使用基地库存" tooltip="计算总量时是否将基地中现有材料计入。">
+    <RadioItem v-model="useBaseInventory">使用基地库存</RadioItem>
   </Active>
-  <Active
-    label="Workforce Only"
-    tooltip="Whether to limit the materials in the group to workforce consumables only.">
-    <RadioItem v-model="workforceOnly">workforce only</RadioItem>
+  <Active label="仅劳动力" tooltip="是否将材料组限制为仅包含劳动力消耗品。">
+    <RadioItem v-model="workforceOnly">仅劳动力</RadioItem>
   </Active>
 </template>

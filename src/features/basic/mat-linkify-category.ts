@@ -33,8 +33,4 @@ function init() {
   tiles.observe('MAT', onTileReady);
 }
 
-features.add(
-  import.meta.url,
-  init,
-  'MAT: Makes material category clickable and leading to XIT MATS with the material category.',
-);
+features.add(import.meta.url, init, 'MAT：使材料类别可点击并跳转到对应类别的 XIT MATS。');

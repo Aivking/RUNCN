@@ -1,14 +1,14 @@
 import { productionStore } from '@src/infrastructure/prun-api/data/production';
 import { userDataStore } from '@src/infrastructure/prun-api/data/user-data';
 
-// MM orders don't have the amount.
+// MM 订单没有数量字段。
 export function isFiniteOrder(
   order: PrunApi.CXBrokerOrder,
 ): order is PrunApi.CXBrokerOrder & { amount: number } {
   return order.amount !== null;
 }
 
-// If any line has a recurring order, we consider all lines to have recurring orders.
+// 如果任一生产线有循环订单，则视所有生产线都有循环订单。
 const hasRecurringOrders = computed(() => {
   if (userDataStore.subscriptionLevel !== 'PRO') {
     return false;

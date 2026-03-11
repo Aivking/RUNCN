@@ -424,4 +424,4 @@ function shield(detail?: Icon): Icon {
   return detail !== undefined ? ['f132', { detail }] : 'f132';
 }
 
-features.add(import.meta.url, init, 'Adds icons to items.');
+features.add(import.meta.url, init, '为物品添加图标。');

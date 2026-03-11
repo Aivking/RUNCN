@@ -39,15 +39,15 @@ function compareContracts(a: PrunApi.Contract, b: PrunApi.Contract) {
   <table v-else>
     <thead>
       <tr>
-        <th>Contract</th>
-        <th>Item</th>
-        <th>Partner</th>
-        <th>Self</th>
+        <th>合同</th>
+        <th>物品</th>
+        <th>对方</th>
+        <th>自己</th>
       </tr>
     </thead>
     <tbody>
       <tr v-if="isEmpty(filtered)">
-        <td colspan="4">No active contracts</td>
+        <td colspan="4">没有活动合同</td>
       </tr>
       <template v-else>
         <ContractRow v-for="contract in filtered" :key="contract.id" :contract="contract" />

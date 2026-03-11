@@ -62,47 +62,43 @@ function onSaveClick() {
 
 <template>
   <div :class="C.DraftConditionEditor.form">
-    <SectionHeader>Sorting Mode</SectionHeader>
+    <SectionHeader>排序模式</SectionHeader>
     <form>
-      <Active
-        label="Label"
-        tooltip="The label showing at the top of the inventory (ABC, CAT, etc.).">
+      <Active label="标签" tooltip="显示在库存顶部的标签 (ABC, CAT 等)。">
         <TextInput v-model="label" style="width: 80%" />
       </Active>
-      <Active label="Category 1 Name" tooltip="The name of the first category for materials.">
+      <Active label="分类 1 名称" tooltip="第一个材料分类的名称。">
         <TextInput v-model="categories[0].name" style="width: 80%" />
       </Active>
-      <Active
-        label="Category 1 MATs"
-        tooltip="A list of materials in the first category. Separate tickers by a comma. (RAT, DW, etc.).">
+      <Active label="分类 1 材料" tooltip="第一个分类中的材料列表。用逗号分隔代码 (RAT, DW 等)。">
         <TextInput v-model="categories[0].materials" style="width: 80%" />
       </Active>
       <template v-for="(category, i) in categories.slice(1)" :key="objectId(category)">
-        <Active :label="`Category ${i + 2} Name`">
+        <Active :label="`分类 ${i + 2} 名称`">
           <TextInput v-model="category.name" style="width: 80%" />
         </Active>
-        <Active :label="`Category ${i + 2} MATs`">
+        <Active :label="`分类 ${i + 2} 材料`">
           <TextInput v-model="category.materials" style="width: 80%" />
         </Active>
       </template>
       <Active
         v-if="storage?.type === 'STORE'"
-        label="Burn Sorting"
-        tooltip="Add burn sorting as a secondary sorting method. Burn categories will show under the categories defined above.">
-        <RadioItem v-model="burn">add burn</RadioItem>
+        label="消耗排序"
+        tooltip="添加消耗排序作为二级排序方式。消耗分类将显示在上述分类下方。">
+        <RadioItem v-model="burn">添加消耗排序</RadioItem>
       </Active>
-      <Active label="Show Zeros" tooltip="Show item icons that have zero quantity.">
-        <RadioItem v-model="zero">show zero</RadioItem>
+      <Active label="显示零值" tooltip="显示数量为零的物品图标。">
+        <RadioItem v-model="zero">显示零值</RadioItem>
       </Active>
       <Commands>
-        <PrunButton primary @click="addCategory">ADD CATEGORY</PrunButton>
+        <PrunButton primary @click="addCategory">添加分类</PrunButton>
         <PrunButton
           :primary="canRemoveCategory"
           :disabled="!canRemoveCategory"
           @click="removeCategory">
-          REMOVE CATEGORY
+          删除分类
         </PrunButton>
-        <PrunButton primary @click="onSaveClick">SAVE</PrunButton>
+        <PrunButton primary @click="onSaveClick">保存</PrunButton>
       </Commands>
     </form>
   </div>

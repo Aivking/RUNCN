@@ -32,22 +32,22 @@ export const CXPO_BUY = act.addActionStep<Data>({
     const willFillCompletely = filled && filled.amount === data.amount;
 
     if (!willFillCompletely && allowUnfilled) {
-      let description = `Bid for ${fixed0(data.amount)} ${ticker} on ${exchange}`;
+      let description = `在 ${exchange} 上投标 ${fixed0(data.amount)} ${ticker}`;
       if (isFinite(priceLimit)) {
-        description += ` at price ${fixed02(data.priceLimit)}`;
-        description += ` (${fixed0(data.amount * data.priceLimit)} total cost)`;
+        description += `，价格 ${fixed02(data.priceLimit)}`;
+        description += `（总费用 ${fixed0(data.amount * data.priceLimit)}）`;
       }
       return description;
     }
 
-    let description = `Buy ${fixed0(amount)} ${ticker} on ${exchange}`;
+    let description = `在 ${exchange} 上购买 ${fixed0(amount)} ${ticker}`;
     if (isFinite(priceLimit)) {
-      description += ` with price limit ${fixed02(priceLimit)}`;
+      description += `，价格限制 ${fixed02(priceLimit)}`;
     }
     if (filled) {
-      description += ` (${fixed0(filled.cost)} total cost)`;
+      description += `（总费用 ${fixed0(filled.cost)}）`;
     } else {
-      description += ' (no price data yet)';
+      description += '（暂无价格数据）';
     }
     return description;
   },
@@ -65,7 +65,7 @@ export const CXPO_BUY = act.addActionStep<Data>({
     assert(cxWarehouse.value, `CX warehouse not found for ${exchange}`);
 
     if (amount <= 0) {
-      log.warning(`No ${ticker} was bought (target amount is 0)`);
+      log.warning(`${ticker} 未购买（目标数量为 0）`);
       skip();
       return;
     }
@@ -87,7 +87,7 @@ export const CXPO_BUY = act.addActionStep<Data>({
       return;
     }
 
-    setStatus('Setting up CXPO buffer...');
+    setStatus('正在设置 CXPO 缓冲区...');
 
     const buyButton = await $(tile.anchor, C.Button.success);
     const form = await $(tile.anchor, C.ComExPlaceOrderForm.form);
@@ -108,13 +108,13 @@ export const CXPO_BUY = act.addActionStep<Data>({
 
       if (!filled) {
         shouldUnwatch = true;
-        fail(`Missing ${cxTicker} order book data`);
+        fail(`缺少 ${cxTicker} 订单簿数据`);
         return;
       }
 
       if (filled.amount < amount && !data.allowUnfilled) {
         if (!data.buyPartial) {
-          let message = `Not enough materials on ${exchange} to buy ${fixed0(amount)} ${ticker}`;
+          let message = `${exchange} 上没有足够的材料购买 ${fixed0(amount)} ${ticker}`;
           if (isFinite(priceLimit)) {
             message += ` with price limit ${fixed02(priceLimit)}/u`;
           }
@@ -125,8 +125,8 @@ export const CXPO_BUY = act.addActionStep<Data>({
 
         const leftover = amount - filled.amount;
         let message =
-          `${fixed0(leftover)} ${ticker} will not be bought on ${exchange} ` +
-          `(${fixed0(filled.amount)} of ${fixed0(amount)} available`;
+          `${fixed0(leftover)} ${ticker} 将不会在 ${exchange} 上购买 ` +
+          `（${fixed0(filled.amount)}/${fixed0(amount)} 可用`;
         if (isFinite(priceLimit)) {
           message += ` with price limit ${fixed02(priceLimit)}/u`;
         }
@@ -147,8 +147,8 @@ export const CXPO_BUY = act.addActionStep<Data>({
         changeInputValue(priceInput, fixed02(filled.priceLimit));
       }
 
-      // Cache description before clicking the buy button because
-      // order book data will change after that.
+      // 在点击买入按钮之前缓存描述，因为
+      // 点击后订单簿数据会发生变化。
       ctx.cacheDescription();
     });
 
@@ -171,10 +171,10 @@ export const CXPO_BUY = act.addActionStep<Data>({
     await waitActionFeedback(tile);
 
     if (shouldWaitForUpdate) {
-      setStatus('Waiting for storage update...');
+      setStatus('等待存储更新...');
       await watchWhile(() => warehouseAmount.value === currentAmount);
     } else {
-      setStatus('Bid order created');
+      setStatus('买单已创建');
     }
 
     complete();

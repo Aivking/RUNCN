@@ -96,7 +96,7 @@ export function calculatePlanetBurn(
       const capacity = line.capacity;
       const burnOrders = getRecurringOrders(line);
       let totalDuration = sumBy(burnOrders, x => x.duration?.millis ?? Infinity);
-      // Convert to days
+      // 转换为天数
       totalDuration /= 86400000;
 
       for (const order of burnOrders) {
@@ -115,11 +115,11 @@ export function calculatePlanetBurn(
   if (workforces) {
     for (const tier of workforces) {
       if (tier.population <= 1) {
-        // Don't count the bugged workforce with one population.
+        // 不计算只有一个人口的异常劳动力。
         continue;
       }
       if (tier.capacity === 0) {
-        // After demolishing housing, you can get homeless pops that don't consume goods.
+        // 拆除住房后，可能会产生不消耗物资的无家可归人口。
         continue;
       }
       for (const need of tier.needs) {

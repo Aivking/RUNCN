@@ -18,7 +18,7 @@ act.addMaterialGroup({
   editComponent: Edit,
   generateMaterialBill: async ({ data, log }) => {
     if (!data.materials || Object.keys(data.materials).length == 0) {
-      log.error('Missing materials.');
+      log.error('缺少材料。');
       return undefined;
     }
     return structuredClone(deepToRaw(data.materials));

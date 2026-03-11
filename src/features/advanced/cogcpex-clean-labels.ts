@@ -1,10 +1,10 @@
 function onTileReady(tile: PrunTile) {
-  // Replace 'view details/vote' with 'vote'
+  // 将 '查看详情/投票' 替换为 '投票'
   subscribe($$(tile.anchor, C.Button.darkInline), button => {
-    button.textContent = 'vote';
+    button.textContent = '投票';
   });
 
-  // Remove redundant title parts
+  // 移除冗余的标题部分
   subscribe($$(tile.anchor, C.Link.link), link => {
     if (link.textContent) {
       link.textContent = link
@@ -18,8 +18,4 @@ function init() {
   tiles.observe('COGCPEX', onTileReady);
 }
 
-features.add(
-  import.meta.url,
-  init,
-  'COGCPEX: Hides "Advertising Campaign:" and "Education Events:" parts of the campaign labels.',
-);
+features.add(import.meta.url, init, 'COGCPEX：隐藏活动标签中的"广告活动："和"教育活动："部分。');

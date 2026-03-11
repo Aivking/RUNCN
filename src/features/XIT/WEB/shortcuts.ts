@@ -27,14 +27,14 @@ function shortcut(shortcut: Shortcut) {
 shortcut({
   command: 'PRUN',
   name: 'PRUN-CEPTION',
-  description: 'Opens PrUn... in PrUn!',
+  description: '在 PrUn 中打开 PrUn！',
   url: () => 'https://apex.prosperousuniverse.com/',
 });
 
 shortcut({
   command: 'PROSPERITY',
   name: 'PROSPERITY',
-  description: 'Prosperity map.',
+  description: 'Prosperity 地图。',
   url: parameters => {
     let url = 'https://prosperity-prun.netlify.app/';
     if (parameters.length == 2) {
@@ -47,7 +47,7 @@ shortcut({
 shortcut({
   command: ['SHEET', 'SHEETS'],
   name: 'GOOGLE SHEETS',
-  description: 'Opens Google Sheets.',
+  description: '打开 Google Sheets。',
   url: parameters => {
     if (isEmpty(parameters)) {
       return undefined;
@@ -73,14 +73,14 @@ shortcut({
     }
     return url;
   },
-  mandatoryParameters: 'Document ID',
-  optionalParameters: 'Sheet ID',
+  mandatoryParameters: '文档 ID',
+  optionalParameters: '工作表 ID',
 });
 
 shortcut({
   command: ['PLANNER', 'PLAN', 'PRUN PLANNER'],
   name: 'PRUN PLANNER',
-  description: 'PrUn Planner.',
+  description: 'PrUn 规划工具。',
   url: parameters => {
     return 'https://prunplanner.org/' + parameters.join('/');
   },
@@ -88,23 +88,23 @@ shortcut({
 
 shortcut({
   command: 'MAP',
-  name: "Taiyi's Map",
-  description: "Taiyi's map.",
+  name: 'Taiyi 地图',
+  description: 'Taiyi 地图。',
   url: () => 'https://universemap.duckdns.org/',
 });
 
 shortcut({
   command: 'YAPT',
-  name: 'Yet another PrUn tool',
-  description: 'Opens the Yet Another PrUn Tool website.',
+  name: '又一个 PrUn 工具',
+  description: '打开 Yet Another PrUn Tool 网站。',
   url: () => 'https://aeryen23.github.io/yapt/',
   bufferSize: [1100, 700],
 });
 
 shortcut({
   command: ['PRUNSTATS', 'PRUNSTAT'],
-  name: 'PrUn Financial Report',
-  description: 'Opens the PrUn Financial Report website.',
+  name: 'PrUn 财务报告',
+  description: '打开 PrUn 财务报告网站。',
   url: parameters => {
     let url =
       'https://pmmg-products.github.io/reports/?' +

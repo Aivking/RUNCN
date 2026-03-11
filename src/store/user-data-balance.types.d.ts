@@ -14,7 +14,7 @@ declare namespace UserData {
   type BalanceSheetDataV2 = [
     timestamp: number,
 
-    // Current Assets
+    // 流动资产
     cash: number,
     cx: number,
     fx: number,
@@ -33,7 +33,7 @@ declare namespace UserData {
     materialsInTransit: number,
     materialsReceivable: number,
 
-    // Non-Current Assets
+    // 非流动资产
     infrastructure: number,
     resourceExtraction: number,
     production: number,
@@ -47,13 +47,13 @@ declare namespace UserData {
     hqUpgrades: number,
     arc: number,
 
-    // Current Liabilities
+    // 流动负债
     accountsPayable: number,
     materialsPayable: number,
     debtsPrincipal: number,
     debtsInterest: number,
 
-    // Non-Current Liabilities
+    // 非流动负债
     accountsPayable: number,
     materialsPayable: number,
     debtsPrincipal: number,

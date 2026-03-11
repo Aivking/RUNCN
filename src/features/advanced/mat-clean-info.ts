@@ -20,4 +20,4 @@ function init() {
   tiles.observe('MAT', onTileReady);
 }
 
-features.add(import.meta.url, init, 'MAT: Hides "Ticker" and "Natural resource" fields.');
+features.add(import.meta.url, init, 'MAT：隐藏"代码"和"自然资源"字段。');

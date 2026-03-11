@@ -30,8 +30,8 @@ export function findWithQuery<T>(
   let nextTerm = '';
   const nextTermParts = [] as string[];
   while (query.length > 0) {
-    // Accumulate terms until we find a match. For example, 'Lom Palanka' is initially split into
-    // 'Lom' and 'Palanka', but we need to join them into 'Lom Palanka' to match.
+    // 累积词项直到找到匹配。例如，'Lom Palanka' 最初被拆分为
+    // 'Lom' 和 'Palanka'，但我们需要将它们合并为 'Lom Palanka' 才能匹配。
     const nextQueryPart = query.shift()!;
     nextTermParts.push(nextQueryPart);
     if (nextTerm.length === 0) {

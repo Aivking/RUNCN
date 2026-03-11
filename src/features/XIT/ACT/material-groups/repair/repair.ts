@@ -14,9 +14,9 @@ act.addMaterialGroup<Config>({
     }
 
     const days = data.days;
-    const daysPart = days !== undefined ? `older than ${days} day${days == 1 ? '' : 's'}` : '';
+    const daysPart = days !== undefined ? `超过 ${days} 天` : '';
     const advanceDays = data.advanceDays ?? 0;
-    return `Repair buildings on ${data.planet} ${daysPart} in ${advanceDays} day${advanceDays == 1 ? '' : 's'}`;
+    return `修复 ${data.planet} 上${daysPart}的建筑，提前 ${advanceDays} 天`;
   },
   editComponent: Edit,
   configureComponent: Configure,
@@ -24,14 +24,14 @@ act.addMaterialGroup<Config>({
   isValidConfig: (data, config) => data.planet !== configurableValue || config.planet !== undefined,
   generateMaterialBill: async ({ data, config, log }) => {
     if (!data.planet) {
-      log.error('Resupply planet is not configured');
+      log.error('未配置补给星球');
       return undefined;
     }
 
     const planet = data.planet === configurableValue ? config.planet : data.planet;
     const site = sitesStore.getByPlanetNaturalIdOrName(planet);
     if (!site?.platforms) {
-      log.error('Missing data on repair planet');
+      log.error('缺少修复星球数据');
       return undefined;
     }
 

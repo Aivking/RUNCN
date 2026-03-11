@@ -25,4 +25,4 @@ function init() {
   tiles.observe('CMDS', onTileReady);
 }
 
-features.add(import.meta.url, init, 'CMDS: Makes commands clickable.');
+features.add(import.meta.url, init, 'CMDS：使命令可点击。');

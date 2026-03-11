@@ -21,7 +21,7 @@ const $style = useCssModule();
 
 const material = computed(() => materialsStore.getByTicker(ticker));
 
-const name = computed(() => getMaterialName(material.value) ?? 'Unknown');
+const name = computed(() => getMaterialName(material.value) ?? '未知');
 
 const amountText = computed(() => {
   if (amount === undefined) {

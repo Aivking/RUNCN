@@ -10,17 +10,17 @@ function onTileReady(tile: PrunTile) {
     const template = ref<PrunApi.ProductionTemplate>();
     const templateField = form.children[5];
     const dropDownItem = _$(templateField, C.DropDownBox.currentItem)!;
-    // In some edge cases C.ProductionLine.template is not re-created
-    // on template change. So, instead of using observeChildListChanged
-    // on the dropDownItem, we'll watch its textContent, as it always
-    // reflects the template change.
+    // 在某些边缘情况下，C.ProductionLine.template 不会在
+    // 模板更改时重新创建。因此，不使用 observeChildListChanged
+    // 监听 dropDownItem，而是监听其 textContent，
+    // 因为它始终反映模板的变化。
     const templateText = refTextContent(dropDownItem);
     watchEffectWhileNodeAlive(dropDownItem, () => {
-      // Touch reactive value.
+      // 触发响应式值。
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _ = templateText.value;
-      // The ProductionLine.template element is re-created each time
-      // a new template in the drop-down box is selected.
+      // 每次在下拉框中选择新模板时，
+      // ProductionLine.template 元素会重新创建。
       const templateElement = _$(dropDownItem, C.ProductionLine.template);
       template.value = parseTemplate(line.value, templateElement);
     });
@@ -56,7 +56,7 @@ function parseTemplate(line: PrunApi.ProductionLine, templateElement: HTMLElemen
   if (!templateElement) {
     return undefined;
   }
-  // The structure of the template element looks like this:
+  // 模板元素的结构如下：
   // C.ProductionLine.inputs, ⇨, MaterialIcon[], duration.
   const inputsContainer = _$(templateElement, C.ProductionLine.inputs);
   if (!inputsContainer) {
@@ -119,4 +119,4 @@ function init() {
   tiles.observe('PRODCO', onTileReady);
 }
 
-features.add(import.meta.url, init, 'PRODCO: Adds a finish ETA label to orders.');
+features.add(import.meta.url, init, 'PRODCO：为订单添加完成预计时间标签。');

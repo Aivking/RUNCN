@@ -24,12 +24,12 @@ const buttonClass = computed(() => ({
 .button::before {
   content: '';
   position: absolute;
-  /* Increases clickable area */
+  /* 增大可点击区域 */
   top: -5px;
   bottom: -5px;
   left: -5px;
   right: -5px;
-  /* Invisible but expands hitbox */
+  /* 不可见但扩展点击区域 */
   background: transparent;
   z-index: -1;
 }

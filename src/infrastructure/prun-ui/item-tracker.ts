@@ -68,7 +68,7 @@ export function sanitizeCategoryName(name: string) {
   return name.replaceAll(' ', '-').replaceAll('(', '').replaceAll(')', '');
 }
 
-// Copied from PrUn js bundle.
+// 从 PrUn js 包中复制的。
 const categoryColors = {
   'agricultural products': {
     color: 'b22222',

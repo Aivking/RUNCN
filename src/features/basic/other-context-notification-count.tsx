@@ -27,8 +27,4 @@ function init() {
   });
 }
 
-features.add(
-  import.meta.url,
-  init,
-  'Adds a counter for notifications from other contexts in the NOTS header label.',
-);
+features.add(import.meta.url, init, '在 NOTS 标题标签中添加其他上下文通知的计数器。');

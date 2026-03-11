@@ -37,4 +37,4 @@ function init() {
   tiles.observe('CXPO', onTileReady);
 }
 
-features.add(import.meta.url, init, 'CXPO: Adds a compact order book.');
+features.add(import.meta.url, init, 'CXPO：添加紧凑型订单簿。');

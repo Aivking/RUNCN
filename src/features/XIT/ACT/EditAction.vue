@@ -45,12 +45,12 @@ function onSaveClick() {
 
 <template>
   <div :class="C.DraftConditionEditor.form">
-    <SectionHeader>{{ add ? 'Add' : 'Edit' }} Action</SectionHeader>
+    <SectionHeader>{{ add ? '添加' : '编辑' }}操作</SectionHeader>
     <form>
-      <Active label="Type">
+      <Active label="类型">
         <SelectInput v-model="type" :options="typeOptions" />
       </Active>
-      <Active label="Name" :error="nameError">
+      <Active label="名称" :error="nameError">
         <TextInput v-model="name" />
       </Active>
       <Component
@@ -60,7 +60,7 @@ function onSaveClick() {
         :action="action"
         :pkg="pkg" />
       <Commands>
-        <PrunButton primary @click="onSaveClick">{{ add ? 'ADD' : 'SAVE' }}</PrunButton>
+        <PrunButton primary @click="onSaveClick">{{ add ? '添加' : '保存' }}</PrunButton>
       </Commands>
     </form>
   </div>

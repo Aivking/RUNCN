@@ -32,7 +32,7 @@ function logError(id: string, error: unknown): void {
     ['```', String(error instanceof Error ? error.stack! : error).trim(), '```'].join('\n'),
   );
 
-  // Don't change this to `throw Error` because Firefox doesn't show extensions' errors in the console
+  // 不要改成 'throw Error'，因为 Firefox 不会在控制台显示扩展的错误
   console.group(`❌ Refined PrUn: ${id}`); // Safari supports only one parameter
   console.log(`📕 ${config.version}`, error); // One parameter improves Safari formatting
   console.log('🔍 Search issue', searchIssueUrl.href);

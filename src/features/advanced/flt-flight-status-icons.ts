@@ -63,4 +63,4 @@ function init() {
   applyCssRule(['FLT', 'FLTS', 'FLTP'], `td:nth-child(4)`, $style.status);
 }
 
-features.add(import.meta.url, init, 'FLT: Replaces the flight status text with arrow icons.');
+features.add(import.meta.url, init, 'FLT：将飞行状态文本替换为箭头图标。');

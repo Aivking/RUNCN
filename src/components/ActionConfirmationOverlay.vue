@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import PrunButton from '@src/components/PrunButton.vue';
 
-const { confirmLabel = 'Confirm' } = defineProps<{
+const { confirmLabel = '确认' } = defineProps<{
   confirmLabel?: string;
   message: string;
   onClose: () => void;
@@ -25,7 +25,7 @@ const { confirmLabel = 'Confirm' } = defineProps<{
           C.fonts.fontRegular,
           C.type.typeLarger,
         ]"
-        >Confirmation required</span
+        >需要确认</span
       >
       <span
         :class="[
@@ -37,7 +37,7 @@ const { confirmLabel = 'Confirm' } = defineProps<{
         >{{ message }}</span
       >
       <div :class="[C.ActionConfirmationOverlay.buttons]">
-        <PrunButton neutral @click="onClose">Cancel</PrunButton>
+        <PrunButton neutral @click="onClose">取消</PrunButton>
         <PrunButton danger @click="onConfirm">{{ confirmLabel }}</PrunButton>
       </div>
     </div>

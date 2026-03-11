@@ -16,4 +16,4 @@ function init() {
   tiles.observe(['FLT', 'FLTS', 'FLTP'], onTileReady);
 }
 
-features.add(import.meta.url, init, 'FLT: Adds a ship condition label to the "Name" column.');
+features.add(import.meta.url, init, 'FLT：在"名称"列中添加舰船状况标签。');

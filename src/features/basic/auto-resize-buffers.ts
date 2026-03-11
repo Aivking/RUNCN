@@ -9,7 +9,7 @@ async function onTileReady(tile: PrunTile) {
   }
 
   if (!pastWindows.has(tile.container)) {
-    // Skip the first tile activation, as the main tiles.ts adjusts the size itself.
+    // 跳过首次磁贴激活，因为主 tiles.ts 会自行调整大小
     pastWindows.add(tile.container);
     return;
   }
@@ -30,4 +30,4 @@ function init() {
   tiles.observeAll(onTileReady);
 }
 
-features.add(import.meta.url, init, 'Automatically resizes the buffer size on command change.');
+features.add(import.meta.url, init, '切换命令时自动调整缓冲区大小。');

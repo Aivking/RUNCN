@@ -24,67 +24,67 @@ export function isPartnerCondition(
 export function friendlyConditionText(type: PrunApi.ContractConditionType) {
   switch (type) {
     case 'BASE_CONSTRUCTION':
-      return 'Construct Base';
+      return '建造基地';
     case 'COMEX_PURCHASE_PICKUP':
-      return 'Material Pickup';
+      return '材料提取';
     case 'CONSTRUCT_SHIP':
-      return 'Construct Ship';
+      return '建造飞船';
     case 'CONTRIBUTION':
-      return 'Contribution';
+      return '贡献';
     case 'DELIVERY':
-      return 'Delivery';
+      return '交付';
     case 'DELIVERY_SHIPMENT':
-      return 'Deliver Shipment';
+      return '交付货物';
     case 'EXPLORATION':
-      return 'Exploration';
+      return '探索';
     case 'FINISH_FLIGHT':
-      return 'Finish Flight';
+      return '完成飞行';
     case 'GATEWAY_FUEL':
-      return 'Gateway Fuel';
+      return '星门燃料';
     case 'HEADQUARTERS_UPGRADE':
-      return 'Upgrade HQ';
+      return '升级总部';
     case 'INFRASTRUCTURE_CONSTRUCTION_FINISH':
-      return 'Infra Build Finish';
+      return '基建建设完成';
     case 'INFRASTRUCTURE_CONSTRUCTION_START':
-      return 'Infra Build Start';
+      return '基建建设开始';
     case 'INFRASTRUCTURE_UPGRADE_FINISH':
-      return 'Infra Upgrade Finish';
+      return '基建升级完成';
     case 'INFRASTRUCTURE_UPGRADE_START':
-      return 'Infra Upgrade Start';
+      return '基建升级开始';
     case 'INFRASTRUCTURE_UPKEEP':
-      return 'Infra Upkeep';
+      return '基建维护';
     case 'LOAN_INSTALLMENT':
-      return 'Loan Installment';
+      return '贷款分期';
     case 'LOAN_PAYOUT':
-      return 'Loan Payout';
+      return '贷款发放';
     case 'PAYMENT':
-      return 'Payment';
+      return '付款';
     case 'PICKUP':
-      return 'Pickup';
+      return '提取';
     case 'PICKUP_SHIPMENT':
-      return 'Pickup';
+      return '提取';
     case 'PLACE_ORDER':
-      return 'Place Order';
+      return '下单';
     case 'POWER':
-      return 'Become Governor';
+      return '成为总督';
     case 'PRODUCTION_ORDER_COMPLETED':
-      return 'Complete Production Order';
+      return '完成生产订单';
     case 'PRODUCTION_RUN':
-      return 'Run Production';
+      return '运行生产';
     case 'PROVISION':
-      return 'Provision';
+      return '供应';
     case 'PROVISION_SHIPMENT':
-      return 'Provision';
+      return '供应';
     case 'REPAIR_SHIP':
-      return 'Repair Ship';
+      return '修复飞船';
     case 'REPUTATION':
-      return 'Reputation';
+      return '声望';
     case 'START_FLIGHT':
-      return 'Start Flight';
+      return '开始飞行';
     case 'WORKFORCE_PROGRAM_PAYMENT':
-      return 'WF Payment';
+      return '劳动力付款';
     case 'WORKFORCE_PROGRAM_START':
-      return 'WF Program Start';
+      return '劳动力项目启动';
     default:
       return type;
   }

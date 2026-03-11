@@ -91,22 +91,22 @@ function deleteRule(rule: [string, number, number]) {
 
 <template>
   <SectionHeader>
-    Override Default Buffer Sizes
+    覆盖默认缓冲区大小
     <Tooltip
       position="bottom"
       :class="$style.tooltip"
-      tooltip="The first matched rule will be used. If no rules match, the default buffer size will be used.
-        You can reorganize the rules by dragging them up and down." />
+      tooltip="将使用第一个匹配的规则。如果没有规则匹配，将使用默认缓冲区大小。
+        你可以通过拖拽来重新组织规则顺序。" />
   </SectionHeader>
   <ActionBar>
     <template v-if="picking">
       <PrunButton neutral>
-        {{ pickedBuffer ? 'CLICK TO PICK THIS BUFFER' : 'CLICK ANYWHERE TO CANCEL' }}
+        {{ pickedBuffer ? '点击选择此缓冲区' : '点击任意位置取消' }}
       </PrunButton>
     </template>
     <template v-else>
-      <PrunButton primary @click="picking = true">PICK BUFFER</PrunButton>
-      <PrunButton primary @click="addNewRule">ADD NEW RULE</PrunButton>
+      <PrunButton primary @click="picking = true">选择缓冲区</PrunButton>
+      <PrunButton primary @click="addNewRule">添加新规则</PrunButton>
     </template>
   </ActionBar>
   <table>
@@ -115,20 +115,20 @@ function deleteRule(rule: [string, number, number]) {
         <GripHeaderCell />
         <th>
           <InlineFlex>
-            Command
+            命令
             <Tooltip
               position="right"
-              tooltip="Can be a full command, a part of it, or a regular expression. Case-insensitive." />
+              tooltip="可以是完整命令、部分命令或正则表达式。不区分大小写。" />
           </InlineFlex>
         </th>
-        <th>Width</th>
-        <th>Height</th>
+        <th>宽度</th>
+        <th>高度</th>
         <th />
       </tr>
     </thead>
     <tbody v-if="userData.settings.buffers.length === 0">
       <tr>
-        <td colspan="5">Nothing here yet.</td>
+        <td colspan="5">还没有内容。</td>
       </tr>
     </tbody>
     <template v-else>
@@ -151,7 +151,7 @@ function deleteRule(rule: [string, number, number]) {
             </div>
           </td>
           <td>
-            <PrunButton danger @click="deleteRule(rule)">DELETE</PrunButton>
+            <PrunButton danger @click="deleteRule(rule)">删除</PrunButton>
           </td>
         </tr>
       </tbody>

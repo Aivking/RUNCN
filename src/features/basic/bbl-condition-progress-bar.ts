@@ -34,4 +34,4 @@ function init() {
   tiles.observe('BBL', onTileReady);
 }
 
-features.add(import.meta.url, init, 'BBL: Adds a progress bar to the building condition row.');
+features.add(import.meta.url, init, 'BBL：在建筑状况行添加进度条。');

@@ -69,4 +69,4 @@ function init() {
   tiles.observe('LMP', onLMPTileReady);
 }
 
-features.add(import.meta.url, init, 'Adds a per-unit price label to ads in LM, LMA, and LMP.');
+features.add(import.meta.url, init, '在 LM、LMA 和 LMP 的广告中添加单价标签。');

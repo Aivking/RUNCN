@@ -42,4 +42,4 @@ function init() {
   tiles.observe('MAT', onTileReady);
 }
 
-features.add(import.meta.url, init, 'MAT: Adds a "Refined PrUn Price" row.');
+features.add(import.meta.url, init, 'MAT：添加"Refined PrUn 价格"行。');

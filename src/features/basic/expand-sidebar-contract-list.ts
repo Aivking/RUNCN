@@ -39,4 +39,4 @@ function init() {
   subscribe($$(document, C.Sidebar.container), onSidebarReady);
 }
 
-features.add(import.meta.url, init, 'Fully expands the contracts list in the sidebar.');
+features.add(import.meta.url, init, '完全展开侧边栏中的合同列表。');

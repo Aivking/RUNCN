@@ -13,7 +13,7 @@ const isFunny = computed(() => {
   const month = get('month');
   const day = get('day');
   const hour = get('hour');
-  // 22:00 to 22:00 LA covers the world okay-ish, and allows for a simultaneous launch across the globe.
+  // 洛杉矶时间 22:00 到 22:00 大致覆盖全球，并允许全球同步发布
   return (month === 3 && day === 31 && hour >= 22) || (month === 4 && day === 1 && hour < 22);
 });
 
@@ -63,4 +63,4 @@ function init() {
   });
 }
 
-features.add(import.meta.url, init, 'Improves material icon rendering.');
+features.add(import.meta.url, init, '改善材料图标渲染。');

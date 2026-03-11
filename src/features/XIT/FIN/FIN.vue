@@ -59,77 +59,76 @@ function formatPercentage(ratio: number | undefined) {
 const figures = computed(() => {
   return [
     {
-      name: 'Quick Assets',
+      name: '速动资产',
       value: formatCurrency(liveBalanceSummary.quickAssets),
       tooltip:
-        'Quick Assets are: Cash and Cash Equivalents, Current Accounts Receivable, and' +
-        ' Current Loans Receivable (see XIT FINBS for more details). These assets are' +
-        ' either liquid or close-to-liquid and are used in Quick Ratio calculation.',
+        '速动资产包括：现金及现金等价物、流动应收账款和' +
+        '流动应收贷款（详见 XIT FINBS）。这些资产' +
+        '是流动性较高的资产，用于速动比率计算。',
     },
     {
-      name: 'Current Assets',
+      name: '流动资产',
       value: formatCurrency(liveBalanceSummary.currentAssets),
     },
-    { name: 'Total Assets', value: formatCurrency(liveBalanceSummary.assets) },
-    { name: 'Equity', value: formatCurrency(liveBalanceSummary.equity) },
+    { name: '总资产', value: formatCurrency(liveBalanceSummary.assets) },
+    { name: '权益', value: formatCurrency(liveBalanceSummary.equity) },
     {
-      name: 'Quick Liabilities',
+      name: '速动负债',
       value: formatCurrency(liveBalanceSummary.quickLiabilities),
       tooltip:
-        'Quick Liabilities are: Current Accounts Payable and Current Loans Payable (see XIT FINBS' +
-        ' for more details). These liabilities represent immediate financial obligations and are' +
-        ' used in Quick Ratio calculation.',
+        '速动负债包括：流动应付账款和流动应付贷款（详见 XIT FINBS' +
+        '）。这些负债代表即时的财务义务，' +
+        '用于速动比率计算。',
     },
     {
-      name: 'Current Liabilities',
+      name: '流动负债',
       value: formatCurrency(liveBalanceSummary.currentLiabilities),
     },
     {
-      name: 'Total Liabilities',
+      name: '总负债',
       value: formatCurrency(liveBalanceSummary.liabilities),
     },
     {
-      name: 'Liquidation Value',
+      name: '清算价值',
       hidden: !userData.fullEquityMode,
       value: formatCurrency(liveBalanceSummary.liquidationValue),
       tooltip:
-        'The market value of all company’s assets that can be converted to cash directly. ' +
-        'The Liquidation Value excludes such assets as ships, HQ upgrades, and ARC, since ' +
-        'they cannot be sold on the market.',
+        '公司所有可直接变现资产的市场价值。' +
+        '清算价值不包括飞船、总部升级和 ARC 等资产，因为' +
+        '它们无法在市场上出售。',
     },
     {
-      name: 'Quick Ratio',
+      name: '速动比率',
       value: formatRatio(liveBalanceSummary.acidTestRatio),
       tooltip:
-        "The quick, or acid-test ratio, compares a company's quick assets to its quick" +
-        ' liabilities to see if it has enough cash to pay its immediate liabilities,' +
-        ' such as short-term debt. Generally, a ratio of 1.0 or more indicates a company can pay' +
-        ' its short-term obligations, while a ratio of less than 1.0 indicates it might struggle' +
-        ' to pay them.',
+        '速动比率（酸性测试比率）将公司的速动资产与速动' +
+        '负债进行比较，以判断是否有足够的现金来支付即时负债，' +
+        '如短期债务。一般来说，比率 1.0 或以上表明公司能够偿还' +
+        '短期债务，低于 1.0 则表明可能难以偿还。',
     },
     {
-      name: 'Debt Ratio',
+      name: '负债比率',
       value: formatPercentage(liveBalanceSummary.debtRatio),
       tooltip:
-        'The debt ratio is defined as the ratio of total debt to total assets. A debt ratio' +
-        ' of greater than 100% means a company has more debt than assets while a debt ratio' +
-        ' of less than 100% indicates that a company has more assets than debt.',
+        '负债比率定义为总负债与总资产的比率。负债比率' +
+        '大于 100% 表示公司负债超过资产，低于 100%' +
+        '则表示公司资产超过负债。',
     },
   ];
 });
 </script>
 
 <template>
-  <FinHeader>Key Figures</FinHeader>
+  <FinHeader>关键指标</FinHeader>
   <KeyFigures :figures="figures" />
-  <FinHeader>Inventory Breakdown</FinHeader>
+  <FinHeader>库存明细</FinHeader>
   <table>
     <thead>
       <tr>
-        <th>Name</th>
-        <th>Non-Current Assets</th>
-        <th>Current Assets</th>
-        <th>Total Assets</th>
+        <th>名称</th>
+        <th>非流动资产</th>
+        <th>流动资产</th>
+        <th>总资产</th>
       </tr>
     </thead>
     <tbody>

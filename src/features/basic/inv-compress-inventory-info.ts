@@ -22,4 +22,4 @@ function init() {
   tiles.observe(['INV', 'SHPI'], onTileReady);
 }
 
-features.add(import.meta.url, init, 'INV/SHPI: Compresses specific inventory info into a row.');
+features.add(import.meta.url, init, 'INV/SHPI：将特定库存信息压缩到一行内。');

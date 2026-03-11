@@ -2,7 +2,7 @@ import { watchEffectWhileNodeAlive } from '@src/utils/watch';
 import { refValue } from '@src/utils/reactive-dom';
 
 function onTileReady(tile: PrunTile) {
-  // Only process BS tiles with parameter
+  // 仅处理带参数的 BS 磁贴
   if (!tile.parameter) {
     return;
   }
@@ -32,8 +32,4 @@ function init() {
   tiles.observe('BS', onTileReady);
 }
 
-features.add(
-  import.meta.url,
-  init,
-  'BS: Merges the area progress bar field with the detailed area stats row.',
-);
+features.add(import.meta.url, init, 'BS：将区域进度条字段与详细区域统计行合并。');

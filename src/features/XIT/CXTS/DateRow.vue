@@ -24,7 +24,7 @@ const totalsLabels = computed(() => {
     <td colspan="2" :class="$style.column">
       <span>{{ ddmmyyyy(date) }}</span>
     </td>
-    <!-- This <tr> is needed so both other <tr>s are the same color -->
+    <!-- 需要这个 <tr> 以保证另外两个 <tr> 颜色相同 -->
     <td :style="{ display: 'none' }" />
     <td colspan="5" :class="$style.column">
       <div v-if="!hideTotals" :class="$style.totals">

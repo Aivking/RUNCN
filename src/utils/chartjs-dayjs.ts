@@ -5,16 +5,16 @@ import dayjs, { QUnitType } from 'dayjs';
 
 import type { TimeUnit } from 'chart.js';
 
-// Needed to handle the custom parsing
+// 用于处理自定义解析
 import CustomParseFormat from 'dayjs/plugin/customParseFormat.js';
 
-// Needed to handle quarter format
+// 用于处理季度格式
 import AdvancedFormat from 'dayjs/plugin/advancedFormat.js';
 
-// Needed to handle adding/subtracting quarter
+// 用于处理季度的加减运算
 import QuarterOfYear from 'dayjs/plugin/quarterOfYear.js';
 
-// Needed to handle localization format
+// 用于处理本地化格式
 import LocalizedFormat from 'dayjs/plugin/localizedFormat.js';
 
 import isoWeek from 'dayjs/plugin/isoWeek.js';
@@ -69,7 +69,7 @@ _adapters._date.override({
   },
   startOf: function (time: any, unit: (TimeUnit & QUnitType) | 'isoWeek', weekday?: number) {
     if (unit === 'isoWeek') {
-      // Ensure that weekday has a valid format
+      // 确保 weekday 有有效的格式
       //const formattedWeekday
 
       const validatedWeekday: number =

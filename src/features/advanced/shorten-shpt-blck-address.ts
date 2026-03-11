@@ -25,4 +25,4 @@ function init() {
   });
 }
 
-features.add(import.meta.url, init, 'Shortens addresses in SHPT and BLCK items.');
+features.add(import.meta.url, init, '缩短 SHPT 和 BLCK 项目中的地址。');

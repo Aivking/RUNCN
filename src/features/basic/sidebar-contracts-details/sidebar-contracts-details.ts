@@ -26,8 +26,4 @@ function init() {
   subscribe($$(document, C.Sidebar.contractId), onContractIdReady);
 }
 
-features.add(
-  import.meta.url,
-  init,
-  'Adds a partner name to contracts in the sidebar on the right.',
-);
+features.add(import.meta.url, init, '在右侧边栏的合同中添加合作伙伴名称。');

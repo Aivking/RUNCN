@@ -15,4 +15,4 @@ function init() {
   tiles.observe('BS', onTileReady);
 }
 
-features.add(import.meta.url, init, 'BS: Adds a building summary list.');
+features.add(import.meta.url, init, 'BS：添加建筑摘要列表。');

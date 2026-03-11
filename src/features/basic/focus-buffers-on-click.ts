@@ -22,4 +22,4 @@ function init() {
   tiles.observeAll(onTileReady);
 }
 
-features.add(import.meta.url, init, 'Focuses buffers on click anywhere, not just the header.');
+features.add(import.meta.url, init, '点击任意位置即可聚焦缓冲区，而不仅限于标题栏。');

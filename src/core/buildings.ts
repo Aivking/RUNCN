@@ -2,7 +2,7 @@ import { mergeMaterialAmounts } from '@src/core/sort-materials';
 import { sumMaterialAmountPrice } from '@src/infrastructure/fio/cx';
 
 export function calcBuildingCondition(age: number) {
-  // This isn't quite right, but will be off by only 1 MCG at most
+  // 这个计算不完全精确，但最多只差 1 个 MCG
   return age > 180 ? 0 : 1 - age / 180;
 }
 

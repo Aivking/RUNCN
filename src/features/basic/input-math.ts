@@ -68,7 +68,7 @@ function init() {
 
 function applyCssRules() {
   const inputSelector = `div:has(> input:is([inputmode='numeric'], [inputmode='decimal']):focus)`;
-  // Remove hard-coded class when molp fixes class duplication
+  // 当 molp 修复类名重复问题后移除硬编码的类名
   const selector = `.FormComponent__input___f43wqaQ > ${inputSelector}`;
   applyCssRule(selector, $style.inputContainer);
   applyCssRule(`${selector}:before`, fa.solid);
@@ -79,8 +79,4 @@ function applyCssRules() {
   applyCssRule(`${selectorDynamic}:before`, $style.functionIconDynamic);
 }
 
-features.add(
-  import.meta.url,
-  init,
-  'Evaluates math expressions in numeric text fields on Enter or Tab.',
-);
+features.add(import.meta.url, init, '按 Enter 或 Tab 时计算数字文本框中的数学表达式。');

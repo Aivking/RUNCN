@@ -43,4 +43,4 @@ function init() {
   tiles.observe(['CX', 'CONT', 'LM', 'SYSI'], onTileReady);
 }
 
-features.add(import.meta.url, init, 'Minimizes headers in CX, CONT, LM, and SYSI.');
+features.add(import.meta.url, init, '最小化 CX、CONT、LM 和 SYSI 中的标题栏。');

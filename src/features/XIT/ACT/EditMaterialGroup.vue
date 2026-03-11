@@ -44,17 +44,17 @@ function onSaveClick() {
 
 <template>
   <div :class="C.DraftConditionEditor.form">
-    <SectionHeader>{{ add ? 'Add' : 'Edit' }} Material Group</SectionHeader>
+    <SectionHeader>{{ add ? '添加' : '编辑' }}材料组</SectionHeader>
     <form>
-      <Active label="Type">
+      <Active label="类型">
         <SelectInput v-model="type" :options="typeOptions" />
       </Active>
-      <Active label="Name" :error="nameError">
+      <Active label="名称" :error="nameError">
         <TextInput v-model="name" />
       </Active>
       <Component :is="editFormComponent" v-if="editFormComponent" ref="editForm" :group="group" />
       <Commands>
-        <PrunButton primary @click="onSaveClick">{{ add ? 'ADD' : 'SAVE' }}</PrunButton>
+        <PrunButton primary @click="onSaveClick">{{ add ? '添加' : '保存' }}</PrunButton>
       </Commands>
     </form>
   </div>

@@ -2,7 +2,7 @@ import $style from './inv-search.module.css';
 import css from '@src/utils/css-utils.module.css';
 
 function onTileReady(tile: PrunTile) {
-  // Only add search bar to the main INV tile
+  // 仅在主 INV 磁贴中添加搜索栏
   if (tile.parameter) {
     return;
   }
@@ -24,7 +24,7 @@ function onTileReady(tile: PrunTile) {
 
     createFragmentApp(() => (
       <div>
-        <input class={$style.inputText} placeholder="Enter location" onInput={onInput} />
+        <input class={$style.inputText} placeholder="输入位置" onInput={onInput} />
       </div>
     )).after(inventoryFilters);
   });
@@ -32,23 +32,23 @@ function onTileReady(tile: PrunTile) {
 
 function filterRow(row: HTMLElement, search: string) {
   if (!search || search === '') {
-    // Always return all rows for empty searches
+    // 搜索为空时始终返回所有行
     return true;
   }
 
-  // The location of the inventory
+  // 库存的位置
   const location = row.children[1].textContent!.toLowerCase();
   if (location !== '--') {
-    // Just match the search text into the location name
+    // 将搜索文本与位置名称进行匹配
     if (location.includes(search.toLowerCase())) {
       return true;
     }
   }
 
-  // The name of the ship ('' if a non-ship inventory)
+  // 船舶名称（非船舶库存为 '')
   const name = row.children[2].textContent!.toLowerCase();
   if (name !== '') {
-    // Just match the search text into the ship name
+    // 将搜索文本与船舶名称进行匹配
     if (name.includes(search.toLowerCase())) {
       return true;
     }
@@ -61,4 +61,4 @@ function init() {
   tiles.observe(['INV', 'SHPI'], onTileReady);
 }
 
-features.add(import.meta.url, init, 'INV/SHPI: Adds a search bar to the main INV buffer.');
+features.add(import.meta.url, init, 'INV/SHPI：在主 INV 缓冲区添加搜索栏。');

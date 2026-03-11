@@ -93,18 +93,18 @@ stepRender();
     <table>
       <thead>
         <tr>
-          <th>Time</th>
-          <th>Type</th>
-          <th>Ticker</th>
-          <th>Partner</th>
-          <th>Amount</th>
-          <th>Price</th>
-          <th>Total</th>
+          <th>时间</th>
+          <th>类型</th>
+          <th>代码</th>
+          <th>对方</th>
+          <th>数量</th>
+          <th>价格</th>
+          <th>总计</th>
         </tr>
       </thead>
       <tbody>
         <tr v-if="isEmpty(days)">
-          <td colSpan="7">No recent trades</td>
+          <td colSpan="7">没有近期交易</td>
         </tr>
         <template v-else>
           <template v-for="group in daysToRender" :key="days[group - 1].date">

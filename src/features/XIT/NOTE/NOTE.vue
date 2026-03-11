@@ -30,8 +30,8 @@ function onCreateClick() {
   <NoteList v-if="isEmpty(parameters)" />
   <NoteEditor v-else-if="note" :note="note" />
   <div v-else :class="$style.create">
-    <span>Note "{{ name }}" not found.</span>
-    <PrunButton primary :class="$style.button" @click="onCreateClick">CREATE</PrunButton>
+    <span>笔记 "{{ name }}" 未找到。</span>
+    <PrunButton primary :class="$style.button" @click="onCreateClick">创建</PrunButton>
   </div>
 </template>
 

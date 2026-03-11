@@ -51,8 +51,8 @@ function onImportClick(ev: Event) {
 
 function onDeleteClick(ev: Event, pkg: UserData.ActionPackageData) {
   showConfirmationOverlay(ev, () => removeArrayElement(userData.actionPackages, pkg), {
-    message: `Are you sure you want to delete the action package "${pkg.global.name}"?`,
-    confirmLabel: 'DELETE',
+    message: `确定要删除操作包 "${pkg.global.name}" 吗？`,
+    confirmLabel: '删除',
   });
 }
 
@@ -67,25 +67,25 @@ function paramName(pkg: UserData.ActionPackageData) {
 
 <template>
   <ActionBar>
-    <div v-if="showQuickstart">Click here if you don't<br />know what to do!</div>
+    <div v-if="showQuickstart">点击这里开始<br />快速入门！</div>
     <div v-if="showQuickstart">→</div>
-    <PrunButton v-if="showQuickstart" primary @click="onQuickstartClick">QUICKSTART</PrunButton>
-    <PrunButton primary @click="onCreateClick">CREATE NEW</PrunButton>
-    <PrunButton primary @click="onImportClick">IMPORT</PrunButton>
+    <PrunButton v-if="showQuickstart" primary @click="onQuickstartClick">快速开始</PrunButton>
+    <PrunButton primary @click="onCreateClick">新建</PrunButton>
+    <PrunButton primary @click="onImportClick">导入</PrunButton>
   </ActionBar>
   <table>
     <thead>
       <tr>
         <GripHeaderCell />
-        <th>Name</th>
-        <th>Execute</th>
-        <th>Edit</th>
-        <th>Delete</th>
+        <th>名称</th>
+        <th>执行</th>
+        <th>编辑</th>
+        <th>删除</th>
       </tr>
     </thead>
     <tbody v-if="userData.actionPackages.length === 0">
       <tr>
-        <td colspan="5">No action packages.</td>
+        <td colspan="5">没有操作包。</td>
       </tr>
     </tbody>
     <tbody v-else v-draggable="[actionPackages, grip.draggable]">
@@ -97,17 +97,15 @@ function paramName(pkg: UserData.ActionPackageData) {
           </PrunLink>
         </td>
         <td>
-          <PrunButton primary @click="showBuffer(`XIT ACT_${paramName(pkg)}`)">
-            EXECUTE
-          </PrunButton>
+          <PrunButton primary @click="showBuffer(`XIT ACT_${paramName(pkg)}`)"> 执行 </PrunButton>
         </td>
         <td>
           <PrunButton primary @click="showBuffer(`XIT ACT_EDIT_${paramName(pkg)}`)">
-            EDIT
+            编辑
           </PrunButton>
         </td>
         <td>
-          <PrunButton dark inline @click="onDeleteClick($event, pkg)">delete</PrunButton>
+          <PrunButton dark inline @click="onDeleteClick($event, pkg)">删除</PrunButton>
         </td>
       </tr>
     </tbody>

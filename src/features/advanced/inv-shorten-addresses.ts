@@ -1,7 +1,7 @@
 import { extractPlanetName } from '@src/util';
 
 function onTileReady(tile: PrunTile) {
-  // Only shorten names in the main INV tile
+  // 仅在主 INV 磁贴中缩短名称
   if (tile.parameter) {
     return;
   }
@@ -17,4 +17,4 @@ function init() {
   tiles.observe('INV', onTileReady);
 }
 
-features.add(import.meta.url, init, 'INV: Shortens addresses in the main INV command.');
+features.add(import.meta.url, init, 'INV：缩短主 INV 命令中的地址。');

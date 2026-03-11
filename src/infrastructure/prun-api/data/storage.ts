@@ -33,8 +33,8 @@ const getByName = createGroupMapGetter(state.all, x => x.name ?? '');
 
 const getByType = createGroupMapGetter(state.all, x => x.type);
 
-// The features only work with personal storages, so
-// filter out the infrastructure construction stores.
+// 功能仅适用于个人存储，因此
+// 过滤掉基础设施建设存储。
 const personal = computed(() => state.all.value?.filter(isPersonalStorage));
 
 const nonPersonalTypes = new Set(['CONSTRUCTION_STORE', 'UPKEEP_STORE']);
