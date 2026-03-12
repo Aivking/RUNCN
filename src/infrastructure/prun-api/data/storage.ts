@@ -31,7 +31,9 @@ const getByAddressableId = createGroupMapGetter(state.all, x => x.addressableId)
 
 const getByName = createGroupMapGetter(state.all, x => x.name ?? '');
 
-const getByType = createGroupMapGetter(state.all, x => x.type);
+const getByTypeRaw = createGroupMapGetter(state.all, x => x.type);
+const getByType = (value?: string | null) =>
+  state.fetched.value ? (getByTypeRaw(value) ?? []) : getByTypeRaw(value);
 
 // 功能仅适用于个人存储，因此
 // 过滤掉基础设施建设存储。
