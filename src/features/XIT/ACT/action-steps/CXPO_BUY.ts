@@ -107,8 +107,8 @@ export const CXPO_BUY = act.addActionStep<Data>({
       const filled = fillAmount(cxTicker, amount, priceLimit);
 
       if (!filled) {
-        shouldUnwatch = true;
-        fail(`缺少 ${cxTicker} 订单簿数据`);
+        // 订单簿数据尚未加载，等待响应式更新后重试。
+        setStatus(`等待 ${cxTicker} 订单簿数据加载...`);
         return;
       }
 
@@ -150,6 +150,7 @@ export const CXPO_BUY = act.addActionStep<Data>({
       // 在点击买入按钮之前缓存描述，因为
       // 点击后订单簿数据会发生变化。
       ctx.cacheDescription();
+      window.getSelection()?.removeAllRanges();
     });
 
     await waitAct();

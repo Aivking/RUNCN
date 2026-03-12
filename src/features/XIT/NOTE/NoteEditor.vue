@@ -6,40 +6,31 @@ const { note } = defineProps<{ note: UserData.Note }>();
 
 const $style = useCssModule();
 
-const renderedText = computed(() => processText(note.text));
+const LINK_REGEXP = /\b(?:[a-zA-Z0-9]{1,3}\.(?:CI1|IC1|AI1|NC1|CI2|NC2))\b/g;
 
-function processText(text?: string) {
-  if (text === undefined) {
-    return '';
-  }
+function parseSegments(text?: string) {
+  if (!text) return [];
 
-  // 处理末尾换行符
-  if (text[text.length - 1] == '\n') {
+  if (text[text.length - 1] === '\n') {
     text += ' ';
   }
 
-  // 允许 HTML 标签
-  text = text.replaceAll('&', '&amp;').replaceAll('<', '&lt;');
+  const segments: { text: string; isLink: boolean }[] = [];
+  let lastIndex = 0;
 
-  const regexp = /\b(?:[a-zA-Z0-9]{1,3}\.(?:CI1|IC1|AI1|NC1|CI2|NC2))(?!<)/g;
-  let counter = 0;
-  while (true) {
-    const matches = text.match(regexp);
-    if (!matches) {
-      break;
+  for (const match of text.matchAll(LINK_REGEXP)) {
+    if (match.index > lastIndex) {
+      segments.push({ text: text.slice(lastIndex, match.index), isLink: false });
     }
-
-    text = text.replaceAll(
-      regexp,
-      match => `<span class="${C.Link.link} ${$style.link}">${match}</span>`,
-    );
-
-    counter++;
-    if (counter > 100) {
-      break;
-    }
+    segments.push({ text: match[0], isLink: true });
+    lastIndex = match.index + match[0].length;
   }
-  return text;
+
+  if (lastIndex < text.length) {
+    segments.push({ text: text.slice(lastIndex), isLink: false });
+  }
+
+  return segments;
 }
 
 const textbox = useTemplateRef<HTMLTextAreaElement>('textbox');
@@ -53,14 +44,30 @@ onMounted(() => {
 });
 
 watch(
-  renderedText,
+  () => note.text,
   async () => {
     await nextTick();
-    const links = overlay.value?.getElementsByClassName($style.link) ?? [];
-    for (const link of Array.from(links)) {
-      link.addEventListener('click', () => {
-        showBuffer(`CXPO ${link.textContent}`);
-      });
+    const el = overlay.value;
+    if (!el) return;
+
+    // Clear existing content
+    while (el.firstChild) {
+      el.removeChild(el.firstChild);
+    }
+
+    const segments = parseSegments(note.text);
+    for (const seg of segments) {
+      if (seg.isLink) {
+        const span = document.createElement('span');
+        span.className = `${C.Link.link} ${$style.link}`;
+        span.textContent = seg.text;
+        span.addEventListener('click', () => {
+          showBuffer(`CXPO ${seg.text}`);
+        });
+        el.appendChild(span);
+      } else {
+        el.appendChild(document.createTextNode(seg.text));
+      }
     }
   },
   { immediate: true },
@@ -72,8 +79,7 @@ watch(
   <div :class="$style.header">{{ note.name }}</div>
   <div>
     <textarea ref="textbox" v-model="note.text" :class="$style.textarea" spellcheck="false" />
-    <!-- eslint-disable-next-line vue/no-v-html -->
-    <pre ref="overlay" :class="$style.overlay" v-html="renderedText" />
+    <pre ref="overlay" :class="$style.overlay" />
   </div>
 </template>
 

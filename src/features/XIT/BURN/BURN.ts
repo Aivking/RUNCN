@@ -9,11 +9,11 @@ xit.add({
       const site = sitesStore.getByPlanetNaturalIdOrName(parameters[0]);
       if (site) {
         const name = getEntityNameFromAddress(site.address);
-        return `增强燃烧报告 - ${name}`;
+        return `消耗品报告 - ${name}`;
       }
     }
 
-    return '增强燃烧报告';
+    return '消耗品报告';
   },
   description: '显示消耗品剩余天数。',
   optionalParameters: '星球标识符, OVERALL, NOT',

@@ -67,14 +67,34 @@ export const MTRA_TRANSFER = act.addActionStep<Data>({
     }
 
     setStatus('正在设置 MTRA 缓冲区...');
+    // 点击 tile 确保窗口获得焦点。
+    await clickElement(tile.anchor as HTMLElement);
+    window.getSelection()?.removeAllRanges();
+
     const container = await $(tile.anchor, C.MaterialSelector.container);
-    const input = await $(container, 'input');
+    const input = (await $(container, 'input')) as HTMLInputElement;
 
     const suggestionsContainer = await $(container, C.MaterialSelector.suggestionsContainer);
-    focusElement(input);
-    changeInputValue(input, ticker);
 
-    const suggestionsList = await $(container, C.MaterialSelector.suggestionsList);
+    // 确保输入框获得焦点并显示建议列表，失败时自动重试。
+    let suggestionsList: Element | undefined;
+    for (let attempt = 0; attempt < 15; attempt++) {
+      await clickElement(input);
+      focusElement(input);
+      input.focus();
+      changeInputValue(input, ticker);
+      window.getSelection()?.removeAllRanges();
+      await new Promise(r => setTimeout(r, 150));
+      suggestionsList = _$(container, C.MaterialSelector.suggestionsList);
+      if (suggestionsList) {
+        break;
+      }
+    }
+    if (!suggestionsList) {
+      fail(`无法打开材料选择器`);
+      return;
+    }
+
     suggestionsContainer.style.display = 'none';
     const match = _$$(suggestionsList, C.MaterialSelector.suggestionEntry).find(
       x => _$(x, C.ColoredIcon.label)?.textContent === ticker,
@@ -108,6 +128,7 @@ export const MTRA_TRANSFER = act.addActionStep<Data>({
       }
     }
     changeInputValue(amountInput, Math.min(amount, maxAmount).toString());
+    window.getSelection()?.removeAllRanges();
 
     const transferButton = await $(tile.anchor, C.Button.btn);
 

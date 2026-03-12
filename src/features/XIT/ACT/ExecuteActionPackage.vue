@@ -26,8 +26,21 @@ const isPreviewing = ref(false);
 const isRunning = ref(false);
 const status = ref(undefined as string | undefined);
 const actReady = ref(false);
+const autoAct = ref(false);
+let autoActTimer: ReturnType<typeof setTimeout> | undefined;
 
 watch(config, clearLog, { deep: true });
+
+watch([actReady, autoAct], ([ready, auto]) => {
+  clearTimeout(autoActTimer);
+  if (ready && auto) {
+    autoActTimer = setTimeout(() => {
+      if (actReady.value && autoAct.value) {
+        onActClick();
+      }
+    }, 100);
+  }
+});
 
 watchEffect(() => {
   for (const name of pkg.groups.map(x => x.name!)) {
@@ -92,6 +105,7 @@ const runner = new ActionRunner({
   onEnd: () => {
     isRunning.value = false;
     status.value = undefined;
+    clearTimeout(autoActTimer);
   },
   onStatusChanged: (title, keepReady) => {
     status.value = title;
@@ -102,6 +116,7 @@ const runner = new ActionRunner({
   onActReady: () => {
     actReady.value = true;
   },
+  isAutoAct: () => autoAct.value,
 });
 
 function onConfigureApplyClick() {
@@ -130,6 +145,8 @@ function onExecuteClick() {
 
 function onCancelClick() {
   actReady.value = false;
+  autoAct.value = false;
+  clearTimeout(autoActTimer);
   runner.cancel();
 }
 
@@ -185,6 +202,9 @@ function clearLog() {
         <PrunButton primary :class="$style.executeButton" @click="onExecuteClick">
           执行
         </PrunButton>
+        <PrunButton :primary="autoAct" :neutral="!autoAct" @click="autoAct = !autoAct">
+          {{ autoAct ? '🟢 自动' : '自动' }}
+        </PrunButton>
       </template>
       <template v-else>
         <PrunButton v-if="needsConfigure" primary disabled>配置</PrunButton>
@@ -198,6 +218,9 @@ function clearLog() {
         </PrunButton>
         <PrunButton primary :disabled="!actReady" @click="onActClick">执行步骤</PrunButton>
         <PrunButton neutral :disabled="!actReady" @click="onSkipClick">跳过</PrunButton>
+        <PrunButton :primary="autoAct" :neutral="!autoAct" @click="autoAct = !autoAct">
+          {{ autoAct ? '🟢 自动' : '自动' }}
+        </PrunButton>
       </template>
     </ActionBar>
   </div>
@@ -208,6 +231,7 @@ function clearLog() {
   height: 100%;
   display: flex;
   flex-direction: column;
+  user-select: none;
 }
 
 .mainWindow {

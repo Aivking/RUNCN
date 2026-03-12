@@ -7,11 +7,13 @@ import { fixed0 } from '@src/utils/format';
 
 const {
   amount,
+  compact,
   size = 'large',
   ticker,
   warning,
 } = defineProps<{
   amount?: number;
+  compact?: boolean;
   size?: ColoredIconSize;
   ticker: string;
   warning?: boolean;
@@ -38,6 +40,7 @@ const amountText = computed(() => {
 const indicatorClass = computed(() => ({
   [C.ColoredValue.negative]: warning,
   [$style.indicatorSmall]: size === 'medium',
+  [$style.indicatorCompact]: compact,
 }));
 
 const onClick = () => showBuffer(`MAT ${ticker.toUpperCase()}`);
@@ -72,5 +75,10 @@ const onClick = () => showBuffer(`MAT ${ticker.toUpperCase()}`);
 
 .indicatorSmall {
   padding: 2px 2px 1px 3px;
+}
+
+.indicatorCompact {
+  font-size: 7px !important;
+  padding: 1px 1px 0 2px;
 }
 </style>

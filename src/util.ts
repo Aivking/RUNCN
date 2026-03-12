@@ -170,6 +170,8 @@ export async function clickElement(element?: HTMLElement | null) {
       view: window,
     }),
   );
+
+  window.getSelection()?.removeAllRanges();
 }
 
 export function mouseOverElement(from: HTMLElement, to: HTMLElement) {

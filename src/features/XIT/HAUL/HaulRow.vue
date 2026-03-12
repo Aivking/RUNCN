@@ -38,20 +38,23 @@ const destination = computed(() => {
   return '-';
 });
 
-// 货物信息（重量/体积）
+// 货物信息（总重量/总体积）
 const cargo = computed(() => {
-  const items: string[] = [];
+  let totalWeight = 0;
+  let totalVolume = 0;
   for (const cond of contract.conditions) {
     if (
       (cond.type === 'DELIVERY_SHIPMENT' || cond.type === 'PROVISION_SHIPMENT') &&
       cond.weight != null
     ) {
-      const w = (cond.weight / 1000).toFixed(1);
-      const v = (cond.volume! / 1000).toFixed(1);
-      items.push(`${w}t / ${v}m³`);
+      totalWeight += cond.weight;
+      totalVolume += cond.volume!;
     }
   }
-  return items.length > 0 ? items.join(', ') : '-';
+  if (totalWeight === 0 && totalVolume === 0) return '-';
+  const w = (totalWeight / 1000).toFixed(1);
+  const v = (totalVolume / 1000).toFixed(1);
+  return `${w}t / ${v}m³`;
 });
 
 // 运费（PAYMENT 条件）

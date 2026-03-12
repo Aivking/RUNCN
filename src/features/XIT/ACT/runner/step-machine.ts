@@ -14,6 +14,7 @@ interface StepMachineOptions {
   onEnd: () => void;
   onStatusChanged: (status: string, keepReady?: boolean) => void;
   onActReady: () => void;
+  isAutoAct: () => boolean;
 }
 
 const AssertionError = new Error('Assertion failed');
@@ -159,6 +160,11 @@ export class StepMachine {
   }
 
   private async waitAct(status: string) {
+    if (this.options.isAutoAct()) {
+      this.options.onStatusChanged(status);
+      await sleep(50);
+      return;
+    }
     this.options.onStatusChanged(status);
     this.options.onActReady();
     await new Promise<void>(resolve => (this.nextAct = resolve));

@@ -4,7 +4,10 @@ import { Logger } from '@src/features/XIT/ACT/runner/logger';
 import { TileAllocator } from '@src/features/XIT/ACT/runner/tile-allocator';
 import { StepMachine } from '@src/features/XIT/ACT/runner/step-machine';
 import { StepGenerator } from '@src/features/XIT/ACT/runner/step-generator';
-import { ActionPackageConfig } from '@src/features/XIT/ACT/shared-types';
+import { ActionPackageConfig, ActionStep } from '@src/features/XIT/ACT/shared-types';
+import { showBuffer } from '@src/infrastructure/prun-ui/buffers';
+import { clickElement } from '@src/util';
+import { sleep } from '@src/utils/sleep';
 
 interface ActionRunnerOptions {
   tile: PrunTile;
@@ -14,12 +17,14 @@ interface ActionRunnerOptions {
   onEnd: () => void;
   onStatusChanged: (status: string, keepReady?: boolean) => void;
   onActReady: () => void;
+  isAutoAct: () => boolean;
 }
 
 export class ActionRunner {
   private readonly tileAllocator: TileAllocator;
   private readonly stepGenerator: StepGenerator;
   private stepMachine?: StepMachine;
+  private preOpenedWindows: Element[] = [];
 
   constructor(private options: ActionRunnerOptions) {
     this.tileAllocator = new TileAllocator(options);
@@ -67,9 +72,16 @@ export class ActionRunner {
       return;
     }
     this.log.info('操作包开始执行');
+    if (this.options.isAutoAct()) {
+      await this.preOpenTiles(steps);
+    }
     this.stepMachine = new StepMachine(steps, {
       ...this.options,
       tileAllocator: this.tileAllocator,
+      onEnd: () => {
+        this.closePreOpenedWindows();
+        this.options.onEnd();
+      },
     });
     this.stepMachine.start();
   }
@@ -91,5 +103,41 @@ export class ActionRunner {
   cancel() {
     this.stepMachine?.cancel();
     this.stepMachine = undefined;
+    this.closePreOpenedWindows();
+  }
+
+  private async preOpenTiles(steps: ActionStep[]) {
+    const commands = new Set<string>();
+    for (const step of steps) {
+      if (step.type === 'CXPO_BUY') {
+        const data = step as ActionStep & { ticker: string; exchange: string };
+        commands.add(`CXPO ${data.ticker}.${data.exchange}`);
+      }
+    }
+    if (commands.size === 0) {
+      return;
+    }
+    this.log.info(`正在预加载 ${commands.size} 个交易所窗口...`);
+    for (const command of commands) {
+      this.options.onStatusChanged(`正在打开 ${command}...`);
+      const window = await showBuffer(command, { force: true, autoSubmit: true });
+      if (window) {
+        this.preOpenedWindows.push(window);
+      }
+    }
+    this.options.onStatusChanged('等待订单簿数据加载...');
+    await sleep(1000);
+    this.log.info('交易所窗口预加载完成');
+  }
+
+  private closePreOpenedWindows() {
+    for (const win of this.preOpenedWindows) {
+      const buttons = win.getElementsByClassName(C.Window.button);
+      const closeButton = Array.from(buttons).find(x => x.textContent === 'x') as
+        | HTMLElement
+        | undefined;
+      closeButton?.click();
+    }
+    this.preOpenedWindows = [];
   }
 }
