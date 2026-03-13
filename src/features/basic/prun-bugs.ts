@@ -42,6 +42,8 @@ function init() {
 
   // 移除 GridItemView 背景色。
   applyCssRule(`.${C.GridItemView.container}`, $style.gridItem);
+  // Prevent layout shifts when items become selected by making the border consistent width.
+  applyCssRule(`.${C.GridItemView.selected}`, $style.gridItemSelected);
 
   // 为 GridItemView 名称添加文本居中。
   applyCssRule(`.${C.GridItemView.name}`, $style.gridItemName);
