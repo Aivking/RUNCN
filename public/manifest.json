@@ -1,6 +1,6 @@
 {
   "name": "Refined PrUn 中文版",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "简化 Prosperous Universe 游戏界面并添加实用功能的浏览器扩展",
   "manifest_version": 3,
   "minimum_chrome_version": "107",

@@ -57,13 +57,15 @@ export class ActionRunner {
     if (fail) {
       this.log.info('已为有效操作生成步骤：');
     }
+    // 先计算总计并显示在最上方。
+    // 用 seenTickers 避免同一材料在不同步骤中重复计算重量/体积。
     let totalCost = 0;
     let missingPriceCount = 0;
     let totalWeight = 0;
     let totalVolume = 0;
+    const seenTickers = new Set<string>();
     for (const step of steps) {
       const stepInfo = act.getActionStepInfo(step.type);
-      this.log.action(stepInfo.description(step));
       if (stepInfo.cost) {
         const cost = stepInfo.cost(step);
         if (cost !== undefined) {
@@ -72,11 +74,16 @@ export class ActionRunner {
           missingPriceCount++;
         }
       }
-      if (stepInfo.weight) {
+      const ticker = (step as ActionStep & { ticker?: string }).ticker;
+      const isNewTicker = ticker && !seenTickers.has(ticker);
+      if (stepInfo.weight && isNewTicker) {
         totalWeight += stepInfo.weight(step) ?? 0;
       }
-      if (stepInfo.volume) {
+      if (stepInfo.volume && isNewTicker) {
         totalVolume += stepInfo.volume(step) ?? 0;
+      }
+      if (ticker) {
+        seenTickers.add(ticker);
       }
     }
     if (totalCost > 0 || totalWeight > 0 || totalVolume > 0) {
@@ -95,6 +102,11 @@ export class ActionRunner {
         parts.push(`体积 ${fixed2(totalVolume)} m3`);
       }
       this.log.summary(`总计：${parts.join('，')}`);
+    }
+    // 再显示每个步骤的详情
+    for (const step of steps) {
+      const stepInfo = act.getActionStepInfo(step.type);
+      this.log.action(stepInfo.description(step));
     }
   }
 

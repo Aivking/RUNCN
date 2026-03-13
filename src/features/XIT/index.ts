@@ -1,5 +1,6 @@
 import './ACT/ACT';
 import './BURN/BURN';
+import './BURN/BURN_GEN';
 import './CALC';
 import './CHAT';
 import './CMDL/CMDL';

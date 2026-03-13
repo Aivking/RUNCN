@@ -13,6 +13,13 @@ const { burn } = defineProps<{
 }>();
 
 const days = computed(() => countDays(burn.burn));
+
+// Only show generate button for real planets (not the overall summary).
+const isRealPlanet = computed(() => burn.naturalId !== '');
+
+function onGenerateActClick() {
+  showBuffer(`XIT BURNGEN ${burn.planetName}`);
+}
 </script>
 
 <template>
@@ -30,6 +37,7 @@ const days = computed(() => countDays(burn.burn));
         <PrunButton dark inline @click="showBuffer(`INV ${burn.storeId.substring(0, 8)}`)">
           INV
         </PrunButton>
+        <PrunButton v-if="isRealPlanet" dark inline @click="onGenerateActClick">ACT</PrunButton>
       </div>
     </td>
   </tr>
