@@ -10,6 +10,7 @@ import {
   canAcceptContract,
   isFactionContract,
   isSelfCondition,
+  calculateContractTotals,
 } from '@src/features/XIT/CONTS/utils';
 import { timestampEachSecond } from '@src/utils/dayjs';
 import { objectId } from '@src/utils/object-id';
@@ -67,21 +68,7 @@ function compareContracts(a: PrunApi.Contract, b: PrunApi.Contract) {
   return (b.date?.timestamp ?? 0) - (a.date?.timestamp ?? 0);
 }
 
-const totals = computed(() => {
-  let receivable = 0;
-  let currency = '';
-  for (const contract of filtered.value) {
-    for (const cond of contract.conditions) {
-      if (cond.type === 'PAYMENT' && cond.amount && cond.status !== 'FULFILLED') {
-        if (!currency) currency = cond.amount.currency;
-        if (cond.party !== contract.party) {
-          receivable += cond.amount.amount;
-        }
-      }
-    }
-  }
-  return { receivable, currency };
-});
+const totals = computed(() => calculateContractTotals(filtered.value));
 
 function formatAmount(amount: number, currency: string) {
   if (!currency || amount === 0) return '-';
@@ -222,6 +209,12 @@ function getDeadline(contract: PrunApi.Contract): string {
 
     <div v-if="totals.currency" :class="$style.totalsBar">
       <span>共 {{ filtered.length }} 单</span>
+
+      <!-- 混合货币警告 -->
+      <span v-if="totals.hasMixedCurrency" :class="$style.warningText">
+        ⚠️ 检测到不同货币，金额统计可能不准确
+      </span>
+
       <span v-if="totals.receivable > 0" :class="$style.receivableText">
         待收: {{ formatAmount(totals.receivable, totals.currency) }}
       </span>
@@ -375,6 +368,11 @@ function getDeadline(contract: PrunApi.Contract): string {
 
 .receivableText {
   color: var(--rp-color-green);
+}
+
+.warningText {
+  color: var(--rp-color-orange);
+  font-weight: bold;
 }
 
 .deadlineCell {

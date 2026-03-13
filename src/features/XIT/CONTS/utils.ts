@@ -21,6 +21,48 @@ export function isPartnerCondition(
   return contract.party !== condition.party;
 }
 
+export interface ContractTotals {
+  receivable: number;
+  payable: number;
+  currency: string;
+  hasMixedCurrency: boolean;
+}
+
+/**
+ * 计算合同列表的应收应付总额
+ * @param contracts 合同列表
+ * @returns 统计结果，包含应收、应付、货币代码和是否混合货币的标志
+ */
+export function calculateContractTotals(contracts: PrunApi.Contract[]): ContractTotals {
+  let receivable = 0;
+  let payable = 0;
+  let currency = '';
+  let hasMixedCurrency = false;
+
+  for (const contract of contracts) {
+    for (const cond of contract.conditions) {
+      // 只处理未完成的支付条件
+      if (cond.type === 'PAYMENT' && cond.amount && cond.status !== 'FULFILLED') {
+        // 检查货币一致性
+        if (currency && cond.amount.currency !== currency) {
+          hasMixedCurrency = true;
+        } else if (!currency) {
+          currency = cond.amount.currency;
+        }
+
+        // 根据条件方判断是应收还是应付
+        if (cond.party !== contract.party) {
+          receivable += cond.amount.amount;
+        } else {
+          payable += cond.amount.amount;
+        }
+      }
+    }
+  }
+
+  return { receivable, payable, currency, hasMixedCurrency };
+}
+
 export function friendlyConditionText(type: PrunApi.ContractConditionType) {
   switch (type) {
     case 'BASE_CONSTRUCTION':
