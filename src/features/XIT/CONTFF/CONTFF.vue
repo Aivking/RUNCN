@@ -4,6 +4,8 @@ import { contractsStore } from '@src/infrastructure/prun-api/data/contracts';
 import ContractOverviewRow from '@src/features/XIT/CONTS/ContractOverviewRow.vue';
 import { isEmpty } from 'ts-extras';
 import { canAcceptContract, isFactionContract } from '@src/features/XIT/CONTS/utils';
+import { timestampEachSecond } from '@src/utils/dayjs';
+import dayjs from 'dayjs';
 
 const STATUS_FILTERS = [
   { key: 'OPEN', label: '公开', colorClass: 'neutral' },
@@ -59,7 +61,6 @@ function compareContracts(a: PrunApi.Contract, b: PrunApi.Contract) {
 
 const totals = computed(() => {
   let receivable = 0;
-  let payable = 0;
   let currency = '';
   for (const contract of filtered.value) {
     for (const cond of contract.conditions) {
@@ -67,18 +68,27 @@ const totals = computed(() => {
         if (!currency) currency = cond.amount.currency;
         if (cond.party !== contract.party) {
           receivable += cond.amount.amount;
-        } else {
-          payable += cond.amount.amount;
         }
       }
     }
   }
-  return { receivable, payable, currency };
+  return { receivable, currency };
 });
 
 function formatAmount(amount: number, currency: string) {
   if (!currency || amount === 0) return '-';
   return `${amount.toLocaleString()} ${currency}`;
+}
+
+function getDeadline(contract: PrunApi.Contract): string {
+  const deadline = contract.dueDate;
+  if (!deadline?.timestamp) return '-';
+  const remaining = deadline.timestamp - timestampEachSecond.value;
+  if (remaining <= 0) return '已逾期';
+  const d = dayjs.duration({ milliseconds: remaining });
+  if (d.days() > 0) return `${d.days()}天 ${d.hours()}小时`;
+  if (d.hours() > 0) return `${d.hours()}小时 ${d.minutes()}分钟`;
+  return `${d.minutes()}分钟`;
 }
 </script>
 
@@ -112,9 +122,6 @@ function formatAmount(amount: number, currency: string) {
       <span v-if="totals.receivable > 0" :class="$style.receivableText">
         待收: {{ formatAmount(totals.receivable, totals.currency) }}
       </span>
-      <span v-if="totals.payable > 0" :class="$style.payableText">
-        应付: {{ formatAmount(totals.payable, totals.currency) }}
-      </span>
     </div>
 
     <table>
@@ -124,7 +131,7 @@ function formatAmount(amount: number, currency: string) {
           <th>物品</th>
           <th>对方</th>
           <th>待收款</th>
-          <th>应付款</th>
+          <th>限期</th>
           <th>进度</th>
           <th>状态</th>
         </tr>
@@ -138,6 +145,12 @@ function formatAmount(amount: number, currency: string) {
             v-for="contract in filtered"
             :key="contract.id"
             :contract="contract" />
+          <tr :class="$style.deadlineRow" v-for="contract in filtered" :key="'d-' + contract.id">
+            <td colspan="3"></td>
+            <td></td>
+            <td :class="$style.deadlineCell">{{ getDeadline(contract) }}</td>
+            <td colspan="3"></td>
+          </tr>
         </template>
       </tbody>
     </table>
@@ -228,8 +241,12 @@ function formatAmount(amount: number, currency: string) {
   color: var(--rp-color-green);
 }
 
-.payableText {
-  color: var(--rp-color-orange);
+.deadlineRow {
+  font-size: 11px;
+}
+
+.deadlineCell {
+  color: var(--rp-color-accent-primary);
 }
 
 .empty {
