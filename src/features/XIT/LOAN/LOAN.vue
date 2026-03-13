@@ -78,6 +78,7 @@ const lent = computed(() =>
 function getLoanSummary(contracts: PrunApi.Contract[]) {
   let totalPrincipal = 0;
   let totalPaid = 0;
+  let remainingInterest = 0;
   let totalInstallments = 0;
   let fulfilledInstallments = 0;
   let currency = '';
@@ -95,12 +96,26 @@ function getLoanSummary(contracts: PrunApi.Contract[]) {
           if (cond.repayment) {
             totalPaid += cond.repayment.amount;
           }
+        } else {
+          // 累计未完成期数的剩余利息
+          if (cond.interest) {
+            remainingInterest += cond.interest.amount;
+          }
         }
       }
     }
   }
 
-  return { totalPrincipal, totalPaid, totalInstallments, fulfilledInstallments, currency };
+  // 未还/未收本金 = 原始本金 - 已归还本金
+  const remainingPrincipal = totalPrincipal - totalPaid;
+  const remainingInstallments = totalInstallments - fulfilledInstallments;
+  return {
+    totalPrincipal: remainingPrincipal,
+    totalInterest: remainingInterest,
+    totalInstallments: remainingInstallments,
+    fulfilledInstallments,
+    currency,
+  };
 }
 
 const borrowedSummary = computed(() => getLoanSummary(borrowed.value));
@@ -145,9 +160,12 @@ function formatAmount(amount: number, currency: string) {
           <th colspan="6" :class="$style.sectionHeader">
             📥 借入贷款
             <span v-if="!isEmpty(borrowed)" :class="$style.summary">
-              本金合计:
-              {{ formatAmount(borrowedSummary.totalPrincipal, borrowedSummary.currency) }} | 已还:
-              {{ borrowedSummary.fulfilledInstallments }}/{{ borrowedSummary.totalInstallments }} 期
+              未还本金:
+              {{ formatAmount(borrowedSummary.totalPrincipal, borrowedSummary.currency) }}
+              | 未还利息:
+              {{ formatAmount(borrowedSummary.totalInterest, borrowedSummary.currency) }}
+              | 已还: {{ borrowedSummary.fulfilledInstallments }} | 剩余:
+              {{ borrowedSummary.totalInstallments }} 期
             </span>
           </th>
         </tr>
@@ -181,8 +199,12 @@ function formatAmount(amount: number, currency: string) {
           <th colspan="6" :class="$style.sectionHeader">
             📤 放出贷款
             <span v-if="!isEmpty(lent)" :class="$style.summary">
-              本金合计: {{ formatAmount(lentSummary.totalPrincipal, lentSummary.currency) }} | 已收:
-              {{ lentSummary.fulfilledInstallments }}/{{ lentSummary.totalInstallments }} 期
+              未收本金:
+              {{ formatAmount(lentSummary.totalPrincipal, lentSummary.currency) }}
+              | 未收利息:
+              {{ formatAmount(lentSummary.totalInterest, lentSummary.currency) }}
+              | 已收: {{ lentSummary.fulfilledInstallments }} | 剩余:
+              {{ lentSummary.totalInstallments }} 期
             </span>
           </th>
         </tr>

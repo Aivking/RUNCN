@@ -59,6 +59,9 @@ interface ActionStepInfo<T> {
   type: string;
   preProcessData?: (data: T) => T;
   description: (data: T) => string;
+  cost?: (data: T) => number | undefined;
+  weight?: (data: T) => number | undefined;
+  volume?: (data: T) => number | undefined;
   execute: (ctx: ActionStepExecuteContext<T>) => Promise<void>;
 }
 

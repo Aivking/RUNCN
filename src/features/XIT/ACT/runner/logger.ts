@@ -1,4 +1,13 @@
-export type LogTag = null | 'INFO' | 'ACTION' | 'SUCCESS' | 'ERROR' | 'SKIP' | 'WARNING' | 'CANCEL';
+export type LogTag =
+  | null
+  | 'INFO'
+  | 'ACTION'
+  | 'SUCCESS'
+  | 'ERROR'
+  | 'SKIP'
+  | 'WARNING'
+  | 'CANCEL'
+  | 'SUMMARY';
 
 export class Logger {
   constructor(public readonly logMessage: (tag: LogTag, msg: string) => void) {}
@@ -33,6 +42,10 @@ export class Logger {
 
   cancel(msg: string) {
     this.logMessage('CANCEL', msg);
+  }
+
+  summary(msg: string) {
+    this.logMessage('SUMMARY', msg);
   }
 
   runtimeError(e: unknown) {

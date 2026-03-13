@@ -37,6 +37,8 @@ function getTagClass(tag: LogTag) {
     case 'ERROR':
     case 'CANCEL':
       return $style.failure;
+    case 'SUMMARY':
+      return $style.summary;
   }
   return undefined;
 }

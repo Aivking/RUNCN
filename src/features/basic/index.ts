@@ -60,6 +60,7 @@ import './mat-refined-prun-price';
 import './mtra-auto-focus-amount';
 import './mtra-transfer-on-enter';
 import './mu-fix-sector-names';
+import './nots-desktop-notifications';
 import './nots-material-ticker';
 import './nots-notification-type-label';
 import './nots-ship-arrival-inventory';

@@ -21,8 +21,8 @@ const spread = computed(() => {
   return ask !== undefined && bid !== undefined ? fixed2(ask - bid) : '--';
 });
 
-const scrollElement = useTemplateRef<HTMLElement>('order-book');
-const spreadElement = useTemplateRef<HTMLElement>('spread');
+const scrollElement = shallowRef<HTMLElement | null>(null);
+const spreadElement = shallowRef<HTMLElement | null>(null);
 watchEffect(() => {
   if (!scrollElement.value || !spreadElement.value) {
     return;

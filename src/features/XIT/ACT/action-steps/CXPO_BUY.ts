@@ -51,6 +51,18 @@ export const CXPO_BUY = act.addActionStep<Data>({
     }
     return description;
   },
+  cost: data => {
+    const cxTicker = `${data.ticker}.${data.exchange}`;
+    return fillAmount(cxTicker, data.amount, data.priceLimit)?.cost;
+  },
+  weight: data => {
+    const material = materialsStore.getByTicker(data.ticker);
+    return material ? material.weight * data.amount : undefined;
+  },
+  volume: data => {
+    const material = materialsStore.getByTicker(data.ticker);
+    return material ? material.volume * data.amount : undefined;
+  },
   execute: async ctx => {
     const { data, log, setStatus, requestTile, waitAct, waitActionFeedback, complete, skip, fail } =
       ctx;

@@ -24,6 +24,14 @@ export const MTRA_TRANSFER = act.addActionStep<Data>({
     const toName = to ? serializeStorage(to) : 'NOT FOUND';
     return `从 ${fromName} 转移 ${fixed0(data.amount)} ${data.ticker} 到 ${toName}`;
   },
+  weight: data => {
+    const material = materialsStore.getByTicker(data.ticker);
+    return material ? material.weight * data.amount : undefined;
+  },
+  volume: data => {
+    const material = materialsStore.getByTicker(data.ticker);
+    return material ? material.volume * data.amount : undefined;
+  },
   execute: async ctx => {
     const { data, log, setStatus, requestTile, waitAct, waitActionFeedback, complete, skip, fail } =
       ctx;

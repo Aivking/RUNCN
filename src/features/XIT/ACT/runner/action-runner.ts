@@ -8,6 +8,8 @@ import { ActionPackageConfig, ActionStep } from '@src/features/XIT/ACT/shared-ty
 import { showBuffer } from '@src/infrastructure/prun-ui/buffers';
 import { clickElement } from '@src/util';
 import { sleep } from '@src/utils/sleep';
+import { cxobStore } from '@src/infrastructure/prun-api/data/cxob';
+import { fixed0, fixed2 } from '@src/utils/format';
 
 interface ActionRunnerOptions {
   tile: PrunTile;
@@ -50,12 +52,49 @@ export class ActionRunner {
     if (steps.length === 0) {
       return;
     }
+    // 静默预加载 CXPO 价格数据
+    await this.preloadPriceData(steps);
     if (fail) {
       this.log.info('已为有效操作生成步骤：');
     }
+    let totalCost = 0;
+    let missingPriceCount = 0;
+    let totalWeight = 0;
+    let totalVolume = 0;
     for (const step of steps) {
       const stepInfo = act.getActionStepInfo(step.type);
       this.log.action(stepInfo.description(step));
+      if (stepInfo.cost) {
+        const cost = stepInfo.cost(step);
+        if (cost !== undefined) {
+          totalCost += cost;
+        } else {
+          missingPriceCount++;
+        }
+      }
+      if (stepInfo.weight) {
+        totalWeight += stepInfo.weight(step) ?? 0;
+      }
+      if (stepInfo.volume) {
+        totalVolume += stepInfo.volume(step) ?? 0;
+      }
+    }
+    if (totalCost > 0 || totalWeight > 0 || totalVolume > 0) {
+      const parts: string[] = [];
+      if (totalCost > 0 || missingPriceCount > 0) {
+        let costStr = `花费 ${fixed0(totalCost)} ICA`;
+        if (missingPriceCount > 0) {
+          costStr += `（${missingPriceCount} 项暂无数据）`;
+        }
+        parts.push(costStr);
+      }
+      if (totalWeight > 0) {
+        parts.push(`重量 ${fixed2(totalWeight)} t`);
+      }
+      if (totalVolume > 0) {
+        parts.push(`体积 ${fixed2(totalVolume)} m3`);
+      }
+      this.log.summary(`总计：${parts.join('，')}`);
     }
   }
 
@@ -104,6 +143,40 @@ export class ActionRunner {
     this.stepMachine?.cancel();
     this.stepMachine = undefined;
     this.closePreOpenedWindows();
+  }
+
+  private async preloadPriceData(steps: ActionStep[]) {
+    const cxTickers = steps
+      .filter(s => s.type === 'CXPO_BUY')
+      .map(s => {
+        const data = s as ActionStep & { ticker: string; exchange: string };
+        return {
+          cxTicker: `${data.ticker}.${data.exchange}`,
+          command: `CXPO ${data.ticker}.${data.exchange}`,
+        };
+      })
+      .filter(({ cxTicker }) => !cxobStore.getByTicker(cxTicker));
+    if (cxTickers.length === 0) return;
+    const opened: Element[] = [];
+    for (const { command } of cxTickers) {
+      const win = await showBuffer(command, { force: true, autoSubmit: true });
+      if (win) opened.push(win);
+    }
+    // wait for price data, up to 5 seconds
+    const deadline = Date.now() + 5000;
+    while (Date.now() < deadline) {
+      const allReady = cxTickers.every(({ cxTicker }) => !!cxobStore.getByTicker(cxTicker));
+      if (allReady) break;
+      await sleep(200);
+    }
+    // close temp windows
+    for (const win of opened) {
+      const buttons = win.getElementsByClassName(C.Window.button);
+      const closeBtn = Array.from(buttons).find(x => x.textContent === 'x') as
+        | HTMLElement
+        | undefined;
+      closeBtn?.click();
+    }
   }
 
   private async preOpenTiles(steps: ActionStep[]) {
