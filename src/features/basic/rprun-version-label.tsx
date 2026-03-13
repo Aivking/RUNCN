@@ -4,7 +4,7 @@ async function onFooterReady(footer: HTMLElement) {
   const userCount = await $(footer, C.UsersOnlineCount.container);
 
   function onClick() {
-    window.open('https://github.com/refined-prun/refined-prun/blob/main/CHANGELOG.md', '_blank');
+    window.open('https://qm.qq.com/q/orvlELomcg', '_blank');
   }
 
   createFragmentApp(() => (
@@ -14,9 +14,9 @@ async function onFooterReady(footer: HTMLElement) {
       <div class={[C.HeadItem.indicator, C.HeadItem.indicatorSuccess]} />
       <div
         class={[$style.label, C.HeadItem.label]}
-        data-tooltip="Refined PrUn 版本"
+        data-tooltip="琉璃制 FOXV"
         data-tooltip-position="top">
-        v. {config.version}
+        v. {config.version} 琉璃制 FOXV
       </div>
     </div>
   )).before(userCount);
