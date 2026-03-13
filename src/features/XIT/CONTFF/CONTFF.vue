@@ -1,10 +1,18 @@
 <script setup lang="ts">
 import LoadingSpinner from '@src/components/LoadingSpinner.vue';
 import { contractsStore } from '@src/infrastructure/prun-api/data/contracts';
-import ContractOverviewRow from '@src/features/XIT/CONTS/ContractOverviewRow.vue';
+import ContractLink from '@src/features/XIT/CONTS/ContractLink.vue';
+import PartnerLink from '@src/features/XIT/CONTS/PartnerLink.vue';
+import MaterialIcon from '@src/components/MaterialIcon.vue';
+import ShipmentIcon from '@src/components/ShipmentIcon.vue';
 import { isEmpty } from 'ts-extras';
-import { canAcceptContract, isFactionContract } from '@src/features/XIT/CONTS/utils';
+import {
+  canAcceptContract,
+  isFactionContract,
+  isSelfCondition,
+} from '@src/features/XIT/CONTS/utils';
 import { timestampEachSecond } from '@src/utils/dayjs';
+import { objectId } from '@src/utils/object-id';
 import dayjs from 'dayjs';
 
 const STATUS_FILTERS = [
@@ -80,6 +88,101 @@ function formatAmount(amount: number, currency: string) {
   return `${amount.toLocaleString()} ${currency}`;
 }
 
+// 物品图标列表（小尺寸）
+interface ShipmentIconProps {
+  type: 'SHIPMENT';
+  shipmentId: string;
+  fulfilled: boolean;
+}
+
+interface MaterialIconProps {
+  type: 'MATERIAL';
+  ticker: string;
+  amount: number;
+  fulfilled: boolean;
+}
+
+function getIcons(contract: PrunApi.Contract) {
+  const result: (ShipmentIconProps | MaterialIconProps)[] = [];
+  for (const condition of contract.conditions) {
+    switch (condition.type) {
+      case 'DELIVERY_SHIPMENT': {
+        if (isSelfCondition(contract, condition)) {
+          result.push({
+            type: 'SHIPMENT',
+            shipmentId: condition.shipmentItemId!,
+            fulfilled: condition.status === 'FULFILLED',
+          });
+          continue;
+        }
+        break;
+      }
+      case 'PROVISION':
+      case 'PICKUP_SHIPMENT': {
+        continue;
+      }
+    }
+
+    const quantity = condition.quantity;
+    if (!quantity?.material) {
+      continue;
+    }
+
+    result.push({
+      type: 'MATERIAL',
+      ticker: quantity.material.ticker,
+      amount: quantity.amount,
+      fulfilled: condition.status === 'FULFILLED',
+    });
+  }
+  return result;
+}
+
+// 待收款（对方需要付给我的）
+function getReceivable(contract: PrunApi.Contract) {
+  let total = 0;
+  let currency = '';
+  for (const cond of contract.conditions) {
+    if (cond.type === 'PAYMENT' && cond.amount && cond.status !== 'FULFILLED') {
+      if (cond.party !== contract.party) {
+        total += cond.amount.amount;
+        if (!currency) currency = cond.amount.currency;
+      }
+    }
+  }
+  return { total, currency };
+}
+
+// 条件完成进度
+function getProgress(contract: PrunApi.Contract) {
+  const fulfilledCount = contract.conditions.filter(c => c.status === 'FULFILLED').length;
+  const totalCount = contract.conditions.length;
+  if (totalCount === 0) return { fulfilled: 0, total: 0, percentage: 0 };
+  return {
+    fulfilled: fulfilledCount,
+    total: totalCount,
+    percentage: Math.round((fulfilledCount / totalCount) * 100),
+  };
+}
+
+// 合同状态
+function getStatusInfo(contract: PrunApi.Contract) {
+  const statusText =
+    {
+      OPEN: '待接受',
+      CLOSED: '进行中',
+      FULFILLED: '已完成',
+      PARTIALLY_FULFILLED: '部分完成',
+      BREACHED: '已违约',
+      TERMINATED: '已终止',
+      CANCELLED: '已取消',
+      REJECTED: '已拒绝',
+      DEADLINE_EXCEEDED: '已逾期',
+    }[contract.status] || contract.status;
+
+  return { text: statusText };
+}
+
 function getDeadline(contract: PrunApi.Contract): string {
   const deadline = contract.dueDate;
   if (!deadline?.timestamp) return '-';
@@ -141,15 +244,48 @@ function getDeadline(contract: PrunApi.Contract): string {
           <td colspan="7" :class="$style.empty">没有活动派系合同</td>
         </tr>
         <template v-else>
-          <ContractOverviewRow
-            v-for="contract in filtered"
-            :key="contract.id"
-            :contract="contract" />
-          <tr :class="$style.deadlineRow" v-for="contract in filtered" :key="'d-' + contract.id">
-            <td colspan="3"></td>
-            <td></td>
+          <tr v-for="contract in filtered" :key="contract.id">
+            <td>
+              <ContractLink :contract="contract" />
+            </td>
+            <td>
+              <div :class="$style.iconGrid">
+                <template v-for="icon in getIcons(contract)" :key="objectId(icon)">
+                  <div :class="[icon.fulfilled && $style.dimmed]">
+                    <ShipmentIcon
+                      v-if="icon.type === 'SHIPMENT'"
+                      size="small"
+                      :shipment-id="icon.shipmentId" />
+                    <MaterialIcon
+                      v-if="icon.type === 'MATERIAL'"
+                      size="small"
+                      compact
+                      :ticker="icon.ticker"
+                      :amount="icon.amount" />
+                  </div>
+                </template>
+              </div>
+            </td>
+            <td>
+              <PartnerLink :contract="contract" />
+            </td>
+            <td :class="$style.receivable">
+              {{ formatAmount(getReceivable(contract).total, getReceivable(contract).currency) }}
+            </td>
             <td :class="$style.deadlineCell">{{ getDeadline(contract) }}</td>
-            <td colspan="3"></td>
+            <td>
+              <div class="progressContainer">
+                <div class="progressBar">
+                  <div
+                    class="progressFill"
+                    :style="{ width: getProgress(contract).percentage + '%' }"></div>
+                </div>
+                <span class="progressText"
+                  >{{ getProgress(contract).fulfilled }}/{{ getProgress(contract).total }}</span
+                >
+              </div>
+            </td>
+            <td>{{ getStatusInfo(contract).text }}</td>
           </tr>
         </template>
       </tbody>
@@ -241,12 +377,60 @@ function getDeadline(contract: PrunApi.Contract): string {
   color: var(--rp-color-green);
 }
 
-.deadlineRow {
-  font-size: 11px;
-}
-
 .deadlineCell {
   color: var(--rp-color-accent-primary);
+  white-space: nowrap;
+}
+
+.iconGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  align-items: center;
+}
+
+.dimmed {
+  opacity: 0.3;
+  filter: grayscale(0.6);
+}
+
+.receivable {
+  color: var(--rp-color-green);
+  white-space: nowrap;
+}
+
+.progressContainer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.progressBar {
+  flex: 1;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  min-width: 40px;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--rp-color-green);
+  transition: width 0.3s ease;
+}
+
+.progressFill.partial {
+  background: var(--rp-color-orange);
+}
+
+.progressFill.neutral {
+  background: var(--rp-color-text);
+}
+
+.progressText {
+  font-size: 11px;
+  white-space: nowrap;
 }
 
 .empty {
