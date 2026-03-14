@@ -15,6 +15,7 @@ import {
 import { timestampEachSecond } from '@src/utils/dayjs';
 import { objectId } from '@src/utils/object-id';
 import dayjs from 'dayjs';
+import '@src/utils/dayjs';
 
 const STATUS_FILTERS = [
   { key: 'OPEN', label: '公开', colorClass: 'neutral' },
@@ -152,6 +153,13 @@ function getProgress(contract: PrunApi.Contract) {
   };
 }
 
+// 进度栏样式类
+function getProgressClass(progress: number) {
+  if (progress >= 100) return 'fulfilled';
+  if (progress > 0) return 'active';
+  return 'pending';
+}
+
 // 合同状态
 function getStatusInfo(contract: PrunApi.Contract) {
   const statusText =
@@ -170,12 +178,31 @@ function getStatusInfo(contract: PrunApi.Contract) {
   return { text: statusText };
 }
 
+// 状态样式类
+function getStatusClass(status: string) {
+  switch (status) {
+    case 'FULFILLED':
+      return 'fulfilled';
+    case 'CLOSED':
+    case 'PARTIALLY_FULFILLED':
+      return 'active';
+    case 'BREACHED':
+    case 'TERMINATED':
+    case 'DEADLINE_EXCEEDED':
+      return 'failed';
+    case 'OPEN':
+      return 'pending';
+    default:
+      return '';
+  }
+}
+
 function getDeadline(contract: PrunApi.Contract): string {
   const deadline = contract.dueDate;
   if (!deadline?.timestamp) return '-';
   const remaining = deadline.timestamp - timestampEachSecond.value;
   if (remaining <= 0) return '已逾期';
-  const d = dayjs.duration({ milliseconds: remaining });
+  const d = dayjs.duration(remaining);
   if (d.days() > 0) return `${d.days()}天 ${d.hours()}小时`;
   if (d.hours() > 0) return `${d.hours()}小时 ${d.minutes()}分钟`;
   return `${d.minutes()}分钟`;
@@ -267,18 +294,23 @@ function getDeadline(contract: PrunApi.Contract): string {
             </td>
             <td :class="$style.deadlineCell">{{ getDeadline(contract) }}</td>
             <td>
-              <div class="progressContainer">
-                <div class="progressBar">
+              <div :class="$style.progressContainer">
+                <div :class="$style.progressBar">
                   <div
-                    class="progressFill"
+                    :class="[
+                      $style.progressFill,
+                      $style[getProgressClass(getProgress(contract).percentage)],
+                    ]"
                     :style="{ width: getProgress(contract).percentage + '%' }"></div>
                 </div>
-                <span class="progressText"
+                <span :class="$style.progressText"
                   >{{ getProgress(contract).fulfilled }}/{{ getProgress(contract).total }}</span
                 >
               </div>
             </td>
-            <td>{{ getStatusInfo(contract).text }}</td>
+            <td :class="$style[getStatusClass(contract.status)]">{{
+              getStatusInfo(contract).text
+            }}</td>
           </tr>
         </template>
       </tbody>
@@ -418,12 +450,28 @@ function getDeadline(contract: PrunApi.Contract): string {
   transition: width 0.3s ease;
 }
 
-.progressFill.partial {
+.progressFill.active {
   background: var(--rp-color-orange);
 }
 
-.progressFill.neutral {
+.progressFill.pending {
   background: var(--rp-color-text);
+}
+
+.fulfilled {
+  color: var(--rp-color-green);
+}
+
+.active {
+  color: var(--rp-color-orange);
+}
+
+.failed {
+  color: var(--rp-color-red);
+}
+
+.pending {
+  color: var(--rp-color-text);
 }
 
 .progressText {
