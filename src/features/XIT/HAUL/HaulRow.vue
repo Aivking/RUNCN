@@ -44,11 +44,14 @@ const cargo = computed(() => {
   let totalVolume = 0;
   for (const cond of contract.conditions) {
     if (
-      (cond.type === 'DELIVERY_SHIPMENT' || cond.type === 'PROVISION_SHIPMENT') &&
-      cond.weight != null
+      (cond.type === 'DELIVERY_SHIPMENT' ||
+        cond.type === 'PICKUP_SHIPMENT' ||
+        cond.type === 'PROVISION_SHIPMENT') &&
+      cond.weight != null &&
+      cond.volume != null
     ) {
       totalWeight += cond.weight;
-      totalVolume += cond.volume!;
+      totalVolume += cond.volume;
     }
   }
   if (totalWeight === 0 && totalVolume === 0) return '-';
