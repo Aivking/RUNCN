@@ -14,22 +14,22 @@ export function showTileOverlay<T extends Component>(
   if (!scrollView) {
     return;
   }
-  const content = scrollView.lastChild as HTMLElement | null;
-  if (content) {
-    content.style.display = 'none';
+  const children = Array.from(scrollView.children) as HTMLElement[];
+  for (const child of children) {
+    child.style.display = 'none';
   }
   const fragmentApp = createFragmentApp(Overlay, {
     child: component,
     props: rootProps,
     onClose: () => {
       fragmentApp.unmount();
-      if (content) {
-        scrollView.appendChild(content);
-        content.style.display = '';
+      for (const child of children) {
+        child.style.display = '';
       }
     },
   });
   fragmentApp.appendTo(scrollView);
+  scrollView.scrollTop = 0;
 }
 
 export function showConfirmationOverlay(

@@ -56,12 +56,19 @@ function onDeleteClick(ev: Event, pkg: UserData.ActionPackageData) {
   });
 }
 
+function onDeleteAllClick(ev: Event) {
+  showConfirmationOverlay(ev, () => userData.actionPackages.splice(0), {
+    message: '确定要删除全部操作包吗？',
+    confirmLabel: '删除全部',
+  });
+}
+
 function friendlyName(pkg: UserData.ActionPackageData) {
-  return pkg.global.name.split('_').join(' ');
+  return (pkg.global.name ?? '').split('_').join(' ');
 }
 
 function paramName(pkg: UserData.ActionPackageData) {
-  return pkg.global.name.split(' ').join('_');
+  return (pkg.global.name ?? '').split(' ').join('_');
 }
 </script>
 
@@ -72,6 +79,9 @@ function paramName(pkg: UserData.ActionPackageData) {
     <PrunButton v-if="showQuickstart" primary @click="onQuickstartClick">快速开始</PrunButton>
     <PrunButton primary @click="onCreateClick">新建</PrunButton>
     <PrunButton primary @click="onImportClick">导入</PrunButton>
+    <PrunButton v-if="actionPackages.length > 0" dark @click="onDeleteAllClick"
+      >删除全部</PrunButton
+    >
   </ActionBar>
   <table>
     <thead>
