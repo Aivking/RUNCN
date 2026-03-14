@@ -14,6 +14,7 @@ import {
   isFactionContract,
   isSelfCondition,
   calculateContractTotals,
+  calculateContractReceivable,
   formatAmount,
   calculateProgress,
   getStatusText,
@@ -100,17 +101,7 @@ function getIcons(contract: PrunApi.Contract) {
 
 // 待收款（对方需要付给我的）
 function getReceivable(contract: PrunApi.Contract) {
-  let total = 0;
-  let currency = '';
-  for (const cond of contract.conditions) {
-    if (cond.type === 'PAYMENT' && cond.amount && cond.status !== 'FULFILLED') {
-      if (cond.party !== contract.party) {
-        total += cond.amount.amount;
-        if (!currency) currency = cond.amount.currency;
-      }
-    }
-  }
-  return { total, currency };
+  return calculateContractReceivable(contract);
 }
 
 function getDeadline(contract: PrunApi.Contract): string {

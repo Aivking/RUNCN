@@ -235,3 +235,31 @@ export function isTransportContract(contract: PrunApi.Contract): boolean {
   ];
   return contract.conditions.some(c => transportTypes.includes(c.type));
 }
+
+/**
+ * 计算单个合同的应收款
+ * @param contract 合同对象
+ * @returns 应收款信息，包含金额和货币代码
+ */
+export function calculateContractReceivable(contract: PrunApi.Contract): {
+  total: number;
+  currency: string;
+} {
+  let total = 0;
+  let currency = '';
+
+  for (const cond of contract.conditions) {
+    // 只处理未完成的支付条件
+    if (cond.type === 'PAYMENT' && cond.amount && cond.status !== 'FULFILLED') {
+      // 判断是否为应收款（条件方不等于合同方）
+      if (cond.party !== contract.party) {
+        total += cond.amount.amount;
+        if (!currency) {
+          currency = cond.amount.currency;
+        }
+      }
+    }
+  }
+
+  return { total, currency };
+}
