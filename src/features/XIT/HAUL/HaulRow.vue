@@ -44,19 +44,20 @@ const cargo = computed(() => {
   let totalVolume = 0;
   for (const cond of contract.conditions) {
     if (
-      (cond.type === 'DELIVERY_SHIPMENT' ||
-        cond.type === 'PICKUP_SHIPMENT' ||
-        cond.type === 'PROVISION_SHIPMENT') &&
-      cond.weight != null &&
-      cond.volume != null
+      cond.type === 'DELIVERY_SHIPMENT' ||
+      cond.type === 'PICKUP_SHIPMENT' ||
+      cond.type === 'PROVISION_SHIPMENT'
     ) {
-      totalWeight += cond.weight;
-      totalVolume += cond.volume;
+      // 直接使用 weight 和 volume 属性（单位都是吨和立方米）
+      if (cond.weight != null && cond.volume != null) {
+        totalWeight += cond.weight;
+        totalVolume += cond.volume;
+      }
     }
   }
   if (totalWeight === 0 && totalVolume === 0) return '-';
-  const w = (totalWeight / 1000).toFixed(1);
-  const v = (totalVolume / 1000).toFixed(1);
+  const w = totalWeight.toFixed(2);
+  const v = totalVolume.toFixed(2);
   return `${w}t / ${v}m³`;
 });
 
