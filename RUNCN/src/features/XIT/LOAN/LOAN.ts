@@ -1,4 +1,4 @@
-import LOAN from '@src/features/XIT/LOAN/LOAN.vue';
+import LOAN from '@src/features/XIT/LOAN/loan.vue';
 
 xit.add({
   command: ['LOAN', 'LOANS'],

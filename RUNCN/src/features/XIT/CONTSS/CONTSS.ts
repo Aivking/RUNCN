@@ -1,4 +1,4 @@
-import CONTSS from '@src/features/XIT/CONTSS/CONTSS.vue';
+import CONTSS from '@src/features/XIT/CONTSS/contss.vue';
 
 xit.add({
   command: ['CONTSS'],

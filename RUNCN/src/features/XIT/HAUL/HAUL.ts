@@ -1,4 +1,4 @@
-import HAUL from '@src/features/XIT/HAUL/HAUL.vue';
+import HAUL from '@src/features/XIT/HAUL/haul.vue';
 
 xit.add({
   command: ['HAUL', 'HAULS'],

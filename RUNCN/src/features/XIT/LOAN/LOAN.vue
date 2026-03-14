@@ -115,13 +115,14 @@ const lentSummary = computed(() => getLoanSummary(lent.value));
           <th>对方</th>
           <th>本金</th>
           <th>利息</th>
+          <th>下次还款</th>
           <th>还款进度</th>
           <th>状态</th>
         </tr>
       </thead>
       <tbody>
         <tr v-if="isEmpty(borrowed)">
-          <td colspan="6" :class="$style.empty">暂无借入贷款</td>
+          <td colspan="7" :class="$style.empty">暂无借入贷款</td>
         </tr>
         <template v-else>
           <LoanRow
@@ -154,13 +155,14 @@ const lentSummary = computed(() => getLoanSummary(lent.value));
           <th>对方</th>
           <th>本金</th>
           <th>利息</th>
+          <th>下次收款</th>
           <th>回收进度</th>
           <th>状态</th>
         </tr>
       </thead>
       <tbody>
         <tr v-if="isEmpty(lent)">
-          <td colspan="6" :class="$style.empty">暂无放出贷款</td>
+          <td colspan="7" :class="$style.empty">暂无放出贷款</td>
         </tr>
         <template v-else>
           <LoanRow v-for="contract in lent" :key="contract.id" :contract="contract" type="lend" />
