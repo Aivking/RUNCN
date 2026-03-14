@@ -1,50 +1,16 @@
 <script setup lang="ts">
+import { ref, computed } from 'vue';
 import LoadingSpinner from '@src/components/LoadingSpinner.vue';
+import StatusFilter from '@src/components/StatusFilter.vue';
 import { contractsStore } from '@src/infrastructure/prun-api/data/contracts';
 import LoanRow from '@src/features/XIT/LOAN/LoanRow.vue';
 import { isEmpty } from 'ts-extras';
+import { isLoanContract, formatAmount } from '@src/features/XIT/CONTS/utils';
 
-// 合同状态定义
-const STATUS_FILTERS = [
-  { key: 'OPEN', label: '公开', colorClass: 'neutral' },
-  { key: 'CLOSED', label: '进行中', colorClass: 'good' },
-  { key: 'FULFILLED', label: '已完成', colorClass: 'good' },
-  { key: 'PARTIALLY_FULFILLED', label: '部分完成', colorClass: 'partial' },
-  { key: 'BREACHED', label: '已违约', colorClass: 'bad' },
-  { key: 'TERMINATED', label: '已终止', colorClass: 'bad' },
-  { key: 'CANCELLED', label: '已取消', colorClass: 'bad' },
-  { key: 'REJECTED', label: '已拒绝', colorClass: 'bad' },
-  { key: 'DEADLINE_EXCEEDED', label: '已逾期', colorClass: 'bad' },
-] as const;
-
-// 筛选状态：存储每个状态是否被选中
 const activeFilters = ref(
   new Set<string>(['OPEN', 'CLOSED', 'PARTIALLY_FULFILLED', 'DEADLINE_EXCEEDED']),
 );
 const showFilters = ref(true);
-
-function toggleFilter(key: string) {
-  const newSet = new Set(activeFilters.value);
-  if (newSet.has(key)) {
-    newSet.delete(key);
-  } else {
-    newSet.add(key);
-  }
-  activeFilters.value = newSet;
-}
-
-function selectAll() {
-  activeFilters.value = new Set(STATUS_FILTERS.map(f => f.key));
-}
-
-function selectNone() {
-  activeFilters.value = new Set();
-}
-
-// 判断合同是否为贷款合同（包含 LOAN_PAYOUT 或 LOAN_INSTALLMENT 条件）
-function isLoanContract(contract: PrunApi.Contract) {
-  return contract.conditions.some(c => c.type === 'LOAN_PAYOUT' || c.type === 'LOAN_INSTALLMENT');
-}
 
 // 判断我是否为借款方（对方发放贷款给我）
 function isBorrowing(contract: PrunApi.Contract) {
@@ -120,38 +86,13 @@ function getLoanSummary(contracts: PrunApi.Contract[]) {
 
 const borrowedSummary = computed(() => getLoanSummary(borrowed.value));
 const lentSummary = computed(() => getLoanSummary(lent.value));
-
-function formatAmount(amount: number, currency: string) {
-  if (!currency) return '0';
-  return `${amount.toLocaleString()} ${currency}`;
-}
 </script>
 
 <template>
   <LoadingSpinner v-if="!contractsStore.fetched" />
   <div v-else :class="$style.container">
     <!-- 筛选栏 -->
-    <div :class="$style.filterBar">
-      <span :class="$style.filterIcon">⚙</span>
-      <button :class="$style.filterAction" @click="selectAll">全部</button>
-      <button :class="$style.filterAction" @click="selectNone">无</button>
-      <button :class="$style.filterAction" @click="showFilters = !showFilters">
-        {{ showFilters ? '隐藏过滤器' : '显示过滤器' }}
-      </button>
-    </div>
-    <div v-if="showFilters" :class="$style.statusFilters">
-      <button
-        v-for="f in STATUS_FILTERS"
-        :key="f.key"
-        :class="[
-          $style.statusBtn,
-          $style[f.colorClass],
-          !activeFilters.has(f.key) && $style.inactive,
-        ]"
-        @click="toggleFilter(f.key)">
-        {{ f.label }}
-      </button>
-    </div>
+    <StatusFilter v-model="activeFilters" v-model:showFilters="showFilters" />
 
     <!-- 借入贷款 -->
     <table>
@@ -232,72 +173,6 @@ function formatAmount(amount: number, currency: string) {
 <style module>
 .container {
   padding: 4px;
-}
-
-.filterBar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.filterIcon {
-  opacity: 0.5;
-  font-size: 12px;
-}
-
-.filterAction {
-  background: none;
-  border: none;
-  color: var(--rp-color-accent-primary);
-  cursor: pointer;
-  font-size: 11px;
-  padding: 2px 4px;
-  text-decoration: underline;
-}
-
-.filterAction:hover {
-  opacity: 0.8;
-}
-
-.statusFilters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  padding: 6px 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.statusBtn {
-  border: none;
-  padding: 2px 6px;
-  font-size: 11px;
-  cursor: pointer;
-  background: none;
-  transition: opacity 0.15s;
-  font-weight: bold;
-}
-
-.statusBtn.inactive {
-  opacity: 0.3;
-  font-weight: normal;
-}
-
-.good {
-  color: var(--rp-color-green);
-}
-
-.bad {
-  color: var(--rp-color-red);
-}
-
-.neutral {
-  color: var(--rp-color-text);
-}
-
-.partial {
-  color: var(--rp-color-orange);
 }
 
 .sectionHeader {

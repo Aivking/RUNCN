@@ -131,3 +131,107 @@ export function friendlyConditionText(type: PrunApi.ContractConditionType) {
       return type;
   }
 }
+
+/**
+ * 获取合同状态的友好文本
+ * @param status 合同状态
+ * @returns 友好的状态文本
+ */
+export function getStatusText(status: string): string {
+  const statusMap = {
+    OPEN: '待接受',
+    CLOSED: '进行中',
+    FULFILLED: '已完成',
+    PARTIALLY_FULFILLED: '部分完成',
+    BREACHED: '已违约',
+    TERMINATED: '已终止',
+    CANCELLED: '已取消',
+    REJECTED: '已拒绝',
+    DEADLINE_EXCEEDED: '已逾期',
+  };
+  return statusMap[status as keyof typeof statusMap] || status;
+}
+
+/**
+ * 获取合同状态的样式类名
+ * @param status 合同状态
+ * @returns 样式类名
+ */
+export function getStatusClass(status: string): string {
+  switch (status) {
+    case 'FULFILLED':
+      return 'fulfilled';
+    case 'CLOSED':
+    case 'PARTIALLY_FULFILLED':
+      return 'active';
+    case 'BREACHED':
+    case 'TERMINATED':
+    case 'DEADLINE_EXCEEDED':
+      return 'failed';
+    case 'OPEN':
+      return 'pending';
+    default:
+      return '';
+  }
+}
+
+/**
+ * 计算合同条件的完成进度
+ * @param contract 合同对象
+ * @returns 进度信息，包含已完成数、总数和百分比
+ */
+export function calculateProgress(contract: PrunApi.Contract) {
+  const fulfilledCount = contract.conditions.filter(c => c.status === 'FULFILLED').length;
+  const totalCount = contract.conditions.length;
+  if (totalCount === 0) return { fulfilled: 0, total: 0, percentage: 0 };
+  return {
+    fulfilled: fulfilledCount,
+    total: totalCount,
+    percentage: Math.round((fulfilledCount / totalCount) * 100),
+  };
+}
+
+/**
+ * 格式化金额
+ * @param amount 金额
+ * @param currency 货币代码
+ * @returns 格式化后的金额字符串
+ */
+export function formatAmount(amount: number, currency: string): string {
+  if (!currency || amount === 0) return '-';
+  return `${amount.toLocaleString()} ${currency}`;
+}
+
+/**
+ * 获取进度条的样式类
+ * @param progress 进度百分比
+ * @returns 样式类名
+ */
+export function getProgressClass(progress: number): string {
+  if (progress >= 100) return 'fulfilled';
+  if (progress > 50) return 'active';
+  return 'pending';
+}
+
+/**
+ * 判断是否为贷款合同
+ * @param contract 合同对象
+ * @returns 是否为贷款合同
+ */
+export function isLoanContract(contract: PrunApi.Contract): boolean {
+  return contract.conditions.some(c => c.type === 'LOAN_PAYOUT' || c.type === 'LOAN_INSTALLMENT');
+}
+
+/**
+ * 判断是否为运输合同
+ * @param contract 合同对象
+ * @returns 是否为运输合同
+ */
+export function isTransportContract(contract: PrunApi.Contract): boolean {
+  const transportTypes: PrunApi.ContractConditionType[] = [
+    'DELIVERY_SHIPMENT',
+    'PICKUP_SHIPMENT',
+    'PROVISION_SHIPMENT',
+  ];
+  return contract.conditions.some(c => transportTypes.includes(c.type));
+}

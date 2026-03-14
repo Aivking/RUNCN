@@ -1,45 +1,20 @@
 <script setup lang="ts">
+import { ref, computed } from 'vue';
 import LoadingSpinner from '@src/components/LoadingSpinner.vue';
+import StatusFilter from '@src/components/StatusFilter.vue';
 import { contractsStore } from '@src/infrastructure/prun-api/data/contracts';
 import ContractOverviewRow from '@src/features/XIT/CONTS/ContractOverviewRow.vue';
 import { isEmpty } from 'ts-extras';
-import { canAcceptContract } from '@src/features/XIT/CONTS/utils';
-
-// 合同状态定义
-const STATUS_FILTERS = [
-  { key: 'OPEN', label: '公开', colorClass: 'neutral' },
-  { key: 'CLOSED', label: '进行中', colorClass: 'good' },
-  { key: 'FULFILLED', label: '已完成', colorClass: 'good' },
-  { key: 'PARTIALLY_FULFILLED', label: '部分完成', colorClass: 'partial' },
-  { key: 'BREACHED', label: '已违约', colorClass: 'bad' },
-  { key: 'TERMINATED', label: '已终止', colorClass: 'bad' },
-  { key: 'CANCELLED', label: '已取消', colorClass: 'bad' },
-  { key: 'REJECTED', label: '已拒绝', colorClass: 'bad' },
-  { key: 'DEADLINE_EXCEEDED', label: '已逾期', colorClass: 'bad' },
-] as const;
+import {
+  canAcceptContract,
+  calculateContractTotals,
+  formatAmount,
+} from '@src/features/XIT/CONTS/utils';
 
 const activeFilters = ref(
   new Set<string>(['OPEN', 'CLOSED', 'PARTIALLY_FULFILLED', 'DEADLINE_EXCEEDED']),
 );
 const showFilters = ref(true);
-
-function toggleFilter(key: string) {
-  const newSet = new Set(activeFilters.value);
-  if (newSet.has(key)) {
-    newSet.delete(key);
-  } else {
-    newSet.add(key);
-  }
-  activeFilters.value = newSet;
-}
-
-function selectAll() {
-  activeFilters.value = new Set(STATUS_FILTERS.map(f => f.key));
-}
-
-function selectNone() {
-  activeFilters.value = new Set();
-}
 
 const filtered = computed(() =>
   (contractsStore.all.value ?? [])
@@ -58,60 +33,24 @@ function compareContracts(a: PrunApi.Contract, b: PrunApi.Contract) {
 }
 
 // 总待收款和应付款统计
-const totals = computed(() => {
-  let receivable = 0;
-  let payable = 0;
-  let currency = '';
-  for (const contract of filtered.value) {
-    for (const cond of contract.conditions) {
-      if (cond.type === 'PAYMENT' && cond.amount && cond.status !== 'FULFILLED') {
-        if (!currency) currency = cond.amount.currency;
-        if (cond.party !== contract.party) {
-          receivable += cond.amount.amount;
-        } else {
-          payable += cond.amount.amount;
-        }
-      }
-    }
-  }
-  return { receivable, payable, currency };
-});
-
-function formatAmount(amount: number, currency: string) {
-  if (!currency || amount === 0) return '-';
-  return `${amount.toLocaleString()} ${currency}`;
-}
+const totals = computed(() => calculateContractTotals(filtered.value));
 </script>
 
 <template>
   <LoadingSpinner v-if="!contractsStore.fetched" />
   <div v-else :class="$style.container">
     <!-- 筛选栏 -->
-    <div :class="$style.filterBar">
-      <span :class="$style.filterIcon">⚙</span>
-      <button :class="$style.filterAction" @click="selectAll">全部</button>
-      <button :class="$style.filterAction" @click="selectNone">无</button>
-      <button :class="$style.filterAction" @click="showFilters = !showFilters">
-        {{ showFilters ? '隐藏过滤器' : '显示过滤器' }}
-      </button>
-    </div>
-    <div v-if="showFilters" :class="$style.statusFilters">
-      <button
-        v-for="f in STATUS_FILTERS"
-        :key="f.key"
-        :class="[
-          $style.statusBtn,
-          $style[f.colorClass],
-          !activeFilters.has(f.key) && $style.inactive,
-        ]"
-        @click="toggleFilter(f.key)">
-        {{ f.label }}
-      </button>
-    </div>
+    <StatusFilter v-model="activeFilters" v-model:showFilters="showFilters" />
 
     <!-- 汇总栏 -->
     <div v-if="totals.currency" :class="$style.totalsBar">
       <span>共 {{ filtered.length }} 单</span>
+
+      <!-- 混合货币警告 -->
+      <span v-if="totals.hasMixedCurrency" :class="$style.warningText">
+        ⚠️ 检测到不同货币，金额统计可能不准确
+      </span>
+
       <span v-if="totals.receivable > 0" :class="$style.receivableText">
         待收: {{ formatAmount(totals.receivable, totals.currency) }}
       </span>
@@ -152,72 +91,6 @@ function formatAmount(amount: number, currency: string) {
   padding: 4px;
 }
 
-.filterBar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.filterIcon {
-  opacity: 0.5;
-  font-size: 12px;
-}
-
-.filterAction {
-  background: none;
-  border: none;
-  color: var(--rp-color-accent-primary);
-  cursor: pointer;
-  font-size: 11px;
-  padding: 2px 4px;
-  text-decoration: underline;
-}
-
-.filterAction:hover {
-  opacity: 0.8;
-}
-
-.statusFilters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  padding: 6px 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.statusBtn {
-  border: none;
-  padding: 2px 6px;
-  font-size: 11px;
-  cursor: pointer;
-  background: none;
-  transition: opacity 0.15s;
-  font-weight: bold;
-}
-
-.statusBtn.inactive {
-  opacity: 0.3;
-  font-weight: normal;
-}
-
-.good {
-  color: var(--rp-color-green);
-}
-
-.bad {
-  color: var(--rp-color-red);
-}
-
-.neutral {
-  color: var(--rp-color-text);
-}
-
-.partial {
-  color: var(--rp-color-orange);
-}
-
 .totalsBar {
   display: flex;
   gap: 16px;
@@ -233,6 +106,11 @@ function formatAmount(amount: number, currency: string) {
 
 .payableText {
   color: var(--rp-color-orange);
+}
+
+.warningText {
+  color: var(--rp-color-orange);
+  font-weight: bold;
 }
 
 .empty {

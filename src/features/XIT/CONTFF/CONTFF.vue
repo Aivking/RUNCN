@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import { ref, computed } from 'vue';
 import LoadingSpinner from '@src/components/LoadingSpinner.vue';
+import StatusFilter from '@src/components/StatusFilter.vue';
+import ProgressBarWithText from '@src/components/ProgressBarWithText.vue';
 import { contractsStore } from '@src/infrastructure/prun-api/data/contracts';
 import ContractLink from '@src/features/XIT/CONTS/ContractLink.vue';
 import PartnerLink from '@src/features/XIT/CONTS/PartnerLink.vue';
@@ -11,46 +14,20 @@ import {
   isFactionContract,
   isSelfCondition,
   calculateContractTotals,
+  formatAmount,
+  calculateProgress,
+  getStatusText,
+  getStatusClass,
 } from '@src/features/XIT/CONTS/utils';
 import { timestampEachSecond } from '@src/utils/dayjs';
 import { objectId } from '@src/utils/object-id';
 import dayjs from 'dayjs';
 import '@src/utils/dayjs';
 
-const STATUS_FILTERS = [
-  { key: 'OPEN', label: '公开', colorClass: 'neutral' },
-  { key: 'CLOSED', label: '进行中', colorClass: 'good' },
-  { key: 'FULFILLED', label: '已完成', colorClass: 'good' },
-  { key: 'PARTIALLY_FULFILLED', label: '部分完成', colorClass: 'partial' },
-  { key: 'BREACHED', label: '已违约', colorClass: 'bad' },
-  { key: 'TERMINATED', label: '已终止', colorClass: 'bad' },
-  { key: 'CANCELLED', label: '已取消', colorClass: 'bad' },
-  { key: 'REJECTED', label: '已拒绝', colorClass: 'bad' },
-  { key: 'DEADLINE_EXCEEDED', label: '已逾期', colorClass: 'bad' },
-] as const;
-
 const activeFilters = ref(
   new Set<string>(['OPEN', 'CLOSED', 'PARTIALLY_FULFILLED', 'DEADLINE_EXCEEDED']),
 );
 const showFilters = ref(true);
-
-function toggleFilter(key: string) {
-  const newSet = new Set(activeFilters.value);
-  if (newSet.has(key)) {
-    newSet.delete(key);
-  } else {
-    newSet.add(key);
-  }
-  activeFilters.value = newSet;
-}
-
-function selectAll() {
-  activeFilters.value = new Set(STATUS_FILTERS.map(f => f.key));
-}
-
-function selectNone() {
-  activeFilters.value = new Set();
-}
 
 const filtered = computed(() =>
   (contractsStore.all.value ?? [])
@@ -70,11 +47,6 @@ function compareContracts(a: PrunApi.Contract, b: PrunApi.Contract) {
 }
 
 const totals = computed(() => calculateContractTotals(filtered.value));
-
-function formatAmount(amount: number, currency: string) {
-  if (!currency || amount === 0) return '-';
-  return `${amount.toLocaleString()} ${currency}`;
-}
 
 // 物品图标列表（小尺寸）
 interface ShipmentIconProps {
@@ -141,62 +113,6 @@ function getReceivable(contract: PrunApi.Contract) {
   return { total, currency };
 }
 
-// 条件完成进度
-function getProgress(contract: PrunApi.Contract) {
-  const fulfilledCount = contract.conditions.filter(c => c.status === 'FULFILLED').length;
-  const totalCount = contract.conditions.length;
-  if (totalCount === 0) return { fulfilled: 0, total: 0, percentage: 0 };
-  return {
-    fulfilled: fulfilledCount,
-    total: totalCount,
-    percentage: Math.round((fulfilledCount / totalCount) * 100),
-  };
-}
-
-// 进度栏样式类
-function getProgressClass(progress: number) {
-  if (progress >= 100) return 'fulfilled';
-  if (progress > 0) return 'active';
-  return 'pending';
-}
-
-// 合同状态
-function getStatusInfo(contract: PrunApi.Contract) {
-  const statusText =
-    {
-      OPEN: '待接受',
-      CLOSED: '进行中',
-      FULFILLED: '已完成',
-      PARTIALLY_FULFILLED: '部分完成',
-      BREACHED: '已违约',
-      TERMINATED: '已终止',
-      CANCELLED: '已取消',
-      REJECTED: '已拒绝',
-      DEADLINE_EXCEEDED: '已逾期',
-    }[contract.status] || contract.status;
-
-  return { text: statusText };
-}
-
-// 状态样式类
-function getStatusClass(status: string) {
-  switch (status) {
-    case 'FULFILLED':
-      return 'fulfilled';
-    case 'CLOSED':
-    case 'PARTIALLY_FULFILLED':
-      return 'active';
-    case 'BREACHED':
-    case 'TERMINATED':
-    case 'DEADLINE_EXCEEDED':
-      return 'failed';
-    case 'OPEN':
-      return 'pending';
-    default:
-      return '';
-  }
-}
-
 function getDeadline(contract: PrunApi.Contract): string {
   const deadline = contract.dueDate;
   if (!deadline?.timestamp) return '-';
@@ -212,27 +128,8 @@ function getDeadline(contract: PrunApi.Contract): string {
 <template>
   <LoadingSpinner v-if="!contractsStore.fetched" />
   <div v-else :class="$style.container">
-    <div :class="$style.filterBar">
-      <span :class="$style.filterIcon">⚙</span>
-      <button :class="$style.filterAction" @click="selectAll">全部</button>
-      <button :class="$style.filterAction" @click="selectNone">无</button>
-      <button :class="$style.filterAction" @click="showFilters = !showFilters">
-        {{ showFilters ? '隐藏过滤器' : '显示过滤器' }}
-      </button>
-    </div>
-    <div v-if="showFilters" :class="$style.statusFilters">
-      <button
-        v-for="f in STATUS_FILTERS"
-        :key="f.key"
-        :class="[
-          $style.statusBtn,
-          $style[f.colorClass],
-          !activeFilters.has(f.key) && $style.inactive,
-        ]"
-        @click="toggleFilter(f.key)">
-        {{ f.label }}
-      </button>
-    </div>
+    <!-- 筛选栏 -->
+    <StatusFilter v-model="activeFilters" v-model:showFilters="showFilters" />
 
     <div v-if="totals.currency" :class="$style.totalsBar">
       <span>共 {{ filtered.length }} 单</span>
@@ -294,23 +191,14 @@ function getDeadline(contract: PrunApi.Contract): string {
             </td>
             <td :class="$style.deadlineCell">{{ getDeadline(contract) }}</td>
             <td>
-              <div :class="$style.progressContainer">
-                <div :class="$style.progressBar">
-                  <div
-                    :class="[
-                      $style.progressFill,
-                      $style[getProgressClass(getProgress(contract).percentage)],
-                    ]"
-                    :style="{ width: getProgress(contract).percentage + '%' }"></div>
-                </div>
-                <span :class="$style.progressText"
-                  >{{ getProgress(contract).fulfilled }}/{{ getProgress(contract).total }}</span
-                >
-              </div>
+              <ProgressBarWithText
+                :current="calculateProgress(contract).fulfilled"
+                :total="calculateProgress(contract).total"
+                :showText="true" />
             </td>
-            <td :class="$style[getStatusClass(contract.status)]">{{
-              getStatusInfo(contract).text
-            }}</td>
+            <td :class="$style[getStatusClass(contract.status)]">
+              {{ getStatusText(contract.status) }}
+            </td>
           </tr>
         </template>
       </tbody>
@@ -321,72 +209,6 @@ function getDeadline(contract: PrunApi.Contract): string {
 <style module>
 .container {
   padding: 4px;
-}
-
-.filterBar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.filterIcon {
-  opacity: 0.5;
-  font-size: 12px;
-}
-
-.filterAction {
-  background: none;
-  border: none;
-  color: var(--rp-color-accent-primary);
-  cursor: pointer;
-  font-size: 11px;
-  padding: 2px 4px;
-  text-decoration: underline;
-}
-
-.filterAction:hover {
-  opacity: 0.8;
-}
-
-.statusFilters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  padding: 6px 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.statusBtn {
-  border: none;
-  padding: 2px 6px;
-  font-size: 11px;
-  cursor: pointer;
-  background: none;
-  transition: opacity 0.15s;
-  font-weight: bold;
-}
-
-.statusBtn.inactive {
-  opacity: 0.3;
-  font-weight: normal;
-}
-
-.good {
-  color: var(--rp-color-green);
-}
-
-.bad {
-  color: var(--rp-color-red);
-}
-
-.neutral {
-  color: var(--rp-color-text);
-}
-
-.partial {
-  color: var(--rp-color-orange);
 }
 
 .totalsBar {
@@ -429,35 +251,6 @@ function getDeadline(contract: PrunApi.Contract): string {
   white-space: nowrap;
 }
 
-.progressContainer {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.progressBar {
-  flex: 1;
-  height: 6px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
-  min-width: 40px;
-}
-
-.progressFill {
-  height: 100%;
-  border-radius: 3px;
-  background: var(--rp-color-green);
-  transition: width 0.3s ease;
-}
-
-.progressFill.active {
-  background: var(--rp-color-orange);
-}
-
-.progressFill.pending {
-  background: var(--rp-color-text);
-}
-
 .fulfilled {
   color: var(--rp-color-green);
 }
@@ -472,11 +265,6 @@ function getDeadline(contract: PrunApi.Contract): string {
 
 .pending {
   color: var(--rp-color-text);
-}
-
-.progressText {
-  font-size: 11px;
-  white-space: nowrap;
 }
 
 .empty {

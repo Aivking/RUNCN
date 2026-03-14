@@ -1,6 +1,14 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import ContractLink from '@src/features/XIT/CONTS/ContractLink.vue';
 import PartnerLink from '@src/features/XIT/CONTS/PartnerLink.vue';
+import ProgressBarWithText from '@src/components/ProgressBarWithText.vue';
+import {
+  formatAmount,
+  getStatusText,
+  getStatusClass,
+  calculateProgress,
+} from '@src/features/XIT/CONTS/utils';
 
 const { contract } = defineProps<{
   contract: PrunApi.Contract;
@@ -65,68 +73,15 @@ const cargo = computed(() => {
 const payment = computed(() => {
   const pay = contract.conditions.find(c => c.type === 'PAYMENT');
   if (!pay?.amount) return '-';
-  return `${pay.amount.amount.toLocaleString()} ${pay.amount.currency}`;
+  return formatAmount(pay.amount.amount, pay.amount.currency);
 });
 
 // 条件完成进度
-const fulfilledCount = computed(
-  () => contract.conditions.filter(c => c.status === 'FULFILLED').length,
-);
-const totalCount = computed(() => contract.conditions.length);
-const progress = computed(() => {
-  if (totalCount.value === 0) return 0;
-  return Math.round((fulfilledCount.value / totalCount.value) * 100);
-});
+const progress = computed(() => calculateProgress(contract));
 
 // 合同状态
-const statusText = computed(() => {
-  switch (contract.status) {
-    case 'OPEN':
-      return '待接受';
-    case 'CLOSED':
-      return '进行中';
-    case 'FULFILLED':
-      return '已完成';
-    case 'PARTIALLY_FULFILLED':
-      return '部分完成';
-    case 'BREACHED':
-      return '已违约';
-    case 'TERMINATED':
-      return '已终止';
-    case 'CANCELLED':
-      return '已取消';
-    case 'REJECTED':
-      return '已拒绝';
-    case 'DEADLINE_EXCEEDED':
-      return '已逾期';
-    default:
-      return contract.status;
-  }
-});
-
-const statusClass = computed(() => {
-  switch (contract.status) {
-    case 'FULFILLED':
-      return $style.fulfilled;
-    case 'CLOSED':
-    case 'PARTIALLY_FULFILLED':
-      return $style.active;
-    case 'BREACHED':
-    case 'TERMINATED':
-    case 'DEADLINE_EXCEEDED':
-      return $style.failed;
-    case 'OPEN':
-      return $style.pending;
-    default:
-      return '';
-  }
-});
-
-const progressClass = computed(() => {
-  if (progress.value >= 100) return $style.fulfilled;
-  if (progress.value > 50) return $style.active;
-  return $style.pending;
-});
+const statusText = computed(() => getStatusText(contract.status));
+const statusClass = computed(() => $style[getStatusClass(contract.status)]);
 </script>
 
 <template>
@@ -142,12 +97,7 @@ const progressClass = computed(() => {
     <td>{{ cargo }}</td>
     <td>{{ payment }}</td>
     <td>
-      <div :class="$style.progressContainer">
-        <div :class="$style.progressBar">
-          <div :class="[$style.progressFill, progressClass]" :style="{ width: progress + '%' }" />
-        </div>
-        <span :class="$style.progressText">{{ fulfilledCount }}/{{ totalCount }}</span>
-      </div>
+      <ProgressBarWithText :current="progress.fulfilled" :total="progress.total" :showText="true" />
     </td>
     <td :class="statusClass">{{ statusText }}</td>
   </tr>
@@ -168,39 +118,5 @@ const progressClass = computed(() => {
 
 .pending {
   color: var(--rp-color-text);
-}
-
-.progressContainer {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.progressBar {
-  flex: 1;
-  height: 6px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
-  min-width: 40px;
-}
-
-.progressFill {
-  height: 100%;
-  border-radius: 3px;
-  background: var(--rp-color-green);
-  transition: width 0.3s ease;
-}
-
-.progressFill.active {
-  background: var(--rp-color-orange);
-}
-
-.progressFill.pending {
-  background: var(--rp-color-text);
-}
-
-.progressText {
-  font-size: 11px;
-  white-space: nowrap;
 }
 </style>
