@@ -16,6 +16,18 @@ function isCheckpoint(entry: MigrationEntry): entry is Checkpoint {
 // 新的迁移应添加到列表顶部。
 // 日期仅供参考，不影响迁移顺序。
 const migrations: MigrationEntry[] = [
+  [
+    '15.03.2026 Add factionCache',
+    userData => {
+      userData.factionCache = undefined;
+    },
+  ],
+  [
+    '15.03.2026 Add factionToken',
+    userData => {
+      userData.factionToken = undefined;
+    },
+  ],
   ['10.03.2026 Checkpoint'],
   [
     '10.03.2026 Remove funny-rations',

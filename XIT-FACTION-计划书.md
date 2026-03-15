@@ -85,12 +85,23 @@ Cloudflare Workers 免费层：10 万请求/天、D1 读 500 万行/天、D1 写
 - 状态流转：`open → in_progress → review → done`
 - 合伙人及以上可主动领取开放任务，执行官可强制分配给指定成员
 - 支持进度备注（子评论），记录过程信息
+- **执行官可删除任务**（任何状态均可删除）
+- 任务列表默认全部展开，不折叠
 
 ### 4.5 公告栏（Bulletin）
 
 - 执行官发布组织公告，所有成员可读
 - 进入面板时高亮显示未读公告数量
 - 按发布时间倒序排列
+- **公告发布后自动向所有成员推送游戏内通知**（通过 `notificationsStore` 或等效通知机制）
+
+### 4.6 每日产出统计（Daily Production）
+
+- 面板新增「产出统计」Tab，每位成员独立一个区块
+- 每个区块显示：**成员董事名称**，后跟该成员当日产出的物品列表（物料 Ticker + 每日产量）
+- 数据来源：复用 `XIT BURN` 现有数据（`burnStore` 或等效 store），无需独立采集
+- 物料图标复用 `MaterialIcon.vue`
+- 每天统计一次，展示当日快照
 
 ---
 
@@ -117,13 +128,14 @@ Cloudflare Workers 免费层：10 万请求/天、D1 读 500 万行/天、D1 写
 ├── tasks/
 │   ├── list                GET   任务列表（分页）
 │   ├── create              POST  [执行官] 创建任务
+│   ├── :id                 DELETE[执行官] 删除任务
 │   ├── :id/assign          PATCH [执行官] 分配任务
 │   ├── :id/claim           POST  [合伙人+] 认领任务
 │   ├── :id/status          PATCH 更新任务状态
 │   └── :id/comment         POST  添加进度备注
 └── bulletin/
     ├── list                GET   公告列表（分页）
-    └── post                POST  [执行官] 发布公告
+    └── post                POST  [执行官] 发布公告（发布后触发成员通知）
 ```
 
 ### 统一错误响应格式
@@ -252,6 +264,8 @@ interface Bulletin {
   author: string;
   createdAt: string;
 }
+
+// 每日产出数据直接从 XIT BURN（burnStore）读取，无需独立类型
 ```
 
 ---
@@ -340,7 +354,7 @@ CREATE TABLE invite_codes (
   created_at TEXT NOT NULL
 );
 
--- 组织表（支持多组织）
+-- 组织表（当前仅单组织：琉璃主权资本，faction_id 为固定常量）
 CREATE TABLE factions (
   id         TEXT PRIMARY KEY,
   name       TEXT NOT NULL UNIQUE,
@@ -352,33 +366,31 @@ CREATE TABLE factions (
 
 ## 九、实施阶段
 
-### Phase 1 — 基础框架（MVP）
-- [ ] Cloudflare Workers 项目初始化（D1 + KV）
-- [ ] D1 建表（含 `faction_id`、索引）
-- [ ] 身份验证端点（邀请码注册 + PIN 设置 + Token 签发）
-- [ ] `XIT FACTION` 命令注册（对象参数 `xit.add({...})`）
-- [ ] 主面板 Tab 骨架（参考 `XIT SET`）
-- [ ] 成员列表展示 + 角色 Badge
-- [ ] **权限分级 UI 控制**（三种角色差异化渲染，从 MVP 起实现）
-- [ ] `userData` 新增 `factionToken` 字段 + 编写 migration
+### Phase 1 — 基础框架（MVP）✅ 已完成
+- [x] Cloudflare Workers 项目初始化（D1 + KV）
+- [x] D1 建表（含 `faction_id`、索引）
+- [x] 身份验证端点（邀请码注册 + PIN 设置 + Token 签发）
+- [x] `XIT FACTION` 命令注册（对象参数 `xit.add({...})`）
+- [x] 主面板 Tab 骨架（参考 `XIT SET`）
+- [x] 成员列表展示 + 角色 Badge
+- [x] **权限分级 UI 控制**（三种角色差异化渲染，从 MVP 起实现）
+- [x] `userData` 新增 `factionToken` 字段 + 编写 migration
 
-### Phase 2 — 核心功能
+### Phase 2 — 核心功能 ✅ 已完成
+- [x] 公共基金模块（余额展示 + 收支记录 + 分页）
+- [x] 物资调配申请提交 + 审批流
+- [x] 任务系统（创建 / 认领 / 状态更新 / 评论）
+- [x] 公告栏 + 未读徽标提醒
 
-- [ ] 公共基金模块（余额展示 + 收支记录 + 分页）
-- [ ] 物资调配申请提交 + 审批流
-- [ ] 任务系统（创建 / 认领 / 状态更新 / 评论）
+### Phase 3 — 完善体验 ✅ 已完成
+- [x] 本地缓存策略（`userData` 中缓存 Token + 部分数据）
+- [x] 错误处理 + 离线降级提示（Workers 不可达时展示缓存数据）
 
-### Phase 3 — 完善体验
-- [ ] 公告栏 + 未读徽标提醒
-- [ ] 本地缓存策略（`userData` 中缓存 Token + 部分数据）
-- [ ] 错误处理 + 离线降级提示（Workers 不可达时展示缓存数据）
-
-### Phase 4 — 可选增强
-- [ ] 多组织 UI（切换不同 faction_id）
-- [ ] 物资申请关联游戏内实际库存（接入 `storageStore`）
-- [ ] 任务截止日期接入游戏内提醒系统（接入 `alertsStore`）
-- [ ] 数据导出为 JSON
-- [ ] 实时推送升级（Cloudflare Durable Objects）
+### Phase 4 — 当前迭代
+- [ ] 任务执行官删除功能（`DELETE /tasks/:id`）
+- [ ] 任务列表默认展开（无折叠交互）
+- [ ] 公告发布后推送游戏内通知给所有成员
+- [ ] 每日产出统计面板（复用 XIT BURN 数据，每成员独立区块，显示董事名 + 产出物品/产量）
 
 ---
 
@@ -390,7 +402,9 @@ CREATE TABLE factions (
 | D1 vs KV？ | 主数据用 D1，KV 仅缓存 Token | D1 有关联查询能力；KV 免费层写入仅 1,000 次/天，保持低写入场景 |
 | 为什么不用 OAuth？ | 游戏无官方 OAuth，公司名 + PIN + 邀请码 | 降低复杂度，PIN 提供基础身份保护 |
 | 为什么不用心跳/轮询？ | 手动刷新，按需加载 | 降低免费层消耗，无自动请求的 ToS 顾虑 |
-| 为什么一开始就加 faction_id？ | 为多组织扩展预留 | 后加需迁移全部数据，成本远高于初始设计 |
+| 为什么不做实时推送？ | 取消 Durable Objects 方案 | 复杂度高、免费层受限，手动刷新满足当前需求 |
+| 为什么只有单组织？ | 当前仅服务琉璃主权资本，无多组织 UI | 避免不必要复杂度；`faction_id` 字段仍保留供未来扩展 |
+| 为什么一开始就加 faction_id？ | 为未来扩展预留，当前固定为单一常量 | 后加需迁移全部数据，成本远高于初始设计 |
 | Workers 在哪部署？ | 独立 Workers 项目，或 `workers/` 子目录 | 与扩展分离，可独立发布和维护 |
 
 ---

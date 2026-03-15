@@ -69,6 +69,11 @@ export const initialUserData = deepFreeze({
     locked: [] as string[],
   },
   commandLists: [] as UserData.CommandList[],
+  factionToken: undefined as string | undefined,
+  factionCache: undefined as
+    | { cachedAt: number; members?: unknown[]; balance?: number; bulletins?: unknown[] }
+    | undefined,
+  factionLastSeenBulletinAt: undefined as string | undefined,
 
   // 在 user-data-migrations.ts 中使用
   migrations: undefined,
