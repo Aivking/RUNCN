@@ -40,7 +40,7 @@ const totals = computed(() => calculateContractTotals(filtered.value));
   <LoadingSpinner v-if="!contractsStore.fetched" />
   <div v-else :class="$style.container">
     <!-- 筛选栏 -->
-    <StatusFilter v-model="activeFilters" v-model:showFilters="showFilters" />
+    <StatusFilter v-model="activeFilters" v-model:show-filters="showFilters" />
 
     <!-- 汇总栏 -->
     <div v-if="totals.currency" :class="$style.totalsBar">

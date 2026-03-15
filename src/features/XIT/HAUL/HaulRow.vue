@@ -97,7 +97,10 @@ const statusClass = computed(() => $style[getStatusClass(contract.status)]);
     <td>{{ cargo }}</td>
     <td>{{ payment }}</td>
     <td>
-      <ProgressBarWithText :current="progress.fulfilled" :total="progress.total" :showText="true" />
+      <ProgressBarWithText
+        :current="progress.fulfilled"
+        :total="progress.total"
+        :show-text="true" />
     </td>
     <td :class="statusClass">{{ statusText }}</td>
   </tr>

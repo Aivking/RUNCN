@@ -6,7 +6,6 @@ import { StepMachine } from '@src/features/XIT/ACT/runner/step-machine';
 import { StepGenerator } from '@src/features/XIT/ACT/runner/step-generator';
 import { ActionPackageConfig, ActionStep } from '@src/features/XIT/ACT/shared-types';
 import { showBuffer } from '@src/infrastructure/prun-ui/buffers';
-import { clickElement } from '@src/util';
 import { sleep } from '@src/utils/sleep';
 import { cxobStore } from '@src/infrastructure/prun-api/data/cxob';
 import { fixed0, fixed2 } from '@src/utils/format';
@@ -75,11 +74,11 @@ export class ActionRunner {
         }
       }
       const ticker = (step as ActionStep & { ticker?: string }).ticker;
-      const isNewTicker = ticker && !seenTickers.has(ticker);
-      if (stepInfo.weight && isNewTicker) {
+      const isNewTicker = !!ticker && !seenTickers.has(ticker);
+      if (stepInfo.weight !== undefined && isNewTicker) {
         totalWeight += stepInfo.weight(step) ?? 0;
       }
-      if (stepInfo.volume && isNewTicker) {
+      if (stepInfo.volume !== undefined && isNewTicker) {
         totalVolume += stepInfo.volume(step) ?? 0;
       }
       if (ticker) {
@@ -172,7 +171,7 @@ export class ActionRunner {
     const opened: Element[] = [];
     for (const { command } of cxTickers) {
       const win = await showBuffer(command, { force: true, autoSubmit: true });
-      if (win) opened.push(win);
+      if (win !== undefined) opened.push(win);
     }
     // wait for price data, up to 5 seconds
     const deadline = Date.now() + 5000;
@@ -206,7 +205,7 @@ export class ActionRunner {
     for (const command of commands) {
       this.options.onStatusChanged(`正在打开 ${command}...`);
       const window = await showBuffer(command, { force: true, autoSubmit: true });
-      if (window) {
+      if (window !== undefined) {
         this.preOpenedWindows.push(window);
       }
     }

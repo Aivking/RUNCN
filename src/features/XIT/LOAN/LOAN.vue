@@ -92,13 +92,13 @@ const lentSummary = computed(() => getLoanSummary(lent.value));
   <LoadingSpinner v-if="!contractsStore.fetched" />
   <div v-else :class="$style.container">
     <!-- 筛选栏 -->
-    <StatusFilter v-model="activeFilters" v-model:showFilters="showFilters" />
+    <StatusFilter v-model="activeFilters" v-model:show-filters="showFilters" />
 
     <!-- 借入贷款 -->
     <table>
       <thead>
         <tr>
-          <th colspan="6" :class="$style.sectionHeader">
+          <th colspan="7" :class="$style.sectionHeader">
             📥 借入贷款
             <span v-if="!isEmpty(borrowed)" :class="$style.summary">
               未还本金:
@@ -138,7 +138,7 @@ const lentSummary = computed(() => getLoanSummary(lent.value));
     <table :class="$style.secondTable">
       <thead>
         <tr>
-          <th colspan="6" :class="$style.sectionHeader">
+          <th colspan="7" :class="$style.sectionHeader">
             📤 放出贷款
             <span v-if="!isEmpty(lent)" :class="$style.summary">
               未收本金:

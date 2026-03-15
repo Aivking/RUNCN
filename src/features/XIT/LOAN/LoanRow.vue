@@ -115,7 +115,7 @@ const nextPaymentAmount = computed(() => {
       </div>
     </td>
     <td>
-      <ProgressBarWithText :current="fulfilledCount" :total="totalCount" :showText="true" />
+      <ProgressBarWithText :current="fulfilledCount" :total="totalCount" :show-text="true" />
     </td>
     <td :class="statusClass">{{ statusText }}</td>
   </tr>

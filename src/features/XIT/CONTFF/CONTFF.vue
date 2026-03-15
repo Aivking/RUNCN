@@ -125,7 +125,7 @@ function getDeadline(contract: PrunApi.Contract): string {
   <LoadingSpinner v-if="!contractsStore.fetched" />
   <div v-else :class="$style.container">
     <!-- 筛选栏 -->
-    <StatusFilter v-model="activeFilters" v-model:showFilters="showFilters" />
+    <StatusFilter v-model="activeFilters" v-model:show-filters="showFilters" />
 
     <div v-if="totals.currency" :class="$style.totalsBar">
       <span>共 {{ filtered.length }} 单</span>
@@ -190,7 +190,7 @@ function getDeadline(contract: PrunApi.Contract): string {
               <ProgressBarWithText
                 :current="calculateProgress(contract).fulfilled"
                 :total="calculateProgress(contract).total"
-                :showText="true" />
+                :show-text="true" />
             </td>
             <td :class="$style[getStatusClass(contract.status)]">
               {{ getStatusText(contract.status) }}
