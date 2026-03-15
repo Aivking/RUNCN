@@ -17,6 +17,7 @@ import './bs-satisfaction-percentage';
 import './bui-sort-recipes';
 import './chat-images';
 import './clickable-apex-logo';
+import './close-all-buffers/close-all-buffers';
 import './cmds-clickable-commands';
 import './co-base-count';
 import './contd-condition-address-placeholder';

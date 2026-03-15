@@ -23,6 +23,7 @@ import './HELP';
 import './HQUC';
 import './MATS';
 import './NOTE/NOTE';
+import './PLAN/PLAN';
 import './REP/REP';
 import './SET/SET';
 import './START';
