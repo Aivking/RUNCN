@@ -43,7 +43,7 @@ const indicatorClass = computed(() => ({
   [$style.indicatorCompact]: compact,
 }));
 
-const onClick = () => showBuffer(`MAT ${ticker.toUpperCase()}`);
+const onClick = () => ticker && showBuffer(`MAT ${ticker.toUpperCase()}`);
 </script>
 
 <template>

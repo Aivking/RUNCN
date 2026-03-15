@@ -61,9 +61,13 @@ async function fetchPlanetDetail(naturalId: string) {
       return;
     }
     const data = await resp.json();
-    const reqs = ((data.BuildRequirements ?? []) as any[]).map(r => ({
-      MaterialTicker: r.MaterialTicker as string,
-      MaterialAmount: r.MaterialAmount as number,
+    interface BuildRequirement {
+      MaterialTicker: string;
+      MaterialAmount: number;
+    }
+    const reqs = ((data.BuildRequirements ?? []) as BuildRequirement[]).map(r => ({
+      MaterialTicker: r.MaterialTicker,
+      MaterialAmount: r.MaterialAmount,
     }));
     planetDetailCache.set(naturalId, reqs);
     planetBuildReqs.value = reqs;
