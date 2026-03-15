@@ -85,7 +85,12 @@ function getIcons(contract: PrunApi.Contract) {
     }
 
     const quantity = condition.quantity;
-    if (!quantity?.material) {
+    if (
+      quantity === null ||
+      quantity === undefined ||
+      quantity.material === null ||
+      quantity.material === undefined
+    ) {
       continue;
     }
 
@@ -106,7 +111,7 @@ function getReceivable(contract: PrunApi.Contract) {
 
 function getDeadline(contract: PrunApi.Contract): string {
   const deadline = contract.dueDate;
-  if (!deadline?.timestamp) return '-';
+  if (!deadline || deadline.timestamp === undefined || deadline.timestamp === null) return '-';
   const remaining = deadline.timestamp - timestampEachSecond.value;
   if (remaining <= 0) return '已逾期';
   const d = dayjs.duration(remaining);
