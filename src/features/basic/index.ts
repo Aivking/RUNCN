@@ -43,6 +43,7 @@ import './funny-materials';
 import './header-calculator-button';
 import './header-duplicate-button';
 import './header-hide-controls-button';
+import './hq-upgrade-bulk-controls';
 import './hide-inactive-close-button';
 import './highlight-own-exchange-orders';
 import './highlight-production-order-error';

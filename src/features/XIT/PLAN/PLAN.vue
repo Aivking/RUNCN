@@ -4,17 +4,19 @@ import {
   fioBuildingsStore,
   loadFioBuildings,
   FioBuilding,
-  isHabitationBuilding,
-  isProductionBuilding,
+  FioRecipeIO,
 } from '@src/features/XIT/PLAN/fio-buildings';
+import { BUILDING_NAMES_ZH } from '@src/features/XIT/PLAN/building-names-zh';
 import { useXitParameters } from '@src/hooks/use-xit-parameters';
 import { getPrice } from '@src/infrastructure/fio/cx';
 import { userData } from '@src/store/user-data';
 import { planetsStore } from '@src/infrastructure/prun-api/data/planets';
+import { sitesStore } from '@src/infrastructure/prun-api/data/sites';
 import { configurableValue } from '@src/features/XIT/ACT/shared-types';
 import { showBuffer } from '@src/infrastructure/prun-ui/buffers';
 import { formatCurrency } from '@src/utils/format';
 import PrunButton from '@src/components/PrunButton.vue';
+import MaterialIcon from '@src/components/MaterialIcon.vue';
 import Active from '@src/components/forms/Active.vue';
 import SelectInput from '@src/components/forms/SelectInput.vue';
 import NumberInput from '@src/components/forms/NumberInput.vue';
@@ -35,6 +37,62 @@ if (parameters.length > 0 && !planet.value) {
 // 懒加载 FIO 建筑数据。
 loadFioBuildings();
 
+// ── 星球环境建材 ──────────────────────────────────────────────
+const PER_AREA_ENV = new Set(['MCG', 'INS', 'SEA']);
+const PER_BUILDING_ENV = new Set(['TSH', 'MGC', 'BL', 'HSE', 'AEF']);
+
+interface PlanetEnvCosts {
+  perArea: Record<string, number>;
+  perBuilding: Record<string, number>;
+}
+
+const planetDetailCache = new Map<string, { MaterialTicker: string; MaterialAmount: number }[]>();
+const planetBuildReqs = ref<{ MaterialTicker: string; MaterialAmount: number }[] | undefined>();
+
+async function fetchPlanetDetail(naturalId: string) {
+  if (planetDetailCache.has(naturalId)) {
+    planetBuildReqs.value = planetDetailCache.get(naturalId);
+    return;
+  }
+  try {
+    const resp = await fetch(`https://rest.fnar.net/planet/${encodeURIComponent(naturalId)}`);
+    if (!resp.ok) {
+      planetBuildReqs.value = undefined;
+      return;
+    }
+    const data = await resp.json();
+    const reqs = ((data.BuildRequirements ?? []) as any[]).map(r => ({
+      MaterialTicker: r.MaterialTicker as string,
+      MaterialAmount: r.MaterialAmount as number,
+    }));
+    planetDetailCache.set(naturalId, reqs);
+    planetBuildReqs.value = reqs;
+  } catch {
+    planetBuildReqs.value = undefined;
+  }
+}
+
+const envCosts = computed<PlanetEnvCosts | undefined>(() => {
+  const reqs = planetBuildReqs.value;
+  if (!reqs || reqs.length === 0) {
+    return undefined;
+  }
+  const cm = findFioBuilding('CM');
+  if (!cm) {
+    return undefined;
+  }
+  const cmArea = cm.AreaCost;
+  const result: PlanetEnvCosts = { perArea: {}, perBuilding: {} };
+  for (const req of reqs) {
+    if (PER_AREA_ENV.has(req.MaterialTicker)) {
+      result.perArea[req.MaterialTicker] = req.MaterialAmount / cmArea;
+    } else if (PER_BUILDING_ENV.has(req.MaterialTicker)) {
+      result.perBuilding[req.MaterialTicker] = req.MaterialAmount;
+    }
+  }
+  return result;
+});
+
 // 交易所选项列表。
 const exchangeOptions = ['IC1', 'AI1', 'NC1', 'CI1', 'NC2', 'CI2'];
 
@@ -47,9 +105,139 @@ const allBuildings = computed<FioBuilding[]>(() => {
   return [...list].sort((a, b) => a.Ticker.localeCompare(b.Ticker));
 });
 
-// 当前已选建筑对应的 FioBuilding 信息。
 function findFioBuilding(ticker: string): FioBuilding | undefined {
   return fioBuildingsStore.buildings?.find(x => x.Ticker === ticker);
+}
+
+// ── 建筑元数据（类型 + 人口容量）──────────────────────────────
+interface BuildingMetaEntry {
+  type: PrunApi.PlatformModuleType;
+  name: string;
+  wfCapacities: PrunApi.WorkforceCapacity[];
+}
+
+const buildingMeta = computed(() => {
+  const sites = sitesStore.all.value;
+  const map = new Map<string, BuildingMetaEntry>();
+  if (!sites) {
+    return map;
+  }
+  for (const site of sites) {
+    for (const opt of site.buildOptions.options) {
+      if (!map.has(opt.ticker)) {
+        map.set(opt.ticker, {
+          type: opt.type,
+          name: opt.name,
+          wfCapacities: opt.workforceCapacities,
+        });
+      }
+    }
+  }
+  return map;
+});
+
+type WfTier = 'Pioneers' | 'Settlers' | 'Technicians' | 'Engineers' | 'Scientists';
+const tierToLevel: Record<WfTier, PrunApi.WorkforceLevel> = {
+  Pioneers: 'PIONEER',
+  Settlers: 'SETTLER',
+  Technicians: 'TECHNICIAN',
+  Engineers: 'ENGINEER',
+  Scientists: 'SCIENTIST',
+};
+
+function getBuildingType(ticker: string): PrunApi.PlatformModuleType | undefined {
+  return buildingMeta.value.get(ticker)?.type;
+}
+
+function isProductionBuilding(ticker: string): boolean {
+  const t = getBuildingType(ticker);
+  if (t) {
+    return t === 'PRODUCTION' || t === 'RESOURCES';
+  }
+  const fb = findFioBuilding(ticker);
+  return fb ? fb.Recipes.length > 0 : false;
+}
+
+function isHabitationBuilding(ticker: string): boolean {
+  const t = getBuildingType(ticker);
+  if (t) {
+    return t === 'HABITATION';
+  }
+  if (ticker in HABITATION_FALLBACK) {
+    return true;
+  }
+  const fb = findFioBuilding(ticker);
+  return fb ? fb.Name.toLowerCase().includes('habitation') : false;
+}
+
+function isStorageBuilding(ticker: string): boolean {
+  const t = getBuildingType(ticker);
+  if (t) {
+    return t === 'STORAGE';
+  }
+  const fb = findFioBuilding(ticker);
+  return fb
+    ? fb.Name.toLowerCase().includes('storage') || fb.Name.toLowerCase().includes('store')
+    : false;
+}
+
+// 获取居住建筑在指定层级的容量。
+// 优先使用游戏 API 数据，容量为 0 或不可用时回退到硬编码表。
+function getWfCapacity(ticker: string, tier: WfTier): number {
+  const meta = buildingMeta.value.get(ticker);
+  if (meta) {
+    const gameCap = meta.wfCapacities.find(c => c.level === tierToLevel[tier])?.capacity;
+    if (gameCap !== undefined && gameCap > 0) {
+      return gameCap;
+    }
+  }
+  return HABITATION_FALLBACK[ticker]?.[tier] ?? 0;
+}
+
+// 已知居住建筑的默认容量回退表。
+// 数据来源：PRUNner 开源项目，与游戏内部数据一致。
+const HABITATION_FALLBACK: Record<string, Partial<Record<WfTier, number>>> = {
+  HB1: { Pioneers: 100 },
+  HB2: { Settlers: 100 },
+  HB3: { Technicians: 100 },
+  HB4: { Engineers: 100 },
+  HB5: { Scientists: 100 },
+  HBB: { Pioneers: 75, Settlers: 75 },
+  HBC: { Settlers: 75, Technicians: 75 },
+  HBM: { Technicians: 75, Engineers: 75 },
+  HBL: { Engineers: 75, Scientists: 75 },
+};
+
+// 获取建筑显示名称：中文 → 游戏内名称 → FIO camelCase 格式化。
+function getBuildingDisplayName(ticker: string): string {
+  if (BUILDING_NAMES_ZH[ticker]) {
+    return BUILDING_NAMES_ZH[ticker];
+  }
+  const gameName = buildingMeta.value.get(ticker)?.name;
+  if (gameName) {
+    return gameName;
+  }
+  const fb = findFioBuilding(ticker);
+  if (!fb) {
+    return ticker;
+  }
+  return fb.Name.replace(/([A-Z])/g, ' $1')
+    .trim()
+    .replace(/^./, s => s.toUpperCase());
+}
+
+// 建筑行类型标签（非生产建筑的配方列显示）。
+function buildingTypeLabel(ticker: string): string {
+  if (isHabitationBuilding(ticker)) {
+    return '居住';
+  }
+  if (isStorageBuilding(ticker)) {
+    return '仓库';
+  }
+  if (ticker === 'CM') {
+    return '核心';
+  }
+  return '--';
 }
 
 // 已用面积合计。
@@ -64,7 +252,6 @@ const totalArea = computed<number>(() => {
   return sum;
 });
 
-// 最大可用面积（每张许可证 500 平方单位）。
 const maxArea = computed<number>(() => permits.value * 500);
 
 // 各层级劳动力需求（来自生产建筑）。
@@ -72,7 +259,7 @@ const workforceNeeded = computed(() => {
   const result = { Pioneers: 0, Settlers: 0, Technicians: 0, Engineers: 0, Scientists: 0 };
   for (const pb of buildings.value) {
     const fb = findFioBuilding(pb.ticker);
-    if (!fb || !isProductionBuilding(fb)) {
+    if (!fb || !isProductionBuilding(pb.ticker)) {
       continue;
     }
     result.Pioneers += fb.Pioneers * pb.count;
@@ -88,26 +275,21 @@ const workforceNeeded = computed(() => {
 const workforceProvided = computed(() => {
   const result = { Pioneers: 0, Settlers: 0, Technicians: 0, Engineers: 0, Scientists: 0 };
   for (const pb of buildings.value) {
-    const fb = findFioBuilding(pb.ticker);
-    if (!fb || !isHabitationBuilding(fb)) {
+    if (!isHabitationBuilding(pb.ticker)) {
       continue;
     }
-    result.Pioneers += fb.Pioneers * pb.count;
-    result.Settlers += fb.Settlers * pb.count;
-    result.Technicians += fb.Technicians * pb.count;
-    result.Engineers += fb.Engineers * pb.count;
-    result.Scientists += fb.Scientists * pb.count;
+    for (const tier of wfTiers) {
+      result[tier] += getWfCapacity(pb.ticker, tier) * pb.count;
+    }
   }
   return result;
 });
 
-// 计算单条生产线的每日利润（输出价值减去输入价值）。
 function calcDailyProfit(fb: FioBuilding, recipeIdx: number, count: number): number | undefined {
   if (recipeIdx < 0 || recipeIdx >= fb.Recipes.length) {
     return undefined;
   }
   const recipe = fb.Recipes[recipeIdx];
-  // 每日运行次数。
   const runsPerDay = 86400000 / recipe.DurationMs;
   let outputValue = 0;
   for (const out of recipe.Outputs) {
@@ -128,12 +310,11 @@ function calcDailyProfit(fb: FioBuilding, recipeIdx: number, count: number): num
   return (outputValue - inputValue) * count;
 }
 
-// 所有建筑的每日总利润。
 const dailyProfit = computed<number | undefined>(() => {
   let total = 0;
   for (const pb of buildings.value) {
     const fb = findFioBuilding(pb.ticker);
-    if (!fb || !isProductionBuilding(fb)) {
+    if (!fb || !isProductionBuilding(pb.ticker)) {
       continue;
     }
     const profit = calcDailyProfit(fb, pb.recipeIdx, pb.count);
@@ -145,9 +326,10 @@ const dailyProfit = computed<number | undefined>(() => {
   return total;
 });
 
-// 汇总所有计划建筑所需的建材。
+// 汇总所有建筑所需建材（基础 + 环境）。
 const totalMaterials = computed<Record<string, number>>(() => {
   const result: Record<string, number> = {};
+  const env = envCosts.value;
   for (const pb of buildings.value) {
     const fb = findFioBuilding(pb.ticker);
     if (!fb) {
@@ -156,15 +338,20 @@ const totalMaterials = computed<Record<string, number>>(() => {
     for (const cost of fb.BuildingCosts) {
       result[cost.CommodityTicker] = (result[cost.CommodityTicker] ?? 0) + cost.Amount * pb.count;
     }
+    if (env) {
+      for (const [ticker, rate] of Object.entries(env.perArea)) {
+        result[ticker] = (result[ticker] ?? 0) + rate * fb.AreaCost * pb.count;
+      }
+      for (const [ticker, amount] of Object.entries(env.perBuilding)) {
+        result[ticker] = (result[ticker] ?? 0) + amount * pb.count;
+      }
+    }
   }
   return result;
 });
 
-// 劳动力层级列表（有序）。
-type WfTier = 'Pioneers' | 'Settlers' | 'Technicians' | 'Engineers' | 'Scientists';
 const wfTiers: WfTier[] = ['Pioneers', 'Settlers', 'Technicians', 'Engineers', 'Scientists'];
 
-// 中文层级名称映射。
 const wfTierNames: Record<WfTier, string> = {
   Pioneers: '先驱',
   Settlers: '定居者',
@@ -180,75 +367,77 @@ function onAutoBalance() {
     return;
   }
 
+  // 收集所有待添加的居住建筑，最后一次性更新列表。
+  const additions: { ticker: string; count: number }[] = [];
+
   for (const tier of wfTiers) {
-    const deficit = workforceNeeded.value[tier] - workforceProvided.value[tier];
+    // 计算初始缺口 + 前序迭代已添加的供给。
+    let provided = workforceProvided.value[tier];
+    for (const a of additions) {
+      provided += getWfCapacity(a.ticker, tier) * a.count;
+    }
+    const deficit = workforceNeeded.value[tier] - provided;
     if (deficit <= 0) {
       continue;
     }
 
     // 找到仅提供该层级劳动力的居住建筑。
     const candidates = allFio.filter(fb => {
-      if (!isHabitationBuilding(fb)) {
+      if (!isHabitationBuilding(fb.Ticker)) {
         return false;
       }
-      // 只允许唯一层级有值，其余为零。
-      const tiers: WfTier[] = ['Pioneers', 'Settlers', 'Technicians', 'Engineers', 'Scientists'];
-      for (const t of tiers) {
-        if (t !== tier && fb[t] > 0) {
-          return false;
-        }
+      const cap = getWfCapacity(fb.Ticker, tier);
+      if (cap <= 0) {
+        return false;
       }
-      return fb[tier] > 0;
+      return wfTiers.every(t => t === tier || getWfCapacity(fb.Ticker, t) === 0);
     });
 
     if (candidates.length === 0) {
       continue;
     }
 
-    // 选择容量最大的居住建筑。
-    candidates.sort((a, b) => b[tier] - a[tier]);
+    candidates.sort((a, b) => getWfCapacity(b.Ticker, tier) - getWfCapacity(a.Ticker, tier));
     const best = candidates[0];
-    const capacity = best[tier];
+    const capacity = getWfCapacity(best.Ticker, tier);
     const neededCount = Math.ceil(deficit / capacity);
+    additions.push({ ticker: best.Ticker, count: neededCount });
+  }
 
-    // 查找已有的规划条目。
-    const existing = buildings.value.find(x => x.ticker === best.Ticker);
-    const newList = [...buildings.value];
+  // 一次性合并到建筑列表。
+  if (additions.length === 0) {
+    return;
+  }
+  const newList = [...buildings.value];
+  for (const a of additions) {
+    const existing = newList.find(x => x.ticker === a.ticker);
     if (existing) {
       const idx = newList.indexOf(existing);
-      newList[idx] = { ...existing, count: existing.count + neededCount };
+      newList[idx] = { ...existing, count: existing.count + a.count };
     } else {
-      newList.push({ ticker: best.Ticker, count: neededCount, recipeIdx: -1 });
+      newList.push({ ticker: a.ticker, count: a.count, recipeIdx: -1 });
     }
-    buildings.value = newList;
   }
+  buildings.value = newList;
 }
 
-// 添加建筑到规划列表。
+// 添加建筑到规划列表（每次添加新行以支持多配方）。
 function onAddBuilding(ticker: string) {
   if (!ticker) {
     return;
   }
-  const existing = buildings.value.find(x => x.ticker === ticker);
   const newList = [...buildings.value];
-  if (existing) {
-    const idx = newList.indexOf(existing);
-    newList[idx] = { ...existing, count: existing.count + 1 };
-  } else {
-    newList.push({ ticker, count: 1, recipeIdx: -1 });
-  }
+  newList.push({ ticker, count: 1, recipeIdx: -1 });
   buildings.value = newList;
   selectedTicker.value = '';
 }
 
-// 删除规划列表中的建筑条目。
 function onRemoveBuilding(idx: number) {
   const newList = [...buildings.value];
   newList.splice(idx, 1);
   buildings.value = newList;
 }
 
-// 更新某行的数量。
 function onCountChange(idx: number, value: number | undefined) {
   if (value === undefined) {
     return;
@@ -258,7 +447,6 @@ function onCountChange(idx: number, value: number | undefined) {
   buildings.value = newList;
 }
 
-// 更新某行的选中配方索引。
 function onRecipeChange(idx: number, value: string) {
   const newList = [...buildings.value];
   newList[idx] = { ...newList[idx], recipeIdx: parseInt(value, 10) };
@@ -271,19 +459,10 @@ function onGenerateAct() {
   if (Object.keys(materials).length === 0) {
     return;
   }
-
-  // 固定包名。
   const pkgName = 'JIHUAJIANZHU';
-
   const pkg: UserData.ActionPackageData = {
     global: { name: pkgName },
-    groups: [
-      {
-        type: 'Manual',
-        name: '建材',
-        materials: { ...materials },
-      },
-    ],
+    groups: [{ type: 'Manual', name: '建材', materials: { ...materials } }],
     actions: [
       {
         type: 'CX Buy',
@@ -296,30 +475,57 @@ function onGenerateAct() {
       },
     ],
   };
-
-  // 找到同名包并替换，否则新增。
   const existingIdx = userData.actionPackages.findIndex(x => x.global.name === pkgName);
   if (existingIdx >= 0) {
     userData.actionPackages[existingIdx] = pkg;
   } else {
     userData.actionPackages.push(pkg);
   }
-
   showBuffer(`XIT ACT GEN ${pkgName}`);
 }
 
-// 构建建筑下拉选项列表。
-const buildingOptions = computed(() => {
-  return allBuildings.value.map(fb => ({
-    label: `${fb.Ticker} - ${fb.Name}`,
-    value: fb.Ticker,
-  }));
+// 按类型分组的建筑选项（不含行星项目等其他建筑）。
+interface BuildingGroup {
+  label: string;
+  items: { ticker: string; displayName: string }[];
+}
+
+const buildingGroups = computed<BuildingGroup[]>(() => {
+  const production: BuildingGroup['items'] = [];
+  const habitation: BuildingGroup['items'] = [];
+  const storage: BuildingGroup['items'] = [];
+  for (const fb of allBuildings.value) {
+    if (fb.Ticker === 'CM') {
+      continue;
+    }
+    const item = {
+      ticker: fb.Ticker,
+      displayName: `${fb.Ticker} - ${getBuildingDisplayName(fb.Ticker)}`,
+    };
+    if (isProductionBuilding(fb.Ticker)) {
+      production.push(item);
+    } else if (isHabitationBuilding(fb.Ticker)) {
+      habitation.push(item);
+    } else if (isStorageBuilding(fb.Ticker)) {
+      storage.push(item);
+    }
+    // 其他建筑（行星项目等）不显示在下拉中。
+  }
+  const groups: BuildingGroup[] = [];
+  if (production.length > 0) {
+    groups.push({ label: '生产建筑', items: production });
+  }
+  if (habitation.length > 0) {
+    groups.push({ label: '居住建筑', items: habitation });
+  }
+  if (storage.length > 0) {
+    groups.push({ label: '仓库', items: storage });
+  }
+  return groups;
 });
 
-// 当前在添加建筑下拉框中选中的 Ticker。
 const selectedTicker = ref('');
 
-// 星球搜索建议列表（最多 20 条，按自然编号匹配优先）。
 const planetSuggestions = computed(() => {
   const input = planet.value.trim().toLowerCase();
   if (!input || input.length < 1) {
@@ -330,21 +536,26 @@ const planetSuggestions = computed(() => {
     .slice(0, 20);
 });
 
-// 若 CM 核心尚未在规划列表中则添加到列表首位。
 function addCoreIfMissing() {
   if (!buildings.value.find(x => x.ticker === 'CM')) {
     buildings.value = [{ ticker: 'CM', count: 1, recipeIdx: -1 }, ...buildings.value];
   }
 }
 
-// 监听星球输入：匹配到已知星球时自动添加 CM 核心。
-watch(planet, newVal => {
-  if (planetsStore.find(newVal.trim())) {
-    addCoreIfMissing();
-  }
-});
+watch(
+  planet,
+  newVal => {
+    const matched = planetsStore.find(newVal.trim());
+    if (matched) {
+      addCoreIfMissing();
+      fetchPlanetDetail(matched.naturalId);
+    } else {
+      planetBuildReqs.value = undefined;
+    }
+  },
+  { immediate: true },
+);
 
-// 获取建筑某行的配方选项列表。
 function recipeOptions(fb: FioBuilding) {
   return fb.Recipes.map((r, i) => ({
     label: r.RecipeName,
@@ -352,10 +563,18 @@ function recipeOptions(fb: FioBuilding) {
   }));
 }
 
-// 获取建筑行的每日利润格式化文本。
+// 获取已选配方的产出材料列表。
+function getRecipeOutputs(pb: PlannedBuilding): FioRecipeIO[] {
+  const fb = findFioBuilding(pb.ticker);
+  if (!fb || pb.recipeIdx < 0 || pb.recipeIdx >= fb.Recipes.length) {
+    return [];
+  }
+  return fb.Recipes[pb.recipeIdx].Outputs;
+}
+
 function rowProfitText(pb: PlannedBuilding): string {
   const fb = findFioBuilding(pb.ticker);
-  if (!fb || !isProductionBuilding(fb)) {
+  if (!fb || !isProductionBuilding(pb.ticker)) {
     return '--';
   }
   const profit = calcDailyProfit(fb, pb.recipeIdx, pb.count);
@@ -365,7 +584,6 @@ function rowProfitText(pb: PlannedBuilding): string {
   return formatCurrency(profit);
 }
 
-// 劳动力状态标志（是否满足）。
 function wfOk(tier: WfTier): boolean {
   return workforceProvided.value[tier] >= workforceNeeded.value[tier];
 }
@@ -407,9 +625,14 @@ function wfOk(tier: WfTier): boolean {
         <div :class="$style.sectionHeader">
           <span>建筑列表</span>
           <div :class="$style.addRow">
-            <SelectInput
-              v-model="selectedTicker"
-              :options="[{ label: '— 选择建筑 —', value: '' }, ...buildingOptions]" />
+            <select v-model="selectedTicker" :class="$style.buildingSelect">
+              <option value="">— 选择建筑 —</option>
+              <optgroup v-for="group in buildingGroups" :key="group.label" :label="group.label">
+                <option v-for="b in group.items" :key="b.ticker" :value="b.ticker">
+                  {{ b.displayName }}
+                </option>
+              </optgroup>
+            </select>
             <PrunButton primary :disabled="!selectedTicker" @click="onAddBuilding(selectedTicker)">
               + 添加
             </PrunButton>
@@ -440,25 +663,31 @@ function wfOk(tier: WfTier): boolean {
               " />
           </span>
           <span :class="$style.colRecipe">
-            <template
-              v-if="
-                findFioBuilding(pb.ticker) && isProductionBuilding(findFioBuilding(pb.ticker)!)
-              ">
-              <select
-                :value="String(pb.recipeIdx)"
-                :class="$style.recipeSelect"
-                @change="e => onRecipeChange(idx, (e.target as HTMLSelectElement).value)">
-                <option value="-1">— 选择配方 —</option>
-                <option
-                  v-for="opt in recipeOptions(findFioBuilding(pb.ticker)!)"
-                  :key="opt.value"
-                  :value="opt.value">
-                  {{ opt.label }}
-                </option>
-              </select>
+            <template v-if="findFioBuilding(pb.ticker) && isProductionBuilding(pb.ticker)">
+              <div :class="$style.recipeRow">
+                <select
+                  :value="String(pb.recipeIdx)"
+                  :class="$style.recipeSelect"
+                  @change="e => onRecipeChange(idx, (e.target as HTMLSelectElement).value)">
+                  <option value="-1">— 选择配方 —</option>
+                  <option
+                    v-for="opt in recipeOptions(findFioBuilding(pb.ticker)!)"
+                    :key="opt.value"
+                    :value="opt.value">
+                    {{ opt.label }}
+                  </option>
+                </select>
+                <span v-if="pb.recipeIdx >= 0" :class="$style.recipeIcons">
+                  <MaterialIcon
+                    v-for="out in getRecipeOutputs(pb)"
+                    :key="out.Ticker"
+                    :ticker="out.Ticker"
+                    size="inline" />
+                </span>
+              </div>
             </template>
             <template v-else>
-              <span :class="$style.noRecipe">居住</span>
+              <span :class="$style.noRecipe">{{ buildingTypeLabel(pb.ticker) }}</span>
             </template>
           </span>
           <span :class="$style.colArea">
@@ -530,6 +759,23 @@ function wfOk(tier: WfTier): boolean {
 </template>
 
 <style module>
+/* 统一暗色主题：所有表单元素与游戏风格一致 */
+.container input,
+.container select {
+  background: rgba(14, 21, 28, 0.85);
+  color: #bbb;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 2px;
+  padding: 2px 4px;
+  font-size: 11px;
+}
+
+.container input:focus,
+.container select:focus {
+  border-color: rgba(255, 200, 86, 0.5);
+  outline: none;
+}
+
 .container {
   display: flex;
   flex-direction: column;
@@ -611,9 +857,27 @@ function wfOk(tier: WfTier): boolean {
   width: 50px;
 }
 
-.recipeSelect {
-  width: 100%;
+.buildingSelect {
+  width: 240px;
   font-size: 11px;
+}
+
+.recipeRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.recipeSelect {
+  flex: 1;
+  min-width: 0;
+  font-size: 11px;
+}
+
+.recipeIcons {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
 }
 
 .noRecipe {

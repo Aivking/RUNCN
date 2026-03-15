@@ -7,6 +7,8 @@ import PrunButton from '@src/components/PrunButton.vue';
 import Active from '@src/components/forms/Active.vue';
 import Commands from '@src/components/forms/Commands.vue';
 import NumberInput from '@src/components/forms/NumberInput.vue';
+import GenerateHQUCActDialog from './GenerateHQUCActDialog.vue';
+import { showTileOverlay } from '@src/infrastructure/prun-ui/tile-overlay';
 
 const from = useTileState('from', companyStore.value?.headquarters.level ?? 1);
 const to = useTileState('to', from.value + 1);
@@ -16,6 +18,10 @@ const materials = computed(() => calculateHQUpgradeMaterials(from.value, to.valu
 function reset() {
   from.value = companyStore.value?.headquarters.level ?? 1;
   to.value = from.value + 1;
+}
+
+function onGenerateAct(ev: Event) {
+  showTileOverlay(ev, GenerateHQUCActDialog, { from: from.value, to: to.value });
 }
 </script>
 
@@ -29,6 +35,7 @@ function reset() {
     </Active>
     <Commands>
       <PrunButton primary @click="reset">重置</PrunButton>
+      <PrunButton dark @click="onGenerateAct">生成ACT购买包</PrunButton>
     </Commands>
   </form>
   <MaterialPurchaseTable :materials="materials" />
