@@ -228,7 +228,7 @@ onMounted(loadData);
         </div>
 
         <!-- Expanded details (default expanded, click header to collapse) -->
-        <div v-if="isExpanded(task.id)" @click.stop style="cursor: default">
+        <div v-if="isExpanded(task.id)" style="cursor: default" @click.stop>
           <div v-if="task.description" style="opacity: 0.6; font-size: 12px; margin: 4px 0">{{
             task.description
           }}</div>

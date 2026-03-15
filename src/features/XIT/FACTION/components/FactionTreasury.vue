@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import PrunButton from '@src/components/PrunButton.vue';
-import SectionHeader from '@src/components/SectionHeader.vue';
 import {
   fetchTreasuryBalance,
   fetchTreasuryRecords,
