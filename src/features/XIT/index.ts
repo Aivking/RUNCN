@@ -10,6 +10,7 @@ import './CONTS/CONTS';
 import './CONTSS/CONTSS';
 import './CONTFF/CONTFF';
 import './CXTS/CXTS';
+import './FACTION/FACTION';
 import './DEV/DEV';
 import './FIN/FIN';
 import './FIN/FINPR';
