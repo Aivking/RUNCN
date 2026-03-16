@@ -29,6 +29,33 @@ export interface ContractTotals {
 }
 
 /**
+ * 支付条件处理回调函数类型
+ * @param condition 支付条件
+ * @param contract 所属合同
+ */
+type PaymentConditionProcessor = (
+  condition: PrunApi.ContractCondition,
+  contract: PrunApi.Contract,
+) => void;
+
+/**
+ * 处理合同中未完成的支付条件
+ * @param contract 合同对象
+ * @param processor 处理每个支付条件的回调函数
+ */
+function processPaymentConditions(
+  contract: PrunApi.Contract,
+  processor: PaymentConditionProcessor,
+): void {
+  for (const condition of contract.conditions) {
+    // 只处理未完成的支付条件
+    if (condition.type === 'PAYMENT' && condition.amount && condition.status !== 'FULFILLED') {
+      processor(condition, contract);
+    }
+  }
+}
+
+/**
  * 计算合同列表的应收应付总额
  * @param contracts 合同列表
  * @returns 统计结果，包含应收、应付、货币代码和是否混合货币的标志
@@ -40,24 +67,23 @@ export function calculateContractTotals(contracts: PrunApi.Contract[]): Contract
   let hasMixedCurrency = false;
 
   for (const contract of contracts) {
-    for (const cond of contract.conditions) {
-      // 只处理未完成的支付条件
-      if (cond.type === 'PAYMENT' && cond.amount && cond.status !== 'FULFILLED') {
-        // 检查货币一致性
-        if (currency && cond.amount.currency !== currency) {
+    processPaymentConditions(contract, condition => {
+      // 检查货币一致性
+      if (condition.amount) {
+        if (currency && condition.amount.currency !== currency) {
           hasMixedCurrency = true;
         } else if (!currency) {
-          currency = cond.amount.currency;
+          currency = condition.amount.currency;
         }
 
         // 根据条件方判断是应收还是应付
-        if (cond.party !== contract.party) {
-          receivable += cond.amount.amount;
+        if (condition.party !== contract.party) {
+          receivable += condition.amount.amount;
         } else {
-          payable += cond.amount.amount;
+          payable += condition.amount.amount;
         }
       }
-    }
+    });
   }
 
   return { receivable, payable, currency, hasMixedCurrency };
@@ -248,18 +274,15 @@ export function calculateContractReceivable(contract: PrunApi.Contract): {
   let total = 0;
   let currency = '';
 
-  for (const cond of contract.conditions) {
-    // 只处理未完成的支付条件
-    if (cond.type === 'PAYMENT' && cond.amount && cond.status !== 'FULFILLED') {
-      // 判断是否为应收款（条件方不等于合同方）
-      if (cond.party !== contract.party) {
-        total += cond.amount.amount;
-        if (!currency) {
-          currency = cond.amount.currency;
-        }
+  processPaymentConditions(contract, condition => {
+    // 判断是否为应收款（条件方不等于合同方）
+    if (condition.party !== contract.party && condition.amount) {
+      total += condition.amount.amount;
+      if (!currency) {
+        currency = condition.amount.currency;
       }
     }
-  }
+  });
 
   return { total, currency };
 }
