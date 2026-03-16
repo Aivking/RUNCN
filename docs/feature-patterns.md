@@ -84,6 +84,17 @@ Then import the file in `src/features/XIT/index.ts`.
 
 The command should be short. Refer to `docs/game/commands.csv` for an example of game commands. Alias is usually added for backwards compatibility or if the community REALLY wants it.
 
+### Tile State Persistence
+
+`tileStatePlugin` binds each XIT component to `getTileState(tile)`, keyed by the tile's numeric ID. Numeric IDs are **non-persistent** — pruned when the tile closes. Named string keys (e.g., `getTileState('my-workspace')`) **are** persistent.
+
+To pass data between XIT commands (e.g., a list view opening an editor), use a named workspace key as a transfer buffer:
+
+1. **Sender** writes data to `getTileState('my-workspace')`, then calls `showBuffer()`.
+2. **Receiver** checks the workspace on setup, copies data into its own tile state via `useTileState`, then clears the workspace.
+
+The receiver's `useTileState` reads from its own tile ID (injected by the plugin), **not** from the named key. You must explicitly consume and clear the workspace.
+
 ---
 
 ## Auto-Imports (no explicit import needed)

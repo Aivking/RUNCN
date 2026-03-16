@@ -49,6 +49,7 @@ export const initialUserData = deepFreeze({
       ['REP', 'XIT REP'],
       ['SET', 'XIT SET'],
       ['HELP', 'XIT HELP'],
+      ['JH', 'XIT JH'],
     ] as [string, string][],
     buffers: [] as [string, number, number][],
     audioVolume: 0.4,
@@ -61,6 +62,7 @@ export const initialUserData = deepFreeze({
   fullEquityMode: true,
   notes: [] as UserData.Note[],
   actionPackages: [] as UserData.ActionPackageData[],
+  basePlans: [] as UserData.BasePlan[],
   systemMessages: [] as UserData.SystemMessages[],
   todo: [] as UserData.TaskList[],
   tabs: {

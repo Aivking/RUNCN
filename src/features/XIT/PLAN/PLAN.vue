@@ -1,25 +1,31 @@
 <script setup lang="ts">
-import { useTileState, PlannedBuilding } from '@src/features/XIT/PLAN/tile-state';
+import { useTileState, PlannedBuilding, PlannedRecipe } from '@src/features/XIT/PLAN/tile-state';
+import { getTileState } from '@src/store/user-data-tiles';
 import {
   fioBuildingsStore,
   loadFioBuildings,
   FioBuilding,
   FioRecipeIO,
 } from '@src/features/XIT/PLAN/fio-buildings';
+import { workforceNeedsStore, loadWorkforceNeeds } from '@src/features/XIT/PLAN/workforce-needs';
 import { BUILDING_NAMES_ZH } from '@src/features/XIT/PLAN/building-names-zh';
 import { useXitParameters } from '@src/hooks/use-xit-parameters';
-import { getPrice } from '@src/infrastructure/fio/cx';
+import { cxStore } from '@src/infrastructure/fio/cx';
 import { userData } from '@src/store/user-data';
 import { planetsStore } from '@src/infrastructure/prun-api/data/planets';
 import { sitesStore } from '@src/infrastructure/prun-api/data/sites';
+import { materialsStore } from '@src/infrastructure/prun-api/data/materials';
+import { sortMaterials } from '@src/core/sort-materials';
 import { configurableValue } from '@src/features/XIT/ACT/shared-types';
 import { showBuffer } from '@src/infrastructure/prun-ui/buffers';
-import { formatCurrency } from '@src/utils/format';
+import { showTileOverlay } from '@src/infrastructure/prun-ui/tile-overlay';
+import { formatCurrency, fixed2 } from '@src/utils/format';
 import PrunButton from '@src/components/PrunButton.vue';
 import MaterialIcon from '@src/components/MaterialIcon.vue';
 import Active from '@src/components/forms/Active.vue';
 import SelectInput from '@src/components/forms/SelectInput.vue';
 import NumberInput from '@src/components/forms/NumberInput.vue';
+import SavePlanOverlay from '@src/features/XIT/PLAN/SavePlanOverlay.vue';
 
 // 从 XIT 参数中读取初始星球。
 const parameters = useXitParameters();
@@ -28,6 +34,79 @@ const planet = useTileState('planet');
 const permits = useTileState('permits');
 const exchange = useTileState('exchange');
 const buildings = useTileState('buildings');
+const experts = useTileState('experts');
+const cogcIndustry = useTileState('cogcIndustry');
+const customInputPrices = useTileState('customInputPrices');
+const customOutputPrices = useTileState('customOutputPrices');
+const customWfPrices = useTileState('customWfPrices');
+const jhPlanId = useTileState('jhPlanId');
+
+// 从 JH 工作区加载数据（从 JH 列表打开计划时）。
+{
+  const ws = getTileState('bplan-workspace') as Record<string, unknown>;
+  if (Object.keys(ws).length > 0) {
+    planet.value = (ws.planet as string) ?? '';
+    permits.value = (ws.permits as number) ?? 1;
+    exchange.value = (ws.exchange as string) ?? 'IC1';
+    buildings.value = JSON.parse(JSON.stringify(ws.buildings ?? []));
+    experts.value = { ...((ws.experts as Record<string, number>) ?? {}) };
+    cogcIndustry.value = (ws.cogcIndustry as string) ?? '';
+    customInputPrices.value = { ...((ws.customInputPrices as Record<string, number>) ?? {}) };
+    customOutputPrices.value = { ...((ws.customOutputPrices as Record<string, number>) ?? {}) };
+    customWfPrices.value = { ...((ws.customWfPrices as Record<string, number>) ?? {}) };
+    jhPlanId.value = (ws.jhPlanId as string) ?? '';
+    // 清空工作区，避免残留。
+    for (const key of Object.keys(ws)) {
+      delete ws[key];
+    }
+  }
+}
+
+// 专家加成固定值（index = 专家数量）。
+const EXPERT_BONUSES = [0, 0.0306, 0.0826, 0.1534, 0.2315, 0.284];
+
+const EXPERTISE_CATEGORIES = [
+  'AGRICULTURE',
+  'CHEMISTRY',
+  'CONSTRUCTION',
+  'ELECTRONICS',
+  'FOOD_INDUSTRIES',
+  'FUEL_REFINING',
+  'MANUFACTURING',
+  'METALLURGY',
+  'RESOURCE_EXTRACTION',
+] as const;
+
+const EXPERTISE_LABELS: Record<string, string> = {
+  AGRICULTURE: '农业',
+  CHEMISTRY: '化学',
+  CONSTRUCTION: '建筑材料',
+  ELECTRONICS: '电子',
+  FOOD_INDUSTRIES: '食品工业',
+  FUEL_REFINING: '燃料精炼',
+  MANUFACTURING: '制造',
+  METALLURGY: '冶金',
+  RESOURCE_EXTRACTION: '资源开采',
+};
+
+function getEfficiencyMultiplier(expertise: string | null | undefined): number {
+  if (!expertise) return 1;
+  const expertCount = Math.min(5, Math.max(0, experts.value[expertise] ?? 0));
+  const expertBonus = EXPERT_BONUSES[expertCount];
+  const cogcBonus = cogcIndustry.value === expertise ? 0.25 : 0;
+  return (1 + expertBonus) * (1 + cogcBonus);
+}
+
+function onExpertChange(category: string, value: number) {
+  const clamped = Math.min(5, Math.max(0, value));
+  const newExperts = { ...experts.value };
+  if (clamped === 0) {
+    delete newExperts[category];
+  } else {
+    newExperts[category] = clamped;
+  }
+  experts.value = newExperts;
+}
 
 // 若用户通过参数传入星球，则预填充。
 if (parameters.length > 0 && !planet.value) {
@@ -36,6 +115,8 @@ if (parameters.length > 0 && !planet.value) {
 
 // 懒加载 FIO 建筑数据。
 loadFioBuildings();
+// 懒加载人口消耗品数据。
+loadWorkforceNeeds();
 
 // ── 星球环境建材 ──────────────────────────────────────────────
 const PER_AREA_ENV = new Set(['MCG', 'INS', 'SEA']);
@@ -61,7 +142,9 @@ async function fetchPlanetDetail(naturalId: string) {
       return;
     }
     const data = await resp.json();
-    const reqs = ((data.BuildRequirements ?? []) as any[]).map(r => ({
+    const reqs = (
+      (data.BuildRequirements ?? []) as { MaterialTicker: string; MaterialAmount: number }[]
+    ).map(r => ({
       MaterialTicker: r.MaterialTicker as string,
       MaterialAmount: r.MaterialAmount as number,
     }));
@@ -156,6 +239,20 @@ function isProductionBuilding(ticker: string): boolean {
   }
   const fb = findFioBuilding(ticker);
   return fb ? fb.Recipes.length > 0 : false;
+}
+
+// 迁移旧格式（recipeIdx + count）到新格式（recipes 数组）。
+function migrateBuilding(pb: PlannedBuilding): PlannedBuilding {
+  if (pb.recipes !== undefined) {
+    return pb;
+  }
+  return {
+    ...pb,
+    recipes:
+      pb.recipeIdx !== undefined && pb.recipeIdx >= 0
+        ? [{ recipeIdx: pb.recipeIdx, count: pb.count }]
+        : [],
+  };
 }
 
 function isHabitationBuilding(ticker: string): boolean {
@@ -285,45 +382,198 @@ const workforceProvided = computed(() => {
   return result;
 });
 
-function calcDailyProfit(fb: FioBuilding, recipeIdx: number, count: number): number | undefined {
-  if (recipeIdx < 0 || recipeIdx >= fb.Recipes.length) {
-    return undefined;
+// 使用 PLAN 磁贴的交易所设置获取价格
+function getPlanPrice(ticker?: string | null): number | undefined {
+  if (!ticker) return undefined;
+
+  const upper = ticker.toUpperCase();
+  const ignored = new Set(userData.settings.financial.ignoredMaterials.split(','));
+  const mmMaterials = new Set(userData.settings.financial.mmMaterials.split(','));
+
+  if (ignored.has(upper)) return 0;
+  if (!cxStore.fetched) return undefined;
+
+  const exchangeData = cxStore.prices.get(exchange.value);
+  if (!exchangeData) return undefined;
+
+  if (mmMaterials.has(upper)) {
+    return exchangeData.get(ticker)?.MMBuy ?? 0;
   }
-  const recipe = fb.Recipes[recipeIdx];
-  const runsPerDay = 86400000 / recipe.DurationMs;
-  let outputValue = 0;
-  for (const out of recipe.Outputs) {
-    const price = getPrice(out.Ticker);
-    if (price === undefined) {
-      return undefined;
+
+  const tickerInfo = exchangeData.get(ticker);
+  if (!tickerInfo) return 0;
+
+  const method = userData.settings.pricing.method;
+  switch (method) {
+    case 'ASK':
+      return tickerInfo.Ask ?? 0;
+    case 'BID':
+      return tickerInfo.Bid ?? 0;
+    case 'AVG':
+      return tickerInfo.PriceAverage ?? 0;
+    case 'VWAP7D':
+      return tickerInfo.VWAP7D ?? 0;
+    case 'VWAP30D':
+      return tickerInfo.VWAP30D ?? 0;
+    case 'DEFAULT':
+      return (
+        tickerInfo.VWAP7D ??
+        tickerInfo.VWAP30D ??
+        tickerInfo.PriceAverage ??
+        tickerInfo.Ask ??
+        tickerInfo.Bid ??
+        0
+      );
+  }
+  return undefined;
+}
+
+// 优先使用自定义价格，否则回退到交易所价格。
+function getInputPrice(ticker: string): number | undefined {
+  if (Object.hasOwn(customInputPrices.value, ticker)) return customInputPrices.value[ticker];
+  return getPlanPrice(ticker);
+}
+
+function getOutputPrice(ticker: string): number | undefined {
+  if (Object.hasOwn(customOutputPrices.value, ticker)) return customOutputPrices.value[ticker];
+  return getPlanPrice(ticker);
+}
+
+function getWfPrice(ticker: string): number | undefined {
+  if (Object.hasOwn(customWfPrices.value, ticker)) return customWfPrices.value[ticker];
+  return getPlanPrice(ticker);
+}
+
+function onSetInputPrice(ticker: string, value: number) {
+  customInputPrices.value = { ...customInputPrices.value, [ticker]: value };
+}
+function onResetInputPrice(ticker: string) {
+  const copy = { ...customInputPrices.value };
+  delete copy[ticker];
+  customInputPrices.value = copy;
+}
+function onSetOutputPrice(ticker: string, value: number) {
+  customOutputPrices.value = { ...customOutputPrices.value, [ticker]: value };
+}
+function onResetOutputPrice(ticker: string) {
+  const copy = { ...customOutputPrices.value };
+  delete copy[ticker];
+  customOutputPrices.value = copy;
+}
+function onSetWfPrice(ticker: string, value: number) {
+  customWfPrices.value = { ...customWfPrices.value, [ticker]: value };
+}
+function onResetWfPrice(ticker: string) {
+  const copy = { ...customWfPrices.value };
+  delete copy[ticker];
+  customWfPrices.value = copy;
+}
+
+// 计算建筑的批次周期数据（PRUNplanner 模型：配方顺序执行）。
+function calcBatchRuns(fb: FioBuilding, recipes: PlannedRecipe[], buildingCount: number) {
+  const eff = getEfficiencyMultiplier(fb.Expertise);
+  let totalBatchTime = 0;
+  for (const r of recipes) {
+    if (r.recipeIdx < 0 || r.recipeIdx >= fb.Recipes.length) continue;
+    const recipe = fb.Recipes[r.recipeIdx];
+    totalBatchTime += (recipe.DurationMs * r.count) / eff;
+  }
+  if (totalBatchTime === 0) return undefined;
+  const batchRuns = (86400000 * buildingCount) / totalBatchTime;
+  return { batchRuns, eff };
+}
+
+function calcDailyProfit(
+  fb: FioBuilding,
+  recipes: PlannedRecipe[],
+  buildingCount: number,
+): number | undefined {
+  const batch = calcBatchRuns(fb, recipes, buildingCount);
+  if (!batch) return undefined;
+
+  let total = 0;
+  for (const r of recipes) {
+    if (r.recipeIdx < 0 || r.recipeIdx >= fb.Recipes.length) continue;
+    const recipe = fb.Recipes[r.recipeIdx];
+    let outputValue = 0;
+    for (const out of recipe.Outputs) {
+      if (!out.CommodityTicker) continue;
+      const price = getOutputPrice(out.CommodityTicker);
+      if (price === undefined) return undefined;
+      outputValue += out.Amount * r.count * price;
     }
-    outputValue += out.Amount * price * runsPerDay;
-  }
-  let inputValue = 0;
-  for (const inp of recipe.Inputs) {
-    const price = getPrice(inp.Ticker);
-    if (price === undefined) {
-      return undefined;
+    let inputValue = 0;
+    for (const inp of recipe.Inputs) {
+      if (!inp.CommodityTicker) continue;
+      const price = getInputPrice(inp.CommodityTicker);
+      if (price === undefined) return undefined;
+      inputValue += inp.Amount * r.count * price;
     }
-    inputValue += inp.Amount * price * runsPerDay;
+    total += (outputValue - inputValue) * batch.batchRuns;
   }
-  return (outputValue - inputValue) * count;
+  return total;
 }
 
 const dailyProfit = computed<number | undefined>(() => {
   let total = 0;
   for (const pb of buildings.value) {
-    const fb = findFioBuilding(pb.ticker);
-    if (!fb || !isProductionBuilding(pb.ticker)) {
-      continue;
-    }
-    const profit = calcDailyProfit(fb, pb.recipeIdx, pb.count);
-    if (profit === undefined) {
-      return undefined;
-    }
+    const migrated = migrateBuilding(pb);
+    const fb = findFioBuilding(migrated.ticker);
+    if (!fb || !isProductionBuilding(migrated.ticker)) continue;
+    if (migrated.recipes.length === 0) continue;
+    const profit = calcDailyProfit(fb, migrated.recipes, pb.count);
+    if (profit === undefined) return undefined;
     total += profit;
   }
   return total;
+});
+
+// 每日消耗材料汇总
+const dailyInputs = computed<Record<string, number>>(() => {
+  const result: Record<string, number> = {};
+  for (const pb of buildings.value) {
+    const migrated = migrateBuilding(pb);
+    const fb = findFioBuilding(migrated.ticker);
+    if (!fb || !isProductionBuilding(migrated.ticker)) continue;
+
+    const batch = calcBatchRuns(fb, migrated.recipes, pb.count);
+    if (!batch) continue;
+
+    for (const r of migrated.recipes) {
+      if (r.recipeIdx < 0 || r.recipeIdx >= fb.Recipes.length) continue;
+      const recipe = fb.Recipes[r.recipeIdx];
+      for (const inp of recipe.Inputs) {
+        if (!inp.CommodityTicker) continue;
+        result[inp.CommodityTicker] =
+          (result[inp.CommodityTicker] ?? 0) + inp.Amount * r.count * batch.batchRuns;
+      }
+    }
+  }
+  return result;
+});
+
+// 每日产出材料汇总
+const dailyOutputs = computed<Record<string, number>>(() => {
+  const result: Record<string, number> = {};
+  for (const pb of buildings.value) {
+    const migrated = migrateBuilding(pb);
+    const fb = findFioBuilding(migrated.ticker);
+    if (!fb || !isProductionBuilding(migrated.ticker)) continue;
+
+    const batch = calcBatchRuns(fb, migrated.recipes, pb.count);
+    if (!batch) continue;
+
+    for (const r of migrated.recipes) {
+      if (r.recipeIdx < 0 || r.recipeIdx >= fb.Recipes.length) continue;
+      const recipe = fb.Recipes[r.recipeIdx];
+      for (const out of recipe.Outputs) {
+        if (!out.CommodityTicker) continue;
+        result[out.CommodityTicker] =
+          (result[out.CommodityTicker] ?? 0) + out.Amount * r.count * batch.batchRuns;
+      }
+    }
+  }
+  return result;
 });
 
 // 汇总所有建筑所需建材（基础 + 环境）。
@@ -335,19 +585,60 @@ const totalMaterials = computed<Record<string, number>>(() => {
     if (!fb) {
       continue;
     }
+    const count = pb.count;
     for (const cost of fb.BuildingCosts) {
-      result[cost.CommodityTicker] = (result[cost.CommodityTicker] ?? 0) + cost.Amount * pb.count;
+      if (!cost.CommodityTicker) continue;
+      result[cost.CommodityTicker] = (result[cost.CommodityTicker] ?? 0) + cost.Amount * count;
     }
     if (env) {
       for (const [ticker, rate] of Object.entries(env.perArea)) {
-        result[ticker] = (result[ticker] ?? 0) + rate * fb.AreaCost * pb.count;
+        result[ticker] = (result[ticker] ?? 0) + rate * fb.AreaCost * count;
       }
       for (const [ticker, amount] of Object.entries(env.perBuilding)) {
-        result[ticker] = (result[ticker] ?? 0) + amount * pb.count;
+        result[ticker] = (result[ticker] ?? 0) + amount * count;
       }
     }
   }
   return result;
+});
+
+// 排序后的消耗材料列表
+const sortedInputs = computed(() => {
+  const tickers = Object.keys(dailyInputs.value);
+  const mats = tickers.map(t => materialsStore.getByTicker(t)).filter(m => m !== undefined);
+  return sortMaterials(mats);
+});
+
+// 排序后的产出材料列表
+const sortedOutputs = computed(() => {
+  const tickers = Object.keys(dailyOutputs.value);
+  const mats = tickers.map(t => materialsStore.getByTicker(t)).filter(m => m !== undefined);
+  return sortMaterials(mats);
+});
+
+// 每日总成本（生产消耗 + 人口消耗品）
+const dailyCost = computed<number | undefined>(() => {
+  let total = 0;
+  for (const [ticker, amount] of Object.entries(dailyInputs.value)) {
+    const price = getInputPrice(ticker);
+    if (price === undefined) return undefined;
+    total += amount * price;
+  }
+  const wfCost = dailyWorkforceCost.value;
+  if (wfCost === undefined) return undefined;
+  total += wfCost;
+  return total;
+});
+
+// 每日总收入
+const dailyRevenue = computed<number | undefined>(() => {
+  let total = 0;
+  for (const [ticker, amount] of Object.entries(dailyOutputs.value)) {
+    const price = getOutputPrice(ticker);
+    if (price === undefined) return undefined;
+    total += amount * price;
+  }
+  return total;
 });
 
 const wfTiers: WfTier[] = ['Pioneers', 'Settlers', 'Technicians', 'Engineers', 'Scientists'];
@@ -360,74 +651,215 @@ const wfTierNames: Record<WfTier, string> = {
   Scientists: '科学家',
 };
 
-// 自动配平居住建筑：为每个缺口层级补充居住建筑。
+// 每日人口消耗品汇总（按 FIO workforceneeds 数据，每100人/天换算，不足1个取整为1）。
+const dailyWorkforceConsumption = computed<Record<string, number>>(() => {
+  const needs = workforceNeedsStore.needs;
+  if (!needs) return {};
+
+  const wfCounts: Record<string, number> = {
+    PIONEER: workforceNeeded.value.Pioneers,
+    SETTLER: workforceNeeded.value.Settlers,
+    TECHNICIAN: workforceNeeded.value.Technicians,
+    ENGINEER: workforceNeeded.value.Engineers,
+    SCIENTIST: workforceNeeded.value.Scientists,
+  };
+
+  const result: Record<string, number> = {};
+  for (const tierNeeds of needs) {
+    const count = wfCounts[tierNeeds.WorkforceType] ?? 0;
+    if (count <= 0) continue;
+    for (const need of tierNeeds.Needs) {
+      const ticker = need.MaterialTicker;
+      result[ticker] = (result[ticker] ?? 0) + (need.Amount * count) / 100;
+    }
+  }
+  // 不足1个取整为1。
+  for (const ticker of Object.keys(result)) {
+    result[ticker] = Math.max(1, Math.ceil(result[ticker]));
+  }
+  return result;
+});
+
+const sortedWorkforceConsumption = computed(() => {
+  const tickers = Object.keys(dailyWorkforceConsumption.value);
+  const mats = tickers.map(t => materialsStore.getByTicker(t)).filter(m => m !== undefined);
+  return sortMaterials(mats);
+});
+
+const dailyWorkforceCost = computed<number | undefined>(() => {
+  let total = 0;
+  for (const [ticker, amount] of Object.entries(dailyWorkforceConsumption.value)) {
+    const price = getWfPrice(ticker);
+    if (price === undefined) return undefined;
+    total += amount * price;
+  }
+  return total;
+});
+
+// 规划中涉及的行业类别（去重，用于专家设置 UI）。
+const activeExpertiseCategories = computed(() => {
+  const cats = new Set<string>();
+  for (const pb of buildings.value) {
+    const fb = findFioBuilding(pb.ticker);
+    if (fb?.Expertise) cats.add(fb.Expertise);
+  }
+  return EXPERTISE_CATEGORIES.filter(c => cats.has(c));
+});
+
+// 自动配平居住建筑：穷举搜索最小面积组合，支持复合住房。
 function onAutoBalance() {
   const allFio = fioBuildingsStore.buildings;
-  if (!allFio) {
-    return;
+  if (!allFio) return;
+
+  // 先移除所有现有居住建筑，基于纯生产需求重新计算。
+  const nonHabBuildings = buildings.value.filter(pb => !isHabitationBuilding(pb.ticker));
+  // 临时计算无居住建筑时的劳动力需求。
+  const needed = { Pioneers: 0, Settlers: 0, Technicians: 0, Engineers: 0, Scientists: 0 };
+  for (const pb of nonHabBuildings) {
+    const fb = findFioBuilding(pb.ticker);
+    if (!fb || !isProductionBuilding(pb.ticker)) continue;
+    needed.Pioneers += fb.Pioneers * pb.count;
+    needed.Settlers += fb.Settlers * pb.count;
+    needed.Technicians += fb.Technicians * pb.count;
+    needed.Engineers += fb.Engineers * pb.count;
+    needed.Scientists += fb.Scientists * pb.count;
   }
 
-  // 收集所有待添加的居住建筑，最后一次性更新列表。
-  const additions: { ticker: string; count: number }[] = [];
-
+  // 当前缺口。
+  const baseDeficit: Record<WfTier, number> = {} as Record<WfTier, number>;
   for (const tier of wfTiers) {
-    // 计算初始缺口 + 前序迭代已添加的供给。
-    let provided = workforceProvided.value[tier];
-    for (const a of additions) {
-      provided += getWfCapacity(a.ticker, tier) * a.count;
-    }
-    const deficit = workforceNeeded.value[tier] - provided;
-    if (deficit <= 0) {
-      continue;
-    }
-
-    // 找到仅提供该层级劳动力的居住建筑。
-    const candidates = allFio.filter(fb => {
-      if (!isHabitationBuilding(fb.Ticker)) {
-        return false;
-      }
-      const cap = getWfCapacity(fb.Ticker, tier);
-      if (cap <= 0) {
-        return false;
-      }
-      return wfTiers.every(t => t === tier || getWfCapacity(fb.Ticker, t) === 0);
-    });
-
-    if (candidates.length === 0) {
-      continue;
-    }
-
-    candidates.sort((a, b) => getWfCapacity(b.Ticker, tier) - getWfCapacity(a.Ticker, tier));
-    const best = candidates[0];
-    const capacity = getWfCapacity(best.Ticker, tier);
-    const neededCount = Math.ceil(deficit / capacity);
-    additions.push({ ticker: best.Ticker, count: neededCount });
+    baseDeficit[tier] = Math.max(0, needed[tier]);
   }
-
-  // 一次性合并到建筑列表。
-  if (additions.length === 0) {
+  if (wfTiers.every(t => baseDeficit[t] <= 0)) {
+    // 无需任何居住建筑，移除现有的。
+    buildings.value = nonHabBuildings;
     return;
   }
-  const newList = [...buildings.value];
-  for (const a of additions) {
-    const existing = newList.find(x => x.ticker === a.ticker);
-    if (existing) {
-      const idx = newList.indexOf(existing);
-      newList[idx] = { ...existing, count: existing.count + a.count };
-    } else {
-      newList.push({ ticker: a.ticker, count: a.count, recipeIdx: -1 });
+
+  // 收集所有居住建筑候选及其容量/面积。
+  interface HabOption {
+    ticker: string;
+    caps: Record<WfTier, number>;
+    area: number;
+  }
+  const options: HabOption[] = allFio
+    .filter(
+      fb => isHabitationBuilding(fb.Ticker) && wfTiers.some(t => getWfCapacity(fb.Ticker, t) > 0),
+    )
+    .map(fb => ({
+      ticker: fb.Ticker,
+      caps: Object.fromEntries(wfTiers.map(t => [t, getWfCapacity(fb.Ticker, t)])) as Record<
+        WfTier,
+        number
+      >,
+      area: fb.AreaCost,
+    }));
+
+  if (options.length === 0) return;
+
+  // 贪心初解：每层独立取最优单层住房，得到上界面积。
+  let bestArea = Infinity;
+  let bestCounts: number[] = options.map(() => 0);
+
+  // 计算初始上界（贪心）。
+  {
+    const greedyCounts = options.map(() => 0);
+    const rem = { ...baseDeficit };
+    for (const tier of wfTiers) {
+      if (rem[tier] <= 0) continue;
+      // 单层住房中找容量/面积比最大的。
+      let bestIdx = -1;
+      let bestRatio = -1;
+      for (let i = 0; i < options.length; i++) {
+        const cap = options[i].caps[tier];
+        if (cap <= 0) continue;
+        const ratio = cap / options[i].area;
+        if (ratio > bestRatio) {
+          bestRatio = ratio;
+          bestIdx = i;
+        }
+      }
+      if (bestIdx < 0) continue;
+      const cap = options[bestIdx].caps[tier];
+      greedyCounts[bestIdx] += Math.ceil(rem[tier] / cap);
     }
+    const greedyArea = greedyCounts.reduce((s, c, i) => s + c * options[i].area, 0);
+    if (greedyArea < bestArea) {
+      bestArea = greedyArea;
+      bestCounts = [...greedyCounts];
+    }
+  }
+
+  // DFS 剪枝搜索最优解。
+  // 只枚举实际有缺口层级涉及的建筑。
+  const relevantOptions = options.filter(opt =>
+    wfTiers.some(t => baseDeficit[t] > 0 && opt.caps[t] > 0),
+  );
+
+  const counts = relevantOptions.map(() => 0);
+
+  function dfs(idx: number, rem: Record<WfTier, number>, usedArea: number) {
+    // 剪枝：已超过当前最优。
+    if (usedArea >= bestArea) return;
+    // 满足条件。
+    if (wfTiers.every(t => rem[t] <= 0)) {
+      bestArea = usedArea;
+      bestCounts = relevantOptions.map((_, i) => counts[i]);
+      return;
+    }
+    if (idx >= relevantOptions.length) return;
+
+    const opt = relevantOptions[idx];
+    // 计算该建筑最多需要几个（满足所有它能覆盖的层级）。
+    let maxNeeded = 0;
+    for (const tier of wfTiers) {
+      if (opt.caps[tier] > 0 && rem[tier] > 0) {
+        maxNeeded = Math.max(maxNeeded, Math.ceil(rem[tier] / opt.caps[tier]));
+      }
+    }
+    // 加一点余量防止剪枝过激，但限制最大搜索量。
+    const maxTry = Math.min(maxNeeded + 1, Math.floor((bestArea - usedArea) / opt.area) + 1);
+
+    for (let c = maxTry; c >= 0; c--) {
+      counts[idx] = c;
+      const newRem = { ...rem };
+      for (const tier of wfTiers) {
+        if (opt.caps[tier] > 0) newRem[tier] = rem[tier] - opt.caps[tier] * c;
+      }
+      dfs(idx + 1, newRem, usedArea + c * opt.area);
+    }
+    counts[idx] = 0;
+  }
+
+  dfs(0, { ...baseDeficit }, 0);
+
+  // 转换结果。
+  const additions: { ticker: string; count: number }[] = [];
+  for (let i = 0; i < relevantOptions.length; i++) {
+    if (bestCounts[i] > 0) {
+      additions.push({ ticker: relevantOptions[i].ticker, count: bestCounts[i] });
+    }
+  }
+
+  // 一次性替换居住建筑。
+  if (additions.length === 0) {
+    buildings.value = nonHabBuildings;
+    return;
+  }
+  const newList = [...nonHabBuildings];
+  for (const a of additions) {
+    newList.push({ ticker: a.ticker, count: a.count, recipes: [] });
   }
   buildings.value = newList;
 }
 
-// 添加建筑到规划列表（每次添加新行以支持多配方）。
+// 添加建筑到规划列表。
 function onAddBuilding(ticker: string) {
   if (!ticker) {
     return;
   }
   const newList = [...buildings.value];
-  newList.push({ ticker, count: 1, recipeIdx: -1 });
+  newList.push({ ticker, count: 1, recipes: [] });
   buildings.value = newList;
   selectedTicker.value = '';
 }
@@ -438,18 +870,59 @@ function onRemoveBuilding(idx: number) {
   buildings.value = newList;
 }
 
-function onCountChange(idx: number, value: number | undefined) {
-  if (value === undefined) {
-    return;
-  }
+// 非生产建筑（居住/仓储/核心）的数量修改。
+function onNonProdCountChange(idx: number, value: number) {
+  if (value === 0 || Number.isNaN(value) || value < 1) return;
   const newList = [...buildings.value];
   newList[idx] = { ...newList[idx], count: Math.max(1, value) };
   buildings.value = newList;
 }
 
-function onRecipeChange(idx: number, value: string) {
+// 生产建筑总数量修改。
+function onBuildingCountChange(idx: number, value: number) {
+  if (value === 0 || Number.isNaN(value) || value < 1) return;
   const newList = [...buildings.value];
-  newList[idx] = { ...newList[idx], recipeIdx: parseInt(value, 10) };
+  newList[idx] = { ...newList[idx], count: Math.max(1, value) };
+  buildings.value = newList;
+}
+
+// 添加一个配方条目到指定建筑行。
+function onAddRecipe(idx: number) {
+  const newList = [...buildings.value];
+  const pb = migrateBuilding(newList[idx]);
+  newList[idx] = { ...pb, recipes: [...pb.recipes, { recipeIdx: -1, count: 1 }] };
+  buildings.value = newList;
+}
+
+// 删除指定建筑行中的某个配方条目。
+function onRemoveRecipe(idx: number, rIdx: number) {
+  const newList = [...buildings.value];
+  const pb = migrateBuilding(newList[idx]);
+  const newRecipes = pb.recipes.filter((_, i) => i !== rIdx);
+  newList[idx] = { ...pb, recipes: newRecipes };
+  buildings.value = newList;
+}
+
+function onRecipeCountChange(idx: number, rIdx: number, value: number | undefined) {
+  if (value === undefined) {
+    return;
+  }
+  const newList = [...buildings.value];
+  const pb = migrateBuilding(newList[idx]);
+  const newRecipes = pb.recipes.map((r, i) =>
+    i === rIdx ? { ...r, count: Math.max(1, value) } : r,
+  );
+  newList[idx] = { ...pb, recipes: newRecipes };
+  buildings.value = newList;
+}
+
+function onRecipeChange(idx: number, rIdx: number, value: string) {
+  const newList = [...buildings.value];
+  const pb = migrateBuilding(newList[idx]);
+  const newRecipes = pb.recipes.map((r, i) =>
+    i === rIdx ? { ...r, recipeIdx: parseInt(value, 10) } : r,
+  );
+  newList[idx] = { ...pb, recipes: newRecipes };
   buildings.value = newList;
 }
 
@@ -482,6 +955,35 @@ function onGenerateAct() {
     userData.actionPackages.push(pkg);
   }
   showBuffer(`XIT ACT GEN ${pkgName}`);
+}
+
+// 保存到 JH 计划列表。
+function onSaveToJH(ev: Event) {
+  showTileOverlay(ev, SavePlanOverlay, {
+    initialName: userData.basePlans.find(p => p.id === jhPlanId.value)?.name ?? '',
+    onSave: (name: string) => {
+      const existing = userData.basePlans.find(p => p.id === jhPlanId.value);
+      const id = existing?.id ?? crypto.randomUUID();
+      jhPlanId.value = id;
+      const plan: UserData.BasePlan = {
+        id,
+        name,
+        savedAt: Date.now(),
+        planet: planet.value,
+        permits: permits.value,
+        exchange: exchange.value,
+        buildings: JSON.parse(JSON.stringify(buildings.value)),
+        experts: { ...experts.value },
+        cogcIndustry: cogcIndustry.value,
+        customInputPrices: { ...customInputPrices.value },
+        customOutputPrices: { ...customOutputPrices.value },
+        customWfPrices: { ...customWfPrices.value },
+      };
+      const idx = userData.basePlans.findIndex(p => p.id === id);
+      if (idx >= 0) userData.basePlans[idx] = plan;
+      else userData.basePlans.push(plan);
+    },
+  });
 }
 
 // 按类型分组的建筑选项（不含行星项目等其他建筑）。
@@ -538,7 +1040,7 @@ const planetSuggestions = computed(() => {
 
 function addCoreIfMissing() {
   if (!buildings.value.find(x => x.ticker === 'CM')) {
-    buildings.value = [{ ticker: 'CM', count: 1, recipeIdx: -1 }, ...buildings.value];
+    buildings.value = [{ ticker: 'CM', count: 1, recipes: [] }, ...buildings.value];
   }
 }
 
@@ -563,13 +1065,12 @@ function recipeOptions(fb: FioBuilding) {
   }));
 }
 
-// 获取已选配方的产出材料列表。
-function getRecipeOutputs(pb: PlannedBuilding): FioRecipeIO[] {
-  const fb = findFioBuilding(pb.ticker);
-  if (!fb || pb.recipeIdx < 0 || pb.recipeIdx >= fb.Recipes.length) {
+// 获取指定 recipeIdx 的产出材料列表。
+function getRecipeOutputs(fb: FioBuilding, recipeIdx: number): FioRecipeIO[] {
+  if (recipeIdx < 0 || recipeIdx >= fb.Recipes.length) {
     return [];
   }
-  return fb.Recipes[pb.recipeIdx].Outputs;
+  return fb.Recipes[recipeIdx].Outputs.filter(out => out.CommodityTicker);
 }
 
 function rowProfitText(pb: PlannedBuilding): string {
@@ -577,10 +1078,10 @@ function rowProfitText(pb: PlannedBuilding): string {
   if (!fb || !isProductionBuilding(pb.ticker)) {
     return '--';
   }
-  const profit = calcDailyProfit(fb, pb.recipeIdx, pb.count);
-  if (profit === undefined) {
-    return '?';
-  }
+  const migrated = migrateBuilding(pb);
+  if (migrated.recipes.length === 0) return '--';
+  const profit = calcDailyProfit(fb, migrated.recipes, pb.count);
+  if (profit === undefined) return '?';
   return formatCurrency(profit);
 }
 
@@ -618,12 +1119,15 @@ function wfOk(tier: WfTier): boolean {
         <Active label="交易所">
           <SelectInput v-model="exchange" :options="exchangeOptions" />
         </Active>
+        <PrunButton primary @click="onSaveToJH">保存到 JH</PrunButton>
       </div>
 
       <!-- 建筑列表 -->
       <div :class="$style.section">
         <div :class="$style.sectionHeader">
-          <span>建筑列表</span>
+          <span
+            >建筑列表 <span :class="$style.hint">（可多次添加同一建筑以使用不同配方）</span></span
+          >
           <div :class="$style.addRow">
             <select v-model="selectedTicker" :class="$style.buildingSelect">
               <option value="">— 选择建筑 —</option>
@@ -643,7 +1147,7 @@ function wfOk(tier: WfTier): boolean {
         <div v-if="buildings.length > 0" :class="$style.tableHeader">
           <span :class="$style.colTicker">建筑</span>
           <span :class="$style.colCount">数量</span>
-          <span :class="$style.colRecipe">配方</span>
+          <span :class="$style.colRecipe">配方（槽数 × 配方）</span>
           <span :class="$style.colArea">面积</span>
           <span :class="$style.colProfit">每日利润</span>
           <span :class="$style.colDel"></span>
@@ -659,16 +1163,36 @@ function wfOk(tier: WfTier): boolean {
               :value="pb.count"
               :class="$style.countInput"
               @change="
-                e => onCountChange(idx, parseInt((e.target as HTMLInputElement).value, 10))
+                e =>
+                  isProductionBuilding(pb.ticker)
+                    ? onBuildingCountChange(idx, parseInt((e.target as HTMLInputElement).value, 10))
+                    : onNonProdCountChange(idx, parseInt((e.target as HTMLInputElement).value, 10))
               " />
           </span>
           <span :class="$style.colRecipe">
             <template v-if="findFioBuilding(pb.ticker) && isProductionBuilding(pb.ticker)">
-              <div :class="$style.recipeRow">
+              <!-- 每个配方条目 -->
+              <div
+                v-for="(r, rIdx) in migrateBuilding(pb).recipes"
+                :key="rIdx"
+                :class="$style.recipeRow">
+                <input
+                  type="number"
+                  min="1"
+                  :value="r.count"
+                  :class="[$style.slotInput, r.count > pb.count ? $style.slotWarn : '']"
+                  @change="
+                    e =>
+                      onRecipeCountChange(
+                        idx,
+                        rIdx,
+                        parseInt((e.target as HTMLInputElement).value, 10),
+                      )
+                  " />
                 <select
-                  :value="String(pb.recipeIdx)"
+                  :value="String(r.recipeIdx)"
                   :class="$style.recipeSelect"
-                  @change="e => onRecipeChange(idx, (e.target as HTMLSelectElement).value)">
+                  @change="e => onRecipeChange(idx, rIdx, (e.target as HTMLSelectElement).value)">
                   <option value="-1">— 选择配方 —</option>
                   <option
                     v-for="opt in recipeOptions(findFioBuilding(pb.ticker)!)"
@@ -677,12 +1201,20 @@ function wfOk(tier: WfTier): boolean {
                     {{ opt.label }}
                   </option>
                 </select>
-                <span v-if="pb.recipeIdx >= 0" :class="$style.recipeIcons">
+                <span v-if="r.recipeIdx >= 0" :class="$style.recipeIcons">
                   <MaterialIcon
-                    v-for="out in getRecipeOutputs(pb)"
-                    :key="out.Ticker"
-                    :ticker="out.Ticker"
+                    v-for="out in getRecipeOutputs(findFioBuilding(pb.ticker)!, r.recipeIdx)"
+                    :key="out.CommodityTicker"
+                    :ticker="out.CommodityTicker"
                     size="inline" />
+                </span>
+                <PrunButton danger inline @click="onRemoveRecipe(idx, rIdx)">✕</PrunButton>
+              </div>
+              <div :class="$style.recipeFooter">
+                <PrunButton neutral inline @click="onAddRecipe(idx)">+ 配方</PrunButton>
+                <span v-if="migrateBuilding(pb).recipes.length > 0" :class="$style.slotHint">
+                  {{ migrateBuilding(pb).recipes.reduce((s, r) => s + r.count, 0) }}/{{ pb.count }}
+                  槽
                 </span>
               </div>
             </template>
@@ -691,7 +1223,7 @@ function wfOk(tier: WfTier): boolean {
             </template>
           </span>
           <span :class="$style.colArea">
-            {{ findFioBuilding(pb.ticker)?.AreaCost ?? 0 }}
+            {{ (findFioBuilding(pb.ticker)?.AreaCost ?? 0) * pb.count }}
           </span>
           <span :class="$style.colProfit">{{ rowProfitText(pb) }}</span>
           <span :class="$style.colDel">
@@ -707,6 +1239,38 @@ function wfOk(tier: WfTier): boolean {
       <!-- 自动配平 -->
       <div :class="$style.section">
         <PrunButton neutral @click="onAutoBalance">自动配平居住建筑</PrunButton>
+      </div>
+
+      <!-- 专家设置 -->
+      <div v-if="activeExpertiseCategories.length > 0" :class="$style.section">
+        <div :class="$style.sectionHeader">专家设置：</div>
+        <div v-for="cat in activeExpertiseCategories" :key="cat" :class="$style.expertRow">
+          <span :class="$style.expertLabel">{{ EXPERTISE_LABELS[cat] }}</span>
+          <input
+            type="number"
+            min="0"
+            max="5"
+            :value="experts[cat] ?? 0"
+            :class="$style.expertInput"
+            @change="
+              e => onExpertChange(cat, parseInt((e.target as HTMLInputElement).value, 10))
+            " />
+          <span :class="$style.expertBonus"
+            >+{{ (EXPERT_BONUSES[Math.min(5, experts[cat] ?? 0)] * 100).toFixed(2) }}%</span
+          >
+        </div>
+      </div>
+
+      <!-- CoGC 项目 -->
+      <div :class="$style.section">
+        <Active label="CoGC 项目">
+          <select v-model="cogcIndustry" :class="$style.cogcSelect">
+            <option value="">— 无 —</option>
+            <option v-for="cat in EXPERTISE_CATEGORIES" :key="cat" :value="cat">
+              {{ EXPERTISE_LABELS[cat] }} (+25%)
+            </option>
+          </select>
+        </Active>
       </div>
 
       <!-- 人口统计 -->
@@ -734,6 +1298,175 @@ function wfOk(tier: WfTier): boolean {
           ]">
           {{ dailyProfit !== undefined ? formatCurrency(dailyProfit) : '价格数据加载中...' }}
         </span>
+      </div>
+
+      <!-- 每日成本 -->
+      <div :class="$style.section">
+        <span :class="$style.profitLabel">每日成本：</span>
+        <span :class="[$style.profitValue, $style.negative]">
+          {{ dailyCost !== undefined ? formatCurrency(dailyCost) : '?' }}
+        </span>
+      </div>
+
+      <!-- 每日收入 -->
+      <div :class="$style.section">
+        <span :class="$style.profitLabel">每日收入：</span>
+        <span :class="[$style.profitValue, $style.positive]">
+          {{ dailyRevenue !== undefined ? formatCurrency(dailyRevenue) : '?' }}
+        </span>
+      </div>
+
+      <!-- 每日消耗 -->
+      <div :class="$style.section">
+        <div :class="$style.sectionHeaderRow">
+          <span :class="$style.sectionHeader">每日消耗：</span>
+          <PrunButton
+            v-if="Object.keys(customInputPrices).length > 0"
+            neutral
+            inline
+            @click="customInputPrices = {}"
+            >↺ 还原全部</PrunButton
+          >
+        </div>
+        <span v-if="sortedInputs.length === 0" :class="$style.empty">无</span>
+        <div v-else :class="$style.priceTable">
+          <div v-for="mat in sortedInputs" :key="mat.ticker" :class="$style.priceRow">
+            <MaterialIcon :ticker="mat.ticker" size="inline" />
+            <span :class="$style.materialAmount">{{ fixed2(dailyInputs[mat.ticker]) }}</span>
+            <span :class="$style.priceX">×</span>
+            <input
+              type="number"
+              min="0"
+              :value="getInputPrice(mat.ticker) ?? 0"
+              :class="[
+                $style.priceInput,
+                customInputPrices[mat.ticker] !== undefined ? $style.customPrice : '',
+              ]"
+              @change="
+                e => onSetInputPrice(mat.ticker, parseFloat((e.target as HTMLInputElement).value))
+              " />
+            <span :class="$style.priceSubtotal"
+              >=
+              {{
+                formatCurrency((getInputPrice(mat.ticker) ?? 0) * (dailyInputs[mat.ticker] ?? 0))
+              }}</span
+            >
+            <PrunButton
+              neutral
+              inline
+              :class="[
+                $style.resetBtn,
+                customInputPrices[mat.ticker] !== undefined ? $style.resetBtnActive : '',
+              ]"
+              @click="onResetInputPrice(mat.ticker)"
+              >↺</PrunButton
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- 每日产出 -->
+      <div :class="$style.section">
+        <div :class="$style.sectionHeaderRow">
+          <span :class="$style.sectionHeader">每日产出：</span>
+          <PrunButton
+            v-if="Object.keys(customOutputPrices).length > 0"
+            neutral
+            inline
+            @click="customOutputPrices = {}"
+            >↺ 还原全部</PrunButton
+          >
+        </div>
+        <span v-if="sortedOutputs.length === 0" :class="$style.empty">无</span>
+        <div v-else :class="$style.priceTable">
+          <div v-for="mat in sortedOutputs" :key="mat.ticker" :class="$style.priceRow">
+            <MaterialIcon :ticker="mat.ticker" size="inline" />
+            <span :class="$style.materialAmount">{{ fixed2(dailyOutputs[mat.ticker]) }}</span>
+            <span :class="$style.priceX">×</span>
+            <input
+              type="number"
+              min="0"
+              :value="getOutputPrice(mat.ticker) ?? 0"
+              :class="[
+                $style.priceInput,
+                customOutputPrices[mat.ticker] !== undefined ? $style.customPrice : '',
+              ]"
+              @change="
+                e => onSetOutputPrice(mat.ticker, parseFloat((e.target as HTMLInputElement).value))
+              " />
+            <span :class="$style.priceSubtotal"
+              >=
+              {{
+                formatCurrency((getOutputPrice(mat.ticker) ?? 0) * (dailyOutputs[mat.ticker] ?? 0))
+              }}</span
+            >
+            <PrunButton
+              neutral
+              inline
+              :class="[
+                $style.resetBtn,
+                customOutputPrices[mat.ticker] !== undefined ? $style.resetBtnActive : '',
+              ]"
+              @click="onResetOutputPrice(mat.ticker)"
+              >↺</PrunButton
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- 每日人口消耗品 -->
+      <div :class="$style.section">
+        <div :class="$style.sectionHeaderRow">
+          <span :class="$style.sectionHeader">每日消耗品：</span>
+          <PrunButton
+            v-if="Object.keys(customWfPrices).length > 0"
+            neutral
+            inline
+            @click="customWfPrices = {}"
+            >↺ 还原全部</PrunButton
+          >
+        </div>
+        <span v-if="sortedWorkforceConsumption.length === 0" :class="$style.empty">
+          {{ workforceNeedsStore.fetched ? '无' : '加载中...' }}
+        </span>
+        <div v-else :class="$style.priceTable">
+          <div v-for="mat in sortedWorkforceConsumption" :key="mat.ticker" :class="$style.priceRow">
+            <MaterialIcon :ticker="mat.ticker" size="inline" />
+            <span :class="$style.materialAmount">{{
+              fixed2(dailyWorkforceConsumption[mat.ticker])
+            }}</span>
+            <span :class="$style.priceX">×</span>
+            <input
+              type="number"
+              min="0"
+              :value="getWfPrice(mat.ticker) ?? 0"
+              :class="[
+                $style.priceInput,
+                customWfPrices[mat.ticker] !== undefined ? $style.customPrice : '',
+              ]"
+              @change="
+                e => onSetWfPrice(mat.ticker, parseFloat((e.target as HTMLInputElement).value))
+              " />
+            <span :class="$style.priceSubtotal"
+              >=
+              {{
+                formatCurrency(
+                  (getWfPrice(mat.ticker) ?? 0) * (dailyWorkforceConsumption[mat.ticker] ?? 0),
+                )
+              }}</span
+            >
+            <PrunButton
+              neutral
+              inline
+              :class="[
+                $style.resetBtn,
+                customWfPrices[mat.ticker] !== undefined ? $style.resetBtnActive : '',
+              ]"
+              @click="onResetWfPrice(mat.ticker)"
+              >↺</PrunButton
+            >
+          </div>
+        </div>
       </div>
 
       <!-- 所需建材 -->
@@ -831,9 +1564,9 @@ function wfOk(tier: WfTier): boolean {
 .tableHeader,
 .buildingRow {
   display: grid;
-  grid-template-columns: 50px 60px 1fr 50px 100px 30px;
+  grid-template-columns: 50px 45px 1fr 50px 90px 30px;
   gap: 4px;
-  align-items: center;
+  align-items: start;
   width: 100%;
 }
 
@@ -854,7 +1587,28 @@ function wfOk(tier: WfTier): boolean {
 }
 
 .countInput {
-  width: 50px;
+  width: 42px;
+}
+
+.slotInput {
+  width: 36px;
+}
+
+.slotWarn {
+  border-color: #ff9800 !important;
+  color: #ff9800;
+}
+
+.recipeFooter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.slotHint {
+  font-size: 10px;
+  opacity: 0.6;
 }
 
 .buildingSelect {
@@ -882,6 +1636,32 @@ function wfOk(tier: WfTier): boolean {
 
 .noRecipe {
   opacity: 0.5;
+}
+
+.expertRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.expertLabel {
+  width: 80px;
+  font-size: 11px;
+}
+
+.expertInput {
+  width: 45px;
+}
+
+.expertBonus {
+  font-size: 11px;
+  color: #4caf50;
+  min-width: 50px;
+}
+
+.cogcSelect {
+  font-size: 11px;
 }
 
 .empty {
@@ -932,5 +1712,73 @@ function wfOk(tier: WfTier): boolean {
   background: rgba(255, 255, 255, 0.08);
   padding: 1px 5px;
   border-radius: 3px;
+}
+
+.materialItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-right: 6px;
+}
+
+.materialAmount {
+  font-size: 10px;
+}
+
+.hint {
+  font-size: 9px;
+  opacity: 0.6;
+  font-weight: normal;
+}
+
+.priceTable {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 2px;
+}
+
+.priceRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.priceX {
+  opacity: 0.5;
+  font-size: 10px;
+}
+
+.priceInput {
+  width: 70px;
+}
+
+.customPrice {
+  border-color: rgba(255, 200, 86, 0.6) !important;
+}
+
+.priceSubtotal {
+  font-size: 10px;
+  opacity: 0.8;
+  min-width: 80px;
+}
+
+.resetBtn {
+  opacity: 0.3;
+  font-size: 11px;
+}
+
+.resetBtnActive {
+  opacity: 1;
+  color: #ffc856 !important;
+  border-color: #ffc856 !important;
+}
+
+.sectionHeaderRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
 }
 </style>

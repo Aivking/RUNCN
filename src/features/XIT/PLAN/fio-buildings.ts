@@ -7,7 +7,7 @@ export interface FioBuildingCost {
 }
 
 export interface FioRecipeIO {
-  Ticker: string;
+  CommodityTicker: string;
   Amount: number;
 }
 
@@ -22,6 +22,7 @@ export interface FioBuilding {
   Ticker: string;
   Name: string;
   AreaCost: number;
+  Expertise: string | null;
   // 人口需求（生产建筑）或人口供给（居住建筑）直接以扁平字段存储
   Pioneers: number;
   Settlers: number;

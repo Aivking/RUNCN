@@ -116,4 +116,19 @@ declare namespace UserData {
   }
 
   type ExchangeChartType = 'SMOOTH' | 'ALIGNED' | 'RAW';
+
+  interface BasePlan {
+    id: string;
+    name: string;
+    savedAt: number;
+    planet: string;
+    permits: number;
+    exchange: string;
+    buildings: unknown[];
+    experts: Record<string, number>;
+    cogcIndustry: string;
+    customInputPrices: Record<string, number>;
+    customOutputPrices: Record<string, number>;
+    customWfPrices: Record<string, number>;
+  }
 }

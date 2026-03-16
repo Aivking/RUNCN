@@ -14,6 +14,56 @@ interface Data {
   amount: number;
 }
 
+const MTRA_TIMEOUT = 1700;
+const MTRA_MAX_RETRIES = 3;
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('MTRA_TIMEOUT')), ms);
+    promise.then(
+      v => {
+        clearTimeout(timer);
+        resolve(v);
+      },
+      e => {
+        clearTimeout(timer);
+        reject(e);
+      },
+    );
+  });
+}
+
+async function setupMtraBuffer(tile: PrunTile, ticker: string) {
+  await clickElement(tile.anchor as HTMLElement);
+  window.getSelection()?.removeAllRanges();
+
+  const container = await withTimeout($(tile.anchor, C.MaterialSelector.container), MTRA_TIMEOUT);
+  const input = (await withTimeout($(container, 'input'), MTRA_TIMEOUT)) as HTMLInputElement;
+  const suggestionsContainer = await withTimeout(
+    $(container, C.MaterialSelector.suggestionsContainer),
+    MTRA_TIMEOUT,
+  );
+
+  let suggestionsList: Element | undefined;
+  for (let attempt = 0; attempt < 15; attempt++) {
+    await clickElement(input);
+    focusElement(input);
+    input.focus();
+    changeInputValue(input, ticker);
+    window.getSelection()?.removeAllRanges();
+    await new Promise(r => setTimeout(r, 150));
+    suggestionsList = _$(container, C.MaterialSelector.suggestionsList);
+    if (suggestionsList) {
+      break;
+    }
+  }
+  if (!suggestionsList) {
+    throw new Error('MTRA_NO_SUGGESTIONS');
+  }
+
+  return { container, input, suggestionsContainer, suggestionsList };
+}
+
 export const MTRA_TRANSFER = act.addActionStep<Data>({
   type: 'MTRA_TRANSFER',
   preProcessData: data => ({ ...data, ticker: data.ticker.toUpperCase() }),
@@ -67,41 +117,40 @@ export const MTRA_TRANSFER = act.addActionStep<Data>({
       return;
     }
 
-    const tile = await requestTile(
-      `MTRA from-${from.id.substring(0, 8)} to-${to.id.substring(0, 8)}`,
-    );
-    if (!tile) {
-      return;
-    }
+    const mtraCommand = `MTRA from-${from.id.substring(0, 8)} to-${to.id.substring(0, 8)}`;
 
-    setStatus('正在设置 MTRA 缓冲区...');
-    // 点击 tile 确保窗口获得焦点。
-    await clickElement(tile.anchor as HTMLElement);
-    window.getSelection()?.removeAllRanges();
-
-    const container = await $(tile.anchor, C.MaterialSelector.container);
-    const input = (await $(container, 'input')) as HTMLInputElement;
-
-    const suggestionsContainer = await $(container, C.MaterialSelector.suggestionsContainer);
-
-    // 确保输入框获得焦点并显示建议列表，失败时自动重试。
-    let suggestionsList: Element | undefined;
-    for (let attempt = 0; attempt < 15; attempt++) {
-      await clickElement(input);
-      focusElement(input);
-      input.focus();
-      changeInputValue(input, ticker);
-      window.getSelection()?.removeAllRanges();
-      await new Promise(r => setTimeout(r, 150));
-      suggestionsList = _$(container, C.MaterialSelector.suggestionsList);
-      if (suggestionsList) {
+    // 带超时重试的 MTRA 缓冲区设置
+    let mtraResult: Awaited<ReturnType<typeof setupMtraBuffer>> | undefined;
+    let tile: PrunTile | undefined;
+    for (let retry = 0; retry < MTRA_MAX_RETRIES; retry++) {
+      tile = await requestTile(mtraCommand);
+      if (!tile) {
+        return;
+      }
+      setStatus(
+        retry === 0
+          ? '正在设置 MTRA 缓冲区...'
+          : `正在重试设置 MTRA 缓冲区（${retry + 1}/${MTRA_MAX_RETRIES}）...`,
+      );
+      try {
+        mtraResult = await setupMtraBuffer(tile, ticker);
         break;
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : '';
+        if (msg === 'MTRA_TIMEOUT' || msg === 'MTRA_NO_SUGGESTIONS') {
+          log.warning(`MTRA 缓冲区设置超时，正在重试...（${retry + 1}/${MTRA_MAX_RETRIES}）`);
+          continue;
+        }
+        throw e;
       }
     }
-    if (!suggestionsList) {
-      fail(`无法打开材料选择器`);
+
+    if (!mtraResult || !tile) {
+      fail('MTRA 缓冲区设置超时，已重试 3 次');
       return;
     }
+
+    const { suggestionsContainer, suggestionsList } = mtraResult;
 
     suggestionsContainer.style.display = 'none';
     const match = _$$(suggestionsList, C.MaterialSelector.suggestionEntry).find(

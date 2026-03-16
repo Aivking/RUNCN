@@ -17,6 +17,16 @@ function isCheckpoint(entry: MigrationEntry): entry is Checkpoint {
 // 日期仅供参考，不影响迁移顺序。
 const migrations: MigrationEntry[] = [
   [
+    '16.03.2026 Add JH sidebar entry',
+    userData => {
+      const sidebar: [string, string][] = userData.settings.sidebar;
+      if (!sidebar.some(([, cmd]: [string, string]) => cmd === 'XIT JH')) {
+        const helpIdx = sidebar.findIndex(([, cmd]: [string, string]) => cmd === 'XIT HELP');
+        sidebar.splice(helpIdx >= 0 ? helpIdx + 1 : sidebar.length, 0, ['JH', 'XIT JH']);
+      }
+    },
+  ],
+  [
     '15.03.2026 Add factionCache',
     userData => {
       userData.factionCache = undefined;

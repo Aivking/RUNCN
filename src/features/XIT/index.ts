@@ -25,6 +25,7 @@ import './HQUC';
 import './MATS';
 import './NOTE/NOTE';
 import './PLAN/PLAN';
+import './PLAN/JH';
 import './REP/REP';
 import './SET/SET';
 import './START';

@@ -70,9 +70,7 @@ defineProps<{ condition: PrunApi.ContractCondition }>();
   </template>
   <template v-else-if="condition.type === 'PLACE_ORDER'">下单</template>
   <template v-else-if="condition.type === 'POWER'">成为总督</template>
-  <template v-else-if="condition.type === 'PRODUCTION_ORDER_COMPLETED'">
-    完成生产订单
-  </template>
+  <template v-else-if="condition.type === 'PRODUCTION_ORDER_COMPLETED'"> 完成生产订单 </template>
   <template v-else-if="condition.type === 'PRODUCTION_RUN'">运行生产</template>
   <template v-else-if="condition.type === 'PROVISION'">
     供应 {{ condition.quantity!.amount }} {{ condition.quantity!.material.ticker }} @
