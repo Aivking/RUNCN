@@ -156,7 +156,7 @@ export async function login(companyName: string, pin: string): Promise<AuthRespo
     .select('id, company_name, role, faction_id')
     .eq('auth_uid', (await supabase.auth.getUser()).data.user!.id)
     .single();
-  if (mErr || !member) throwApi('NOT_FOUND', '未找到成员信息');
+  if (mErr instanceof Error || !member) throwApi('NOT_FOUND', '未找到成员信息');
 
   // Sync username from game data
   const gameUsername = userDataStore.username;
@@ -491,7 +491,7 @@ export async function reportProduction(items: ProductionItem[]): Promise<ApiSucc
   const today = new Date().toISOString().slice(0, 10);
 
   const rows = items
-    .filter(item => item.ticker && item.quantity > 0)
+    .filter(item => !!item.ticker && item.quantity > 0)
     .map(item => ({
       faction_id: (myFaction.data as string) ?? '',
       company_name: (myName.data as string) ?? '',
@@ -541,7 +541,7 @@ export async function fetchProductionSummary(date?: string): Promise<ProductionS
 
   const byMember: Record<string, Array<{ id: string; ticker: string; quantity: number }>> = {};
   for (const row of prodResult.data ?? []) {
-    if (!byMember[row.company_name]) byMember[row.company_name] = [];
+    if (byMember[row.company_name] === undefined) byMember[row.company_name] = [];
     byMember[row.company_name].push({
       id: row.id,
       ticker: row.material_ticker,
