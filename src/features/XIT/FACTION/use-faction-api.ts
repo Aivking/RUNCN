@@ -156,7 +156,7 @@ export async function login(companyName: string, pin: string): Promise<AuthRespo
     .select('id, company_name, role, faction_id')
     .eq('auth_uid', (await supabase.auth.getUser()).data.user!.id)
     .single();
-  if (mErr instanceof Error || !member) throwApi('NOT_FOUND', '未找到成员信息');
+  if ('message' in (mErr || {}) || !member) throwApi('NOT_FOUND', '未找到成员信息');
 
   // Sync username from game data
   const gameUsername = userDataStore.username;
