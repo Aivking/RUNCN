@@ -100,6 +100,13 @@ onApiMessage({ SOME_MESSAGE_TYPE(data) { /* ... */ } });
 - **`showBuffer(cmd)`** (`buffers.ts`) — Opens a new game floating buffer programmatically with the provided command.
 - **`applyCssRule`** (`refined-prun-css.ts`) — Injects CSS rules, optionally scoped to a command.
 
+### `fio/` — FIO REST API
+
+External data source at `rest.fnar.net`. Known limitations:
+- Habitation buildings (HB1–HB5, HBB, HBC, HBM, HBL) return all workforce fields as 0. Use game API `buildOptions.workforceCapacities` or hardcoded fallback for actual capacities.
+- Extraction buildings (EXT, RIG, COL) return a single empty placeholder recipe (`=>`). Real extraction recipes are planet-specific; use FIO `/planet/{id}` resources + `materialsStore.getById()` to map `MaterialId` → ticker, or game API `productionTemplates` if the user has a base.
+- Planet resources: `{MaterialId (hash), ResourceType (MINERAL|LIQUID|GASEOUS), Factor (0–1 concentration)}`. ResourceType maps to building: MINERAL→EXT, LIQUID→RIG, GASEOUS→COL.
+
 ### `storage/` — Persistence
 
 User settings live in `userData` (`src/store/user-data.ts`), a reactive object auto-synced to `chrome.storage.local` via a `postMessage` relay between page and content script contexts.

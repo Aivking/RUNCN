@@ -86,7 +86,11 @@ Buildings are structures constructed within a base that provide workforce housin
 ### Construction
 
 - Requires construction materials: building prefabs and extreme-environment materials (where applicable).
-- Environment materials are either required per-area (MCG, INS, SEA), or per-building (TSH, MGC, BL, HSE, AEF).
+- Environment material formulas (where `area` = building's AreaCost):
+  - Surface: Rocky → MCG = `area × 4`, Gaseous → AEF = `ceil(area / 3)`
+  - Gravity: < 0.25 → MGC = 1 (per-building), > 2.5 → BL = 1 (per-building)
+  - Pressure: < 0.25 → SEA = `area` (per-area), > 2.0 → HSE = 1 (per-building)
+  - Temperature: < −25 → INS = `area × 10` (per-area), > 75 → TSH = 1 (per-building)
 - Each building consumes **area** from the base's area pool.
 - Demolishing a building reclaims its area and returns a portion of construction materials.
 

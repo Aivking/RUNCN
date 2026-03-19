@@ -119,62 +119,103 @@ loadFioBuildings();
 loadWorkforceNeeds();
 
 // ── 星球环境建材 ──────────────────────────────────────────────
-const PER_AREA_ENV = new Set(['MCG', 'INS', 'SEA']);
-const PER_BUILDING_ENV = new Set(['TSH', 'MGC', 'BL', 'HSE', 'AEF']);
-
-interface PlanetEnvCosts {
-  perArea: Record<string, number>;
-  perBuilding: Record<string, number>;
+interface PlanetResource {
+  ticker: string;
+  type: 'MINERAL' | 'LIQUID' | 'GASEOUS';
+  factor: number;
 }
 
-const planetDetailCache = new Map<string, { MaterialTicker: string; MaterialAmount: number }[]>();
-const planetBuildReqs = ref<{ MaterialTicker: string; MaterialAmount: number }[] | undefined>();
+interface PlanetEnvironment {
+  gravity: number;
+  temperature: number;
+  pressure: number;
+  surface: boolean;
+  resources: PlanetResource[];
+}
+
+const RESOURCE_TYPE_BUILDING: Record<string, string> = {
+  MINERAL: 'EXT',
+  LIQUID: 'RIG',
+  GASEOUS: 'COL',
+};
+
+const planetEnvCache = new Map<string, PlanetEnvironment>();
+const planetEnv = ref<PlanetEnvironment | undefined>();
 
 async function fetchPlanetDetail(naturalId: string) {
-  if (planetDetailCache.has(naturalId)) {
-    planetBuildReqs.value = planetDetailCache.get(naturalId);
+  if (planetEnvCache.has(naturalId)) {
+    planetEnv.value = planetEnvCache.get(naturalId);
     return;
   }
   try {
     const resp = await fetch(`https://rest.fnar.net/planet/${encodeURIComponent(naturalId)}`);
     if (!resp.ok) {
-      planetBuildReqs.value = undefined;
+      planetEnv.value = undefined;
       return;
     }
     const data = await resp.json();
-    const reqs = (
-      (data.BuildRequirements ?? []) as { MaterialTicker: string; MaterialAmount: number }[]
-    ).map(r => ({
-      MaterialTicker: r.MaterialTicker as string,
-      MaterialAmount: r.MaterialAmount as number,
-    }));
-    planetDetailCache.set(naturalId, reqs);
-    planetBuildReqs.value = reqs;
+    const resources: PlanetResource[] = [];
+    for (const r of (data.Resources ?? []) as {
+      MaterialId: string;
+      ResourceType: string;
+      Factor: number;
+    }[]) {
+      const mat = materialsStore.getById(r.MaterialId);
+      if (mat) {
+        resources.push({
+          ticker: mat.ticker,
+          type: r.ResourceType as PlanetResource['type'],
+          factor: r.Factor,
+        });
+      }
+    }
+    const env: PlanetEnvironment = {
+      gravity: data.Gravity as number,
+      temperature: data.Temperature as number,
+      pressure: data.Pressure as number,
+      surface: data.Surface as boolean,
+      resources,
+    };
+    planetEnvCache.set(naturalId, env);
+    planetEnv.value = env;
   } catch {
-    planetBuildReqs.value = undefined;
+    planetEnv.value = undefined;
   }
 }
 
-const envCosts = computed<PlanetEnvCosts | undefined>(() => {
-  const reqs = planetBuildReqs.value;
-  if (!reqs || reqs.length === 0) {
-    return undefined;
+// 根据星球环境参数和建筑面积计算环境建材需求。
+function getPlanetEnvMaterials(areaCost: number): Record<string, number> {
+  const env = planetEnv.value;
+  if (!env) {
+    return {};
   }
-  const cm = findFioBuilding('CM');
-  if (!cm) {
-    return undefined;
+  const mats: Record<string, number> = {};
+  // 星球表面类型
+  if (env.surface) {
+    mats['MCG'] = areaCost * 4;
+  } else {
+    mats['AEF'] = Math.ceil(areaCost / 3);
   }
-  const cmArea = cm.AreaCost;
-  const result: PlanetEnvCosts = { perArea: {}, perBuilding: {} };
-  for (const req of reqs) {
-    if (PER_AREA_ENV.has(req.MaterialTicker)) {
-      result.perArea[req.MaterialTicker] = req.MaterialAmount / cmArea;
-    } else if (PER_BUILDING_ENV.has(req.MaterialTicker)) {
-      result.perBuilding[req.MaterialTicker] = req.MaterialAmount;
-    }
+  // 重力
+  if (env.gravity < 0.25) {
+    mats['MGC'] = 1;
+  } else if (env.gravity > 2.5) {
+    mats['BL'] = 1;
   }
-  return result;
-});
+  // 气压
+  if (env.pressure < 0.25) {
+    mats['SEA'] = areaCost;
+  } else if (env.pressure > 2.0) {
+    mats['HSE'] = 1;
+  }
+  // 温度
+  if (env.temperature < -25) {
+    mats['INS'] = areaCost * 10;
+  } else if (env.temperature > 75) {
+    mats['TSH'] = 1;
+  }
+  return mats;
+}
 
 // 交易所选项列表。
 const exchangeOptions = ['IC1', 'AI1', 'NC1', 'CI1', 'NC2', 'CI2'];
@@ -472,10 +513,11 @@ function onResetWfPrice(ticker: string) {
 // 计算建筑的批次周期数据（PRUNplanner 模型：配方顺序执行）。
 function calcBatchRuns(fb: FioBuilding, recipes: PlannedRecipe[], buildingCount: number) {
   const eff = getEfficiencyMultiplier(fb.Expertise);
+  const effectiveRecipes = getEffectiveRecipes(fb);
   let totalBatchTime = 0;
   for (const r of recipes) {
-    if (r.recipeIdx < 0 || r.recipeIdx >= fb.Recipes.length) continue;
-    const recipe = fb.Recipes[r.recipeIdx];
+    if (r.recipeIdx < 0 || r.recipeIdx >= effectiveRecipes.length) continue;
+    const recipe = effectiveRecipes[r.recipeIdx];
     totalBatchTime += (recipe.DurationMs * r.count) / eff;
   }
   if (totalBatchTime === 0) return undefined;
@@ -491,10 +533,11 @@ function calcDailyProfit(
   const batch = calcBatchRuns(fb, recipes, buildingCount);
   if (!batch) return undefined;
 
+  const effectiveRecipes = getEffectiveRecipes(fb);
   let total = 0;
   for (const r of recipes) {
-    if (r.recipeIdx < 0 || r.recipeIdx >= fb.Recipes.length) continue;
-    const recipe = fb.Recipes[r.recipeIdx];
+    if (r.recipeIdx < 0 || r.recipeIdx >= effectiveRecipes.length) continue;
+    const recipe = effectiveRecipes[r.recipeIdx];
     let outputValue = 0;
     for (const out of recipe.Outputs) {
       if (!out.CommodityTicker) continue;
@@ -539,9 +582,10 @@ const dailyInputs = computed<Record<string, number>>(() => {
     const batch = calcBatchRuns(fb, migrated.recipes, pb.count);
     if (!batch) continue;
 
+    const effectiveRecipes = getEffectiveRecipes(fb);
     for (const r of migrated.recipes) {
-      if (r.recipeIdx < 0 || r.recipeIdx >= fb.Recipes.length) continue;
-      const recipe = fb.Recipes[r.recipeIdx];
+      if (r.recipeIdx < 0 || r.recipeIdx >= effectiveRecipes.length) continue;
+      const recipe = effectiveRecipes[r.recipeIdx];
       for (const inp of recipe.Inputs) {
         if (!inp.CommodityTicker) continue;
         result[inp.CommodityTicker] =
@@ -563,9 +607,10 @@ const dailyOutputs = computed<Record<string, number>>(() => {
     const batch = calcBatchRuns(fb, migrated.recipes, pb.count);
     if (!batch) continue;
 
+    const effectiveRecipes = getEffectiveRecipes(fb);
     for (const r of migrated.recipes) {
-      if (r.recipeIdx < 0 || r.recipeIdx >= fb.Recipes.length) continue;
-      const recipe = fb.Recipes[r.recipeIdx];
+      if (r.recipeIdx < 0 || r.recipeIdx >= effectiveRecipes.length) continue;
+      const recipe = effectiveRecipes[r.recipeIdx];
       for (const out of recipe.Outputs) {
         if (!out.CommodityTicker) continue;
         result[out.CommodityTicker] =
@@ -579,24 +624,21 @@ const dailyOutputs = computed<Record<string, number>>(() => {
 // 汇总所有建筑所需建材（基础 + 环境）。
 const totalMaterials = computed<Record<string, number>>(() => {
   const result: Record<string, number> = {};
-  const env = envCosts.value;
   for (const pb of buildings.value) {
     const fb = findFioBuilding(pb.ticker);
     if (!fb) {
       continue;
     }
     const count = pb.count;
+    // 基础建材
     for (const cost of fb.BuildingCosts) {
       if (!cost.CommodityTicker) continue;
       result[cost.CommodityTicker] = (result[cost.CommodityTicker] ?? 0) + cost.Amount * count;
     }
-    if (env) {
-      for (const [ticker, rate] of Object.entries(env.perArea)) {
-        result[ticker] = (result[ticker] ?? 0) + rate * fb.AreaCost * count;
-      }
-      for (const [ticker, amount] of Object.entries(env.perBuilding)) {
-        result[ticker] = (result[ticker] ?? 0) + amount * count;
-      }
+    // 环境建材（根据星球环境和建筑面积计算）
+    const envMats = getPlanetEnvMaterials(fb.AreaCost);
+    for (const [ticker, amount] of Object.entries(envMats)) {
+      result[ticker] = (result[ticker] ?? 0) + amount * count;
     }
   }
   return result;
@@ -757,44 +799,44 @@ function onAutoBalance() {
 
   if (options.length === 0) return;
 
+  // DFS 剪枝搜索最优解。
+  // 只枚举实际有缺口层级涉及的建筑。
+  const relevantOptions = options.filter(opt =>
+    wfTiers.some(t => baseDeficit[t] > 0 && opt.caps[t] > 0),
+  );
+
   // 贪心初解：每层独立取最优单层住房，得到上界面积。
   let bestArea = Infinity;
-  let bestCounts: number[] = options.map(() => 0);
+  let bestCounts: number[] = relevantOptions.map(() => 0);
 
   // 计算初始上界（贪心）。
   {
-    const greedyCounts = options.map(() => 0);
+    const greedyCounts = relevantOptions.map(() => 0);
     const rem = { ...baseDeficit };
     for (const tier of wfTiers) {
       if (rem[tier] <= 0) continue;
       // 单层住房中找容量/面积比最大的。
       let bestIdx = -1;
       let bestRatio = -1;
-      for (let i = 0; i < options.length; i++) {
-        const cap = options[i].caps[tier];
+      for (let i = 0; i < relevantOptions.length; i++) {
+        const cap = relevantOptions[i].caps[tier];
         if (cap <= 0) continue;
-        const ratio = cap / options[i].area;
+        const ratio = cap / relevantOptions[i].area;
         if (ratio > bestRatio) {
           bestRatio = ratio;
           bestIdx = i;
         }
       }
       if (bestIdx < 0) continue;
-      const cap = options[bestIdx].caps[tier];
+      const cap = relevantOptions[bestIdx].caps[tier];
       greedyCounts[bestIdx] += Math.ceil(rem[tier] / cap);
     }
-    const greedyArea = greedyCounts.reduce((s, c, i) => s + c * options[i].area, 0);
+    const greedyArea = greedyCounts.reduce((s, c, i) => s + c * relevantOptions[i].area, 0);
     if (greedyArea < bestArea) {
       bestArea = greedyArea;
       bestCounts = [...greedyCounts];
     }
   }
-
-  // DFS 剪枝搜索最优解。
-  // 只枚举实际有缺口层级涉及的建筑。
-  const relevantOptions = options.filter(opt =>
-    wfTiers.some(t => baseDeficit[t] > 0 && opt.caps[t] > 0),
-  );
 
   const counts = relevantOptions.map(() => 0);
 
@@ -961,9 +1003,11 @@ function onGenerateAct() {
 function onSaveToJH(ev: Event) {
   showTileOverlay(ev, SavePlanOverlay, {
     initialName: userData.basePlans.find(p => p.id === jhPlanId.value)?.name ?? '',
-    onSave: (name: string) => {
-      const existing = userData.basePlans.find(p => p.id === jhPlanId.value);
-      const id = existing?.id ?? crypto.randomUUID();
+    isExisting: !!jhPlanId.value && userData.basePlans.some(p => p.id === jhPlanId.value),
+    onSave: (name: string, saveAsNew: boolean) => {
+      const id = saveAsNew
+        ? crypto.randomUUID()
+        : (userData.basePlans.find(p => p.id === jhPlanId.value)?.id ?? crypto.randomUUID());
       jhPlanId.value = id;
       const plan: UserData.BasePlan = {
         id,
@@ -1052,14 +1096,55 @@ watch(
       addCoreIfMissing();
       fetchPlanetDetail(matched.naturalId);
     } else {
-      planetBuildReqs.value = undefined;
+      planetEnv.value = undefined;
     }
   },
   { immediate: true },
 );
 
+// 开采产量计算常量（来源：PRUNplanner）。
+const TOTAL_MS_DAY = 86400000;
+const BASE_DAILY: Record<string, number> = { MINERAL: 70, LIQUID: 70, GASEOUS: 60 };
+const DAILY_TYPE_SHARE: Record<string, number> = {
+  MINERAL: 43200000 / TOTAL_MS_DAY, // EXT 12h → 0.5
+  LIQUID: 17280000 / TOTAL_MS_DAY, // RIG 4h48m → 0.2
+  GASEOUS: 21600000 / TOTAL_MS_DAY, // COL 6h → 0.25
+};
+
+// 获取建筑的有效配方列表。
+// 对于开采类建筑（EXT/RIG/COL），FIO 只有空配方，需根据星球资源生成。
+function getEffectiveRecipes(fb: FioBuilding): FioRecipe[] {
+  const ticker = fb.Ticker;
+  const buildingForType = RESOURCE_TYPE_BUILDING;
+  const matchingType = Object.entries(buildingForType).find(([, b]) => b === ticker)?.[0];
+  if (!matchingType) {
+    return fb.Recipes;
+  }
+  const env = planetEnv.value;
+  if (!env || env.resources.length === 0) {
+    return fb.Recipes;
+  }
+  const planetResources = env.resources.filter(r => r.type === matchingType);
+  if (planetResources.length === 0) {
+    return fb.Recipes;
+  }
+  return planetResources.map(r => {
+    const dailyExtraction = r.factor * (BASE_DAILY[r.type] ?? 70);
+    const share = DAILY_TYPE_SHARE[r.type] ?? 0.5;
+    const amount = Math.trunc(Math.ceil(dailyExtraction * share));
+    const timeMs =
+      amount > 0 ? Math.round(amount * (TOTAL_MS_DAY / dailyExtraction)) : TOTAL_MS_DAY;
+    return {
+      RecipeName: `=>${amount}x${r.ticker} (${(r.factor * 100).toFixed(1)}%)`,
+      DurationMs: timeMs,
+      Inputs: [],
+      Outputs: [{ CommodityTicker: r.ticker, Amount: amount }],
+    };
+  });
+}
+
 function recipeOptions(fb: FioBuilding) {
-  return fb.Recipes.map((r, i) => ({
+  return getEffectiveRecipes(fb).map((r, i) => ({
     label: r.RecipeName,
     value: String(i),
   }));
@@ -1067,10 +1152,11 @@ function recipeOptions(fb: FioBuilding) {
 
 // 获取指定 recipeIdx 的产出材料列表。
 function getRecipeOutputs(fb: FioBuilding, recipeIdx: number): FioRecipeIO[] {
-  if (recipeIdx < 0 || recipeIdx >= fb.Recipes.length) {
+  const recipes = getEffectiveRecipes(fb);
+  if (recipeIdx < 0 || recipeIdx >= recipes.length) {
     return [];
   }
-  return fb.Recipes[recipeIdx].Outputs.filter(out => out.CommodityTicker);
+  return recipes[recipeIdx].Outputs.filter(out => out.CommodityTicker);
 }
 
 function rowProfitText(pb: PlannedBuilding): string {

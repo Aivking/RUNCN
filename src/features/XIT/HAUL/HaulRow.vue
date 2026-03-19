@@ -47,26 +47,24 @@ const destination = computed(() => {
 });
 
 // 货物信息（总重量/总体积）
+// 同一批货物会出现在多个条件类型中（PROVISION + DELIVERY 等），只取一种类型累加。
 const cargo = computed(() => {
-  let totalWeight = 0;
-  let totalVolume = 0;
-  for (const cond of contract.conditions) {
-    if (
-      cond.type === 'DELIVERY_SHIPMENT' ||
-      cond.type === 'PICKUP_SHIPMENT' ||
-      cond.type === 'PROVISION_SHIPMENT'
-    ) {
-      // 直接使用 weight 和 volume 属性（单位都是吨和立方米）
-      if (cond.weight != null && cond.volume != null) {
-        totalWeight += cond.weight;
-        totalVolume += cond.volume;
+  const types = ['PROVISION_SHIPMENT', 'PICKUP_SHIPMENT', 'DELIVERY_SHIPMENT'] as const;
+  for (const type of types) {
+    const conds = contract.conditions.filter(
+      c => c.type === type && c.weight != null && c.volume != null,
+    );
+    if (conds.length > 0) {
+      let w = 0;
+      let v = 0;
+      for (const c of conds) {
+        w += c.weight!;
+        v += c.volume!;
       }
+      return `${w.toFixed(2)}t / ${v.toFixed(2)}m³`;
     }
   }
-  if (totalWeight === 0 && totalVolume === 0) return '-';
-  const w = totalWeight.toFixed(2);
-  const v = totalVolume.toFixed(2);
-  return `${w}t / ${v}m³`;
+  return '-';
 });
 
 // 运费（PAYMENT 条件）

@@ -60,6 +60,8 @@ declare namespace UserData {
     materials?: Record<string, number>;
     exclusions?: string[];
     consumablesOnly?: boolean;
+    includeConsumables?: boolean;
+    includeInputs?: boolean;
   }
 
   type ActionType = 'CX Buy' | 'MTRA' | 'Refuel';

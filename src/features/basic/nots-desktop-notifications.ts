@@ -1,4 +1,5 @@
 import { alertsStore } from '@src/infrastructure/prun-api/data/alerts';
+import { userData } from '@src/store/user-data';
 import { watchUntil } from '@src/utils/watch';
 
 // ── 类型标签映射（与 nots-notification-type-label 保持一致）────────────────
@@ -50,8 +51,8 @@ const labelMap = new Map<PrunApi.AlertType, string>([
   ['GATEWAY_LINK_UNLINKED', '星门'],
   ['SHIP_FLIGHT_ENDED', '到达'],
   ['POPULATION_REPORT_AVAILABLE', '报告'],
-  ['LOCAL_MARKET_AD_ACCEPTED', '广告'],
-  ['LOCAL_MARKET_AD_EXPIRED', '广告'],
+  ['LOCAL_MARKET_AD_ACCEPTED', '合同'],
+  ['LOCAL_MARKET_AD_EXPIRED', '合同'],
   ['WORKFORCE_LOW_SUPPLIES', '物资'],
   ['WORKFORCE_OUT_OF_SUPPLIES', '物资'],
   ['WORKFORCE_UNSATISFIED', '物资'],
@@ -70,6 +71,18 @@ const labelMap = new Map<PrunApi.AlertType, string>([
 function getData(alert: PrunApi.Alert, key: string): unknown {
   return alert.data.find(x => x.key === key)?.value;
 }
+
+const EXPERTISE_LABELS: Record<string, string> = {
+  AGRICULTURE: '农业',
+  CHEMISTRY: '化学',
+  CONSTRUCTION: '建筑材料',
+  ELECTRONICS: '电子',
+  FOOD_INDUSTRIES: '食品工业',
+  FUEL_REFINING: '燃料精炼',
+  MANUFACTURING: '制造',
+  METALLURGY: '冶金',
+  RESOURCE_EXTRACTION: '资源开采',
+};
 
 function formatAddress(address: PrunApi.Address): string {
   for (const line of address.lines) {
@@ -195,9 +208,9 @@ function formatAlertBody(alert: PrunApi.Alert): string {
       return addrStr ? `${addrStr} 劳动力不满` : '劳动力不满警告';
     }
     case 'LOCAL_MARKET_AD_ACCEPTED':
-      return '本地市场广告已被接受';
+      return '本地合同已被接受';
     case 'LOCAL_MARKET_AD_EXPIRED':
-      return '本地市场广告已过期';
+      return '本地合同已过期';
     case 'WAREHOUSE_STORE_LOCKED_INSUFFICIENT_FUNDS':
       return '仓库因资金不足被锁定';
     case 'WAREHOUSE_STORE_UNLOCKED':
@@ -244,18 +257,39 @@ function formatAlertBody(alert: PrunApi.Alert): string {
       return '星门跳跃中止：链路已变更';
     case 'GATEWAY_JUMP_ABORTED_LINK_NOT_ESTABLISHED':
       return '星门跳跃中止：链路未建立';
-    case 'SITE_EXPERT_DROPPED':
-      return '专家等级下降';
+    case 'SITE_EXPERT_DROPPED': {
+      const category = getData(alert, 'expertiseCategory') as string | undefined;
+      const planet = getData(alert, 'planet') as { address: PrunApi.Address } | undefined;
+      const addr = getData(alert, 'address') as { address: PrunApi.Address } | undefined;
+      const catStr = category ? (EXPERTISE_LABELS[category] ?? category) : '';
+      const locStr = (planet ?? addr) ? formatAddress((planet ?? addr)!.address) : '';
+      const parts = [locStr, catStr].filter(Boolean);
+      return parts.length > 0 ? `${parts.join(' ')} 专家通知` : '专家通知';
+    }
     case 'POPULATION_PROJECT_UPGRADED':
       return '人口项目已升级';
     case 'POPULATION_REPORT_AVAILABLE':
       return '人口报告已发布';
-    case 'COGC_PROGRAM_CHANGED':
-      return 'COGC 计划已变更';
-    case 'COGC_STATUS_CHANGED':
-      return 'COGC 状态已变更';
-    case 'COGC_UPKEEP_STARTED':
-      return 'COGC 维护已开始';
+    case 'COGC_PROGRAM_CHANGED': {
+      const program = getData(alert, 'program') as string | undefined;
+      const planet = getData(alert, 'planet') as { address: PrunApi.Address } | undefined;
+      const addr = getData(alert, 'address') as { address: PrunApi.Address } | undefined;
+      const locStr = (planet ?? addr) ? formatAddress((planet ?? addr)!.address) : '';
+      const parts = [locStr, program].filter(Boolean);
+      return parts.length > 0 ? `COGC 计划变更：${parts.join(' ')}` : 'COGC 计划已变更';
+    }
+    case 'COGC_STATUS_CHANGED': {
+      const planet = getData(alert, 'planet') as { address: PrunApi.Address } | undefined;
+      const addr = getData(alert, 'address') as { address: PrunApi.Address } | undefined;
+      const locStr = (planet ?? addr) ? formatAddress((planet ?? addr)!.address) : '';
+      return locStr ? `${locStr} COGC 状态已变更` : 'COGC 状态已变更';
+    }
+    case 'COGC_UPKEEP_STARTED': {
+      const planet = getData(alert, 'planet') as { address: PrunApi.Address } | undefined;
+      const addr = getData(alert, 'address') as { address: PrunApi.Address } | undefined;
+      const locStr = (planet ?? addr) ? formatAddress((planet ?? addr)!.address) : '';
+      return locStr ? `${locStr} COGC 维护已开始` : 'COGC 维护已开始';
+    }
     case 'ADMIN_CENTER_MOTION_VOTING_STARTED':
       return '行政中心动议投票已开始';
     case 'ADMIN_CENTER_MOTION_PASSED':
@@ -278,11 +312,12 @@ function formatAlertBody(alert: PrunApi.Alert): string {
 // ── 发送桌面通知 ──────────────────────────────────────────────────────────────
 function sendDesktopNotification(alert: PrunApi.Alert) {
   if (Notification.permission !== 'granted') return;
+  if (userData.settings.mutedDesktopNotifications.includes(alert.type)) return;
   const label = labelMap.get(alert.type) ?? '通知';
   const body = formatAlertBody(alert);
   new Notification(`APEX — ${label}`, {
     body,
-    tag: `apex-alert-${alert.id}`, // 防止同一条通知重复弹出
+    tag: `apex-alert-${alert.id}`,
     icon: '/favicon.ico',
     silent: false,
   });

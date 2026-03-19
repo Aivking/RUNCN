@@ -14,7 +14,7 @@ async function onFooterReady(footer: HTMLElement) {
       <div class={[C.HeadItem.indicator, C.HeadItem.indicatorSuccess]} />
       <div
         class={[$style.label, C.HeadItem.label]}
-        data-tooltip="琉璃制 FOXV"
+        data-tooltip="琉璃主权资本集团内部使用"
         data-tooltip-position="top">
         v. {config.version} 琉璃制 FOXV
       </div>

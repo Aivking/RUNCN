@@ -2,6 +2,16 @@ import $style from './close-all-buffers.module.css';
 import { sleep } from '@src/utils/sleep';
 
 async function closeAllBuffers() {
+  // 先恢复所有最小化的窗口，否则关闭按钮不生效。
+  const minimizedIndicators = _$$(document.body, C.Dock.indicatorMinimized);
+  for (const indicator of minimizedIndicators) {
+    const dockItem = indicator.closest(`.${C.Dock.buffer}`) as HTMLElement | null;
+    if (dockItem) {
+      dockItem.click();
+      await sleep(50);
+    }
+  }
+
   const windows = _$$(document.body, C.Window.window);
   for (const win of windows) {
     const closeBtn = _$$(win, C.Window.button).find((b: Element) => b.textContent === 'x');

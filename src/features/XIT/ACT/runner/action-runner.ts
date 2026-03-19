@@ -8,6 +8,7 @@ import { ActionPackageConfig, ActionStep } from '@src/features/XIT/ACT/shared-ty
 import { showBuffer } from '@src/infrastructure/prun-ui/buffers';
 import { sleep } from '@src/utils/sleep';
 import { cxobStore } from '@src/infrastructure/prun-api/data/cxob';
+import { exchangesStore } from '@src/infrastructure/prun-api/data/exchanges';
 import { fixed0, fixed2 } from '@src/utils/format';
 
 interface ActionRunnerOptions {
@@ -58,7 +59,7 @@ export class ActionRunner {
     }
     // 先计算总计并显示在最上方。
     // 用 seenTickers 避免同一材料在不同步骤中重复计算重量/体积。
-    let totalCost = 0;
+    const costByCurrency = new Map<string, number>();
     let missingPriceCount = 0;
     let totalWeight = 0;
     let totalVolume = 0;
@@ -68,7 +69,9 @@ export class ActionRunner {
       if (stepInfo.cost) {
         const cost = stepInfo.cost(step);
         if (cost !== undefined) {
-          totalCost += cost;
+          const exchange = (step as ActionStep & { exchange?: string }).exchange;
+          const currency = exchangesStore.getByCode(exchange)?.currency.code ?? '?';
+          costByCurrency.set(currency, (costByCurrency.get(currency) ?? 0) + cost);
         } else {
           missingPriceCount++;
         }
@@ -85,10 +88,14 @@ export class ActionRunner {
         seenTickers.add(ticker);
       }
     }
+    const totalCost = [...costByCurrency.values()].reduce((s, v) => s + v, 0);
     if (totalCost > 0 || totalWeight > 0 || totalVolume > 0) {
       const parts: string[] = [];
       if (totalCost > 0 || missingPriceCount > 0) {
-        let costStr = `花费 ${fixed0(totalCost)} ICA`;
+        const costParts = [...costByCurrency.entries()].map(
+          ([currency, amount]) => `${fixed0(amount)} ${currency}`,
+        );
+        let costStr = `花费 ${costParts.join(' + ')}`;
         if (missingPriceCount > 0) {
           costStr += `（${missingPriceCount} 项暂无数据）`;
         }

@@ -143,14 +143,20 @@ onMounted(() => {
         :class="$style.memberRow"
         style="flex-direction: column; align-items: stretch; gap: 4px">
         <div style="display: flex; justify-content: space-between; align-items: center">
-          <SectionHeader>{{ bulletin.title }}</SectionHeader>
+          <SectionHeader style="color: rgb(230, 200, 80)">{{ bulletin.title }}</SectionHeader>
           <span :class="$style.memberJoined"
             >{{ bulletin.author }} · {{ formatDate(bulletin.createdAt) }}</span
           >
         </div>
-        <div style="font-size: 12px; opacity: 0.8; white-space: pre-wrap; padding: 2px 0 6px">{{
-          bulletin.content
-        }}</div>
+        <div
+          style="
+            font-size: 12px;
+            color: rgb(220, 220, 220);
+            white-space: pre-wrap;
+            padding: 2px 0 6px;
+          "
+          >{{ bulletin.content }}</div
+        >
       </div>
     </template>
   </div>

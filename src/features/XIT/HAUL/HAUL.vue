@@ -49,6 +49,9 @@ function getTransportSummary(contracts: PrunApi.Contract[]) {
   let currency = '';
   let totalContracts = contracts.length;
   let completedContracts = 0;
+  let totalWeight = 0;
+  let totalVolume = 0;
+  const shipTypes = ['PROVISION_SHIPMENT', 'PICKUP_SHIPMENT', 'DELIVERY_SHIPMENT'] as const;
 
   for (const contract of contracts) {
     if (contract.status === 'FULFILLED') completedContracts++;
@@ -58,9 +61,22 @@ function getTransportSummary(contracts: PrunApi.Contract[]) {
         if (!currency) currency = cond.amount.currency;
       }
     }
+    // 同一批货物出现在多种条件类型中，只取第一种有数据的类型累加。
+    for (const type of shipTypes) {
+      const conds = contract.conditions.filter(
+        c => c.type === type && c.weight != null && c.volume != null,
+      );
+      if (conds.length > 0) {
+        for (const c of conds) {
+          totalWeight += c.weight!;
+          totalVolume += c.volume!;
+        }
+        break;
+      }
+    }
   }
 
-  return { totalPayment, currency, totalContracts, completedContracts };
+  return { totalPayment, currency, totalContracts, completedContracts, totalWeight, totalVolume };
 }
 
 const carryingSummary = computed(() => getTransportSummary(carrying.value));
@@ -83,6 +99,8 @@ const shippingSummary = computed(() => getTransportSummary(shipping.value));
               共 {{ carryingSummary.totalContracts }} 单 | 已完成
               {{ carryingSummary.completedContracts }} 单 | 运费合计:
               {{ formatAmount(carryingSummary.totalPayment, carryingSummary.currency) }}
+              | {{ carryingSummary.totalWeight.toFixed(2) }}t /
+              {{ carryingSummary.totalVolume.toFixed(2) }}m³
             </span>
           </th>
         </tr>
@@ -121,6 +139,8 @@ const shippingSummary = computed(() => getTransportSummary(shipping.value));
               共 {{ shippingSummary.totalContracts }} 单 | 已完成
               {{ shippingSummary.completedContracts }} 单 | 运费合计:
               {{ formatAmount(shippingSummary.totalPayment, shippingSummary.currency) }}
+              | {{ shippingSummary.totalWeight.toFixed(2) }}t /
+              {{ shippingSummary.totalVolume.toFixed(2) }}m³
             </span>
           </th>
         </tr>

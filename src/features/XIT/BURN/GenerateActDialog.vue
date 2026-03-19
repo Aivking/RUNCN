@@ -15,6 +15,7 @@ import { workforcesStore } from '@src/infrastructure/prun-api/data/workforces';
 import { productionStore } from '@src/infrastructure/prun-api/data/production';
 import { storagesStore } from '@src/infrastructure/prun-api/data/storage';
 import { materialsStore } from '@src/infrastructure/prun-api/data/materials';
+import { shipsStore } from '@src/infrastructure/prun-api/data/ships';
 import { getEntityNameFromAddress } from '@src/infrastructure/prun-api/data/addresses';
 import { fixed2 } from '@src/utils/format';
 import { showBuffer } from '@src/infrastructure/prun-ui/buffers';
@@ -62,6 +63,88 @@ const exchange = ref(exchanges[0]);
 
 // Auto-derive warehouse name from selected exchange.
 const warehouseName = computed(() => `${exchangeStationMap[exchange.value]} Warehouse`);
+
+// ── 飞船容量填满 ──────────────────────────────────────────────
+const selectedShip = ref('');
+
+const shipSelectOptions = computed(() => {
+  const ships = shipsStore.all.value;
+  if (!ships) return ['不限制'];
+  const opts = ['不限制'];
+  for (const ship of ships) {
+    const store = storagesStore.getById(ship.idShipStore);
+    const wCap = store?.weightCapacity ?? 0;
+    const vCap = store?.volumeCapacity ?? 0;
+    const label = ship.name
+      ? `${ship.registration} (${ship.name}) ${fixed2(wCap)}t/${fixed2(vCap)}m³`
+      : `${ship.registration} ${fixed2(wCap)}t/${fixed2(vCap)}m³`;
+    opts.push(label);
+  }
+  return opts;
+});
+
+function getSelectedShip(): PrunApi.Ship | undefined {
+  if (!selectedShip.value || selectedShip.value === '不限制') return undefined;
+  const reg = selectedShip.value.split(' ')[0];
+  return shipsStore.getByRegistration(reg);
+}
+
+// 根据指定天数计算材料清单的总重量和总体积。
+function calcBillWeightVolume(d: number): { weight: number; volume: number } {
+  if (!burn.value || d <= 0) return { weight: 0, volume: 0 };
+  const consumablesOnly = includeConsumables.value && !includeInputs.value;
+  let burnData = burn.value.burn;
+  if (!useBaseInv.value && site.value) {
+    const id = site.value.siteId;
+    const wf = workforcesStore.getById(id)?.workforces;
+    const prod = productionStore.getBySiteId(id);
+    burnData = calculatePlanetBurn(consumablesOnly ? undefined : prod, wf, undefined);
+  }
+  let weight = 0;
+  let volume = 0;
+  for (const ticker of Object.keys(burnData)) {
+    const matBurn = burnData[ticker];
+    if (matBurn.dailyAmount >= 0) continue;
+    if (consumablesOnly && matBurn.type !== 'workforce') continue;
+    if (!consumablesOnly && !includeConsumables.value && matBurn.type === 'workforce') continue;
+    const need = useBaseInv.value
+      ? Math.ceil((matBurn.daysLeft - d) * matBurn.dailyAmount)
+      : Math.ceil(-d * matBurn.dailyAmount);
+    if (need > 0) {
+      const mat = materialsStore.getByTicker(ticker);
+      if (mat) {
+        weight += mat.weight * need;
+        volume += mat.volume * need;
+      }
+    }
+  }
+  return { weight, volume };
+}
+
+// 选中飞船时自动计算最大天数。
+watch([selectedShip, includeConsumables, includeInputs, useBaseInv], () => {
+  const ship = getSelectedShip();
+  if (!ship) return;
+  const store = storagesStore.getById(ship.idShipStore);
+  if (!store) return;
+  const wCap = store.weightCapacity;
+  const vCap = store.volumeCapacity;
+  // 二分搜索最大天数
+  let lo = 1;
+  let hi = 9999;
+  let best = 1;
+  while (lo <= hi) {
+    const mid = Math.floor((lo + hi) / 2);
+    const { weight, volume } = calcBillWeightVolume(mid);
+    if (weight <= wCap && volume <= vCap) {
+      best = mid;
+      lo = mid + 1;
+    } else {
+      hi = mid - 1;
+    }
+  }
+  days.value = best;
+});
 
 const packageName = computed(() => {
   const name = burn.value?.planetName ?? planetName.value;
@@ -167,6 +250,8 @@ function onGenerateClick() {
         days: days.value,
         useBaseInv: useBaseInv.value,
         consumablesOnly,
+        includeConsumables: includeConsumables.value,
+        includeInputs: includeInputs.value,
         exclusions: [],
       },
     ],
@@ -229,6 +314,9 @@ function onGenerateClick() {
       </Active>
       <Active label="交易所" tooltip="选择交易所，仓库自动绑定对应空间站。">
         <SelectInput v-model="exchange" :options="exchanges" />
+      </Active>
+      <Active label="飞船填满" tooltip="选择飞船后自动计算能装多少天补给，填满飞船。">
+        <SelectInput v-model="selectedShip" :options="shipSelectOptions" />
       </Active>
       <Active label="仓库">
         <span>{{ warehouseName }}</span>

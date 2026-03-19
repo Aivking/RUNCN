@@ -17,6 +17,26 @@ function isCheckpoint(entry: MigrationEntry): entry is Checkpoint {
 // 日期仅供参考，不影响迁移顺序。
 const migrations: MigrationEntry[] = [
   [
+    '18.03.2026 Add mutedDesktopNotifications',
+    userData => {
+      if (!userData.settings.mutedDesktopNotifications) {
+        userData.settings.mutedDesktopNotifications = [];
+      }
+    },
+  ],
+  [
+    '17.03.2026 Add lastAutoProductionDate',
+    userData => {
+      userData.lastAutoProductionDate = undefined;
+    },
+  ],
+  [
+    '17.03.2026 Add supabaseAuth',
+    userData => {
+      userData.supabaseAuth = undefined;
+    },
+  ],
+  [
     '16.03.2026 Add JH sidebar entry',
     userData => {
       const sidebar: [string, string][] = userData.settings.sidebar;

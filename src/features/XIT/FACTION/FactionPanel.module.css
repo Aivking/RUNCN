@@ -82,6 +82,11 @@
   font-size: 13px;
 }
 
+.memberUsername {
+  font-size: 11px;
+  color: rgb(100, 180, 230);
+}
+
 .roleBadge {
   padding: 1px 5px;
   border-radius: 2px;

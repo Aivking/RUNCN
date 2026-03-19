@@ -58,8 +58,10 @@ act.addMaterialGroup<Config>({
     }
     const stores = storagesStore.getByAddressableId(site.siteId);
 
+    const includeInputs = data.includeInputs !== false && !data.consumablesOnly;
+
     const planetBurn = calculatePlanetBurn(
-      data.consumablesOnly ? undefined : production.value,
+      includeInputs ? production.value : undefined,
       workforce.value,
       (data.useBaseInv ?? true) ? stores : undefined,
     );
@@ -71,6 +73,19 @@ act.addMaterialGroup<Config>({
       }
       const matBurn = planetBurn[ticker];
       if (matBurn.dailyAmount >= 0) {
+        continue;
+      }
+      if (data.consumablesOnly && matBurn.type !== 'workforce') {
+        continue;
+      }
+      if (
+        !data.consumablesOnly &&
+        data.includeConsumables === false &&
+        matBurn.type === 'workforce'
+      ) {
+        continue;
+      }
+      if (!data.consumablesOnly && !includeInputs && matBurn.type === 'input') {
         continue;
       }
       const days = typeof data.days === 'number' ? data.days : parseFloat(data.days);

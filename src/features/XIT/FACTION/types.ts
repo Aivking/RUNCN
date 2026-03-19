@@ -3,6 +3,7 @@ export type MemberRole = 'member' | 'partner' | 'executive';
 export interface FactionMember {
   id: string;
   companyName: string;
+  username?: string;
   role: MemberRole;
   joinedAt: string;
 }
@@ -41,7 +42,7 @@ export interface InviteResponse {
 }
 
 export const ROLE_LABELS: Record<MemberRole, string> = {
-  executive: '执行官',
+  executive: '执政官',
   partner: '合伙人',
   member: '成员',
 };
@@ -167,12 +168,14 @@ export interface FactionCache {
 // --- Phase 4 Types ---
 
 export interface ProductionItem {
+  id?: string;
   ticker: string;
   quantity: number;
 }
 
 export interface ProductionMemberSummary {
   companyName: string;
+  username?: string;
   items: ProductionItem[];
 }
 

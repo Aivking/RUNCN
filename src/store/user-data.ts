@@ -53,6 +53,7 @@ export const initialUserData = deepFreeze({
     ] as [string, string][],
     buffers: [] as [string, number, number][],
     audioVolume: 0.4,
+    mutedDesktopNotifications: [] as string[],
   },
   sorting: {} as Record<string, UserData.StoreSortingData>,
   balanceHistory: {
@@ -76,6 +77,8 @@ export const initialUserData = deepFreeze({
     | { cachedAt: number; members?: unknown[]; balance?: number; bulletins?: unknown[] }
     | undefined,
   factionLastSeenBulletinAt: undefined as string | undefined,
+  supabaseAuth: undefined as Record<string, string> | undefined,
+  lastAutoProductionDate: undefined as string | undefined,
 
   // 在 user-data-migrations.ts 中使用
   migrations: undefined,

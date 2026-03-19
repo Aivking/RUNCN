@@ -32,6 +32,7 @@ import './cxob-supply-demand-values/cxob-supply-demand-values';
 import './cxpc-chart-types/cxpc-chart-types';
 import './cxpo-auto-price';
 import './cxpo-bigger-buttons';
+import './faction-auto-report';
 import './cxpo-order-book/cxpo-order-book';
 import './exp-expert-eta';
 import './expand-sidebar-contract-list';

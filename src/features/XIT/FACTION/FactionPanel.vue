@@ -171,6 +171,11 @@ function availableRoles(currentRole: MemberRole): MemberRole[] {
   return ROLE_ORDER.filter(r => r !== currentRole);
 }
 
+// 按角色排序：执政官 → 合伙人 → 成员
+const sortedMembers = computed(() =>
+  [...members.value].sort((a, b) => ROLE_ORDER.indexOf(a.role) - ROLE_ORDER.indexOf(b.role)),
+);
+
 // Format date.
 function formatDate(iso: string): string {
   const d = new Date(iso);
@@ -295,9 +300,10 @@ onMounted(() => {
       <!-- Members list -->
       <template v-else>
         <div v-if="members.length === 0" :class="$style.emptyMessage">暂无成员</div>
-        <div v-for="member in members" :key="member.id" :class="$style.memberRow">
+        <div v-for="member in sortedMembers" :key="member.id" :class="$style.memberRow">
           <div :class="$style.memberInfo">
             <span :class="$style.memberName">{{ member.companyName }}</span>
+            <span v-if="member.username" :class="$style.memberUsername">{{ member.username }}</span>
             <span :class="[$style.roleBadge, roleBadgeClass(member.role)]">
               {{ ROLE_LABELS[member.role] }}
             </span>

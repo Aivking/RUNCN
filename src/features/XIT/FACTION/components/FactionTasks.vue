@@ -201,7 +201,9 @@ onMounted(loadData);
         <!-- Task header -->
         <div style="display: flex; justify-content: space-between; align-items: center">
           <div :class="$style.memberInfo">
-            <span style="font-size: 13px">{{ task.title }}</span>
+            <span style="font-size: 13px; color: rgb(230, 200, 80); font-weight: bold">{{
+              task.title
+            }}</span>
             <span
               :class="[$style.roleBadge]"
               :style="{
@@ -212,9 +214,6 @@ onMounted(loadData);
               }">
               {{ TASK_STATUS_LABELS[task.status] }}
             </span>
-            <span v-if="task.assignee" style="opacity: 0.5; font-size: 11px">{{
-              task.assignee
-            }}</span>
           </div>
           <div style="display: flex; align-items: center; gap: 4px">
             <span v-if="task.dueDate" style="opacity: 0.5; font-size: 11px"
@@ -229,12 +228,24 @@ onMounted(loadData);
 
         <!-- Expanded details (default expanded, click header to collapse) -->
         <div v-if="isExpanded(task.id)" style="cursor: default" @click.stop>
-          <div v-if="task.description" style="opacity: 0.6; font-size: 12px; margin: 4px 0">{{
-            task.description
-          }}</div>
-          <div style="font-size: 11px; opacity: 0.5; margin-bottom: 4px"
+          <div
+            v-if="task.description"
+            style="color: rgb(220, 220, 220); font-size: 12px; margin: 4px 0"
+            >{{ task.description }}</div
+          >
+          <div style="font-size: 11px; opacity: 0.5; margin-bottom: 2px"
             >发布人：{{ task.createdBy }}</div
           >
+          <div v-if="task.assignee" style="font-size: 11px; margin-bottom: 2px">
+            <span style="opacity: 0.5">认领人：</span>
+            <span style="color: rgb(100, 180, 230)">{{ task.assignee }}</span>
+          </div>
+          <div
+            v-if="task.status === 'done' && task.assignee"
+            style="font-size: 11px; margin-bottom: 4px">
+            <span style="opacity: 0.5">完成人：</span>
+            <span style="color: rgb(146, 196, 125)">{{ task.assignee }}</span>
+          </div>
 
           <!-- Action buttons -->
           <div style="display: flex; gap: 4px; flex-wrap: wrap; margin: 4px 0">

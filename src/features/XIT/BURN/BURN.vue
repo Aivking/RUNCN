@@ -14,7 +14,6 @@ import { countDays } from '@src/features/XIT/BURN/utils';
 import InlineFlex from '@src/components/InlineFlex.vue';
 import { findWithQuery } from '@src/utils/find-with-query';
 import { convertToPlanetNaturalId } from '@src/core/planet-natural-id';
-
 const parameters = useXitParameters();
 
 // 用于整体消耗的虚拟基地。
