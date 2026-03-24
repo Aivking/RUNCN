@@ -16,6 +16,7 @@ const tile = useTile();
 let goingToSplit = ref(false);
 
 const config = ref({
+  globalOptions: { skipMissingMaterials: false },
   materialGroups: {},
   actions: {},
 } as ActionPackageConfig);
@@ -192,35 +193,51 @@ function clearLog() {
         </PrunButton>
       </template>
       <template v-else-if="isPreviewing">
-        <PrunButton v-if="needsConfigure" primary @click="onConfigureClick">配置</PrunButton>
-        <PrunButton disabled>预览</PrunButton>
-        <PrunButton disabled>执行</PrunButton>
+        <div :class="$style.actionGroup">
+          <PrunButton v-if="needsConfigure" primary @click="onConfigureClick">配置</PrunButton>
+          <PrunButton disabled>预览</PrunButton>
+          <PrunButton disabled>执行</PrunButton>
+        </div>
       </template>
       <template v-else-if="!isRunning">
-        <PrunButton v-if="needsConfigure" primary @click="onConfigureClick">配置</PrunButton>
-        <PrunButton primary @click="onPreviewClick">预览</PrunButton>
-        <PrunButton primary :class="$style.executeButton" @click="onExecuteClick">
-          执行
-        </PrunButton>
-        <PrunButton :primary="autoAct" :neutral="!autoAct" @click="autoAct = !autoAct">
-          {{ autoAct ? '🟢 自动' : '自动' }}
-        </PrunButton>
+        <div :class="$style.actionGroup">
+          <PrunButton v-if="needsConfigure" primary @click="onConfigureClick">配置</PrunButton>
+          <PrunButton primary @click="onPreviewClick">预览</PrunButton>
+          <PrunButton primary :class="$style.executeButton" @click="onExecuteClick">
+            执行
+          </PrunButton>
+          <PrunButton :primary="autoAct" :neutral="!autoAct" @click="autoAct = !autoAct">
+            {{ autoAct ? '🟢 自动' : '自动' }}
+          </PrunButton>
+          <label :class="$style.skipCheckbox">
+            <input
+              type="checkbox"
+              v-model="config.globalOptions!.skipMissingMaterials" />跳过不足材料
+          </label>
+        </div>
       </template>
       <template v-else>
-        <PrunButton v-if="needsConfigure" primary disabled>配置</PrunButton>
-        <PrunButton primary disabled>预览</PrunButton>
-        <PrunButton
-          danger
-          :disabled="!actReady"
-          :class="$style.executeButton"
-          @click="onCancelClick">
-          取消
-        </PrunButton>
-        <PrunButton primary :disabled="!actReady" @click="onActClick">执行步骤</PrunButton>
-        <PrunButton neutral :disabled="!actReady" @click="onSkipClick">跳过</PrunButton>
-        <PrunButton :primary="autoAct" :neutral="!autoAct" @click="autoAct = !autoAct">
-          {{ autoAct ? '🟢 自动' : '自动' }}
-        </PrunButton>
+        <div :class="$style.actionGroup">
+          <PrunButton v-if="needsConfigure" primary disabled>配置</PrunButton>
+          <PrunButton primary disabled>预览</PrunButton>
+          <PrunButton
+            danger
+            :disabled="!actReady"
+            :class="$style.executeButton"
+            @click="onCancelClick">
+            取消
+          </PrunButton>
+          <PrunButton primary :disabled="!actReady" @click="onActClick">执行步骤</PrunButton>
+          <PrunButton neutral :disabled="!actReady" @click="onSkipClick">跳过</PrunButton>
+          <PrunButton :primary="autoAct" :neutral="!autoAct" @click="autoAct = !autoAct">
+            {{ autoAct ? '🟢 自动' : '自动' }}
+          </PrunButton>
+          <label :class="$style.skipCheckbox">
+            <input
+              type="checkbox"
+              v-model="config.globalOptions!.skipMissingMaterials" />跳过不足材料
+          </label>
+        </div>
       </template>
     </ActionBar>
   </div>
@@ -251,6 +268,27 @@ function clearLog() {
   margin-left: 2px;
   justify-content: flex-start;
   user-select: none;
+}
+
+.actionGroup {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.skipCheckbox {
+  display: flex;
+  align-items: center;
+  margin-right: 5px;
+  margin-left: 5px;
+  font-size: 11px;
+  cursor: pointer;
+  color: #ccc;
+}
+
+.skipCheckbox input {
+  margin-right: 4px;
 }
 
 /* 使取消和执行按钮宽度相同，保持布局稳定。 */

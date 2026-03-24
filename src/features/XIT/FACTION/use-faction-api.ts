@@ -21,6 +21,15 @@ import type {
   ProductionItem,
   FactionMember,
   Bulletin,
+  TransportRoute,
+  TransportRoutesResponse,
+  ShipStatusReport,
+  ShipStatusResponse,
+  TransportTrip,
+  TransportBooking,
+  TripsResponse,
+  PluginUser,
+  PluginUsersResponse,
 } from './types';
 
 const SUPABASE_URL = 'https://tnfncrvsengkativszlx.supabase.co';
@@ -460,23 +469,46 @@ export async function aggregateMyProduction(): Promise<{ ticker: string; quantit
     productionStore.getBySiteId(site.siteId);
   }
 
-  // 等待所有 site 的数据就绪
-  await watchUntil(() =>
-    sites.every(site => {
-      const wf = workforcesStore.getById(site.siteId);
-      const prod = productionStore.getBySiteId(site.siteId);
-      return wf !== undefined && prod !== undefined;
-    }),
-  );
+  // 等待所有 site 的数据就绪（加上 15 秒超时，以防某些基地没有劳动力或产出数据而无限期挂起）
+  await Promise.race([
+    watchUntil(() =>
+      sites.every(site => {
+        const wf = workforcesStore.getById(site.siteId);
+        const prod = productionStore.getBySiteId(site.siteId);
+        return wf !== undefined && prod !== undefined;
+      }),
+    ),
+    new Promise(resolve => setTimeout(resolve, 15000)),
+  ]);
 
-  const aggregated: Record<string, number> = {};
+  // 分别汇总所有星球的产出、生产线消耗、人口消耗。
+  const globalOutput: Record<string, number> = {};
+  const globalInput: Record<string, number> = {};
+  const globalWorkforce: Record<string, number> = {};
   for (const site of sites) {
     const planetBurn = getPlanetBurn(site);
-    if (!planetBurn) continue;
+    if (!planetBurn) {
+      continue;
+    }
     for (const [ticker, mat] of Object.entries(planetBurn.burn)) {
-      aggregated[ticker] = (aggregated[ticker] ?? 0) + mat.dailyAmount;
+      globalOutput[ticker] = (globalOutput[ticker] ?? 0) + mat.output;
+      globalInput[ticker] = (globalInput[ticker] ?? 0) + mat.input;
+      globalWorkforce[ticker] = (globalWorkforce[ticker] ?? 0) + mat.workforce;
     }
   }
+
+  // 全局净产出 = 全部产出 - 全部生产线消耗 - 全部人口消耗。
+  const allTickers = new Set([
+    ...Object.keys(globalOutput),
+    ...Object.keys(globalInput),
+    ...Object.keys(globalWorkforce),
+  ]);
+  const aggregated: Record<string, number> = {};
+  for (const ticker of allTickers) {
+    aggregated[ticker] =
+      (globalOutput[ticker] ?? 0) - (globalInput[ticker] ?? 0) - (globalWorkforce[ticker] ?? 0);
+  }
+
   return Object.entries(aggregated)
     .filter(([, qty]) => qty > 0)
     .map(([ticker, quantity]) => ({
@@ -500,7 +532,16 @@ export async function reportProduction(items: ProductionItem[]): Promise<ApiSucc
       report_date: today,
     }));
 
-  if (rows.length === 0) return { ok: true };
+  if (rows.length === 0) {
+    if (myFaction.data && myName.data) {
+      await supabase
+        .from('daily_production')
+        .delete()
+        .eq('faction_id', myFaction.data)
+        .eq('company_name', myName.data);
+    }
+    return { ok: true };
+  }
 
   // 先插入新数据，成功后再删除不在新数据中的旧记录
   const { error } = await supabase.from('daily_production').upsert(rows, {
@@ -508,8 +549,17 @@ export async function reportProduction(items: ProductionItem[]): Promise<ApiSucc
   });
   if (error) throwApi('REPORT_FAILED', error.message);
 
-  // 删除当天该用户不在本次上报中的旧材料记录
   const newTickers = rows.map(r => r.material_ticker);
+
+  // 删除该用户历史日期的全部记录（只保留今天）
+  await supabase
+    .from('daily_production')
+    .delete()
+    .eq('faction_id', rows[0].faction_id)
+    .eq('company_name', rows[0].company_name)
+    .neq('report_date', today);
+
+  // 删除当天该用户不在本次上报中的旧材料记录
   await supabase
     .from('daily_production')
     .delete()
@@ -517,17 +567,17 @@ export async function reportProduction(items: ProductionItem[]): Promise<ApiSucc
     .eq('company_name', rows[0].company_name)
     .eq('report_date', today)
     .not('material_ticker', 'in', `(${newTickers.join(',')})`);
+
   return { ok: true };
 }
 
-export async function fetchProductionSummary(date?: string): Promise<ProductionSummaryResponse> {
-  const targetDate = date ?? new Date().toISOString().slice(0, 10);
+export async function fetchProductionSummary(): Promise<ProductionSummaryResponse> {
+  const today = new Date().toISOString().slice(0, 10);
 
   const [prodResult, membersResult] = await Promise.all([
     supabase
       .from('daily_production')
-      .select('id, company_name, material_ticker, quantity')
-      .eq('report_date', targetDate)
+      .select('id, company_name, material_ticker, quantity, report_date')
       .order('company_name')
       .order('material_ticker'),
     supabase.from('members').select('company_name, username'),
@@ -539,22 +589,32 @@ export async function fetchProductionSummary(date?: string): Promise<ProductionS
     if (m.username) usernameMap[m.company_name] = m.username;
   }
 
-  const byMember: Record<string, Array<{ id: string; ticker: string; quantity: number }>> = {};
+  const byMember: Record<
+    string,
+    Record<string, { id: string; ticker: string; quantity: number; report_date: string }>
+  > = {};
+
   for (const row of prodResult.data ?? []) {
-    if (byMember[row.company_name] === undefined) byMember[row.company_name] = [];
-    byMember[row.company_name].push({
-      id: row.id,
-      ticker: row.material_ticker,
-      quantity: row.quantity,
-    });
+    if (!byMember[row.company_name]) {
+      byMember[row.company_name] = {};
+    }
+    const existing = byMember[row.company_name][row.material_ticker];
+    if (!existing || row.report_date > existing.report_date) {
+      byMember[row.company_name][row.material_ticker] = {
+        id: row.id,
+        ticker: row.material_ticker,
+        quantity: row.quantity,
+        report_date: row.report_date,
+      };
+    }
   }
 
-  const members = Object.entries(byMember).map(([companyName, items]) => ({
+  const members = Object.entries(byMember).map(([companyName, tickerMap]) => ({
     companyName,
     username: usernameMap[companyName],
-    items,
+    items: Object.values(tickerMap),
   }));
-  return { ok: true, date: targetDate, members };
+  return { ok: true, date: today, members };
 }
 
 export async function updateProductionQuantity(id: string, quantity: number): Promise<ApiSuccess> {
@@ -563,15 +623,11 @@ export async function updateProductionQuantity(id: string, quantity: number): Pr
   return { ok: true };
 }
 
-export async function deleteProductionByMember(
-  companyName: string,
-  date: string,
-): Promise<ApiSuccess> {
+export async function deleteProductionByMember(companyName: string): Promise<ApiSuccess> {
   const { error } = await supabase
     .from('daily_production')
     .delete()
-    .eq('company_name', companyName)
-    .eq('report_date', date);
+    .eq('company_name', companyName);
   if (error) throwApi('DELETE_FAILED', error.message);
   return { ok: true };
 }
@@ -630,4 +686,314 @@ export async function postBulletin(title: string, content: string): Promise<ApiS
   });
   if (error) throwApi('CREATE_FAILED', error.message);
   return { ok: true };
+}
+
+// --- Transport ---
+
+export async function fetchTransportRoutes(): Promise<TransportRoutesResponse> {
+  const [routesResult, membersResult] = await Promise.all([
+    supabase.from('transport_routes').select('*').order('created_at', { ascending: false }),
+    supabase.from('members').select('company_name, username'),
+  ]);
+  if (routesResult.error) throwApi('FETCH_FAILED', routesResult.error.message);
+
+  const usernameMap: Record<string, string> = {};
+  for (const m of membersResult.data ?? []) {
+    if (m.username) usernameMap[m.company_name] = m.username;
+  }
+
+  const routes: TransportRoute[] = (routesResult.data ?? []).map(r => ({
+    id: r.id,
+    companyName: r.company_name,
+    username: usernameMap[r.company_name],
+    departure: r.departure,
+    destination: r.destination,
+    roundTrip: r.round_trip,
+    feePerTon: r.fee_per_ton,
+    feePerM3: r.fee_per_m3,
+    shipRegistrations: r.ship_registration ? r.ship_registration.split(',').filter(Boolean) : [],
+    notes: r.notes ?? undefined,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+  }));
+  return { ok: true, routes };
+}
+
+export async function createTransportRoute(data: {
+  departure: string;
+  destination: string;
+  roundTrip: boolean;
+  feePerTon: number;
+  feePerM3: number;
+  shipRegistrations: string[];
+  notes?: string;
+}): Promise<ApiSuccess> {
+  const myFaction = await supabase.rpc('get_my_faction_id' as never);
+  const myName = await supabase.rpc('get_my_company_name' as never);
+  const { error } = await supabase.from('transport_routes').insert({
+    faction_id: (myFaction.data as string) ?? '',
+    company_name: (myName.data as string) ?? '',
+    departure: data.departure,
+    destination: data.destination,
+    round_trip: data.roundTrip,
+    fee_per_ton: data.feePerTon,
+    fee_per_m3: data.feePerM3,
+    ship_registration: data.shipRegistrations.length > 0 ? data.shipRegistrations.join(',') : null,
+    notes: data.notes ?? null,
+  });
+  if (error) throwApi('CREATE_FAILED', error.message);
+  return { ok: true };
+}
+
+export async function updateTransportRoute(
+  id: string,
+  data: {
+    departure: string;
+    destination: string;
+    roundTrip: boolean;
+    feePerTon: number;
+    feePerM3: number;
+    shipRegistrations: string[];
+    notes?: string;
+  },
+): Promise<ApiSuccess> {
+  const { error } = await supabase
+    .from('transport_routes')
+    .update({
+      departure: data.departure,
+      destination: data.destination,
+      round_trip: data.roundTrip,
+      fee_per_ton: data.feePerTon,
+      fee_per_m3: data.feePerM3,
+      ship_registration:
+        data.shipRegistrations.length > 0 ? data.shipRegistrations.join(',') : null,
+      notes: data.notes ?? null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', id);
+  if (error) throwApi('UPDATE_FAILED', error.message);
+  return { ok: true };
+}
+
+export async function deleteTransportRoute(id: string): Promise<ApiSuccess> {
+  const { error } = await supabase.from('transport_routes').delete().eq('id', id);
+  if (error) throwApi('DELETE_FAILED', error.message);
+  return { ok: true };
+}
+
+// --- Ship Status ---
+
+export async function reportShipStatuses(
+  reports: Omit<ShipStatusReport, 'reportedAt'>[],
+): Promise<ApiSuccess> {
+  if (reports.length === 0) return { ok: true };
+
+  const myFaction = await supabase.rpc('get_my_faction_id' as never);
+  const factionId = (myFaction.data as string) ?? '';
+  const now = new Date().toISOString();
+
+  const rows = reports.map(r => {
+    const row: Record<string, unknown> = {
+      faction_id: factionId,
+      company_name: r.companyName,
+      ship_registration: r.shipRegistration,
+      ship_name: r.shipName ?? null,
+      condition: r.condition ?? null,
+      location: r.location ?? null,
+      is_flying: r.isFlying,
+      flight_destination: r.flightDestination ?? null,
+      flight_eta: r.flightEta ?? null,
+      cargo_volume: r.cargoVolume ?? null,
+      cargo_weight: r.cargoWeight ?? null,
+      reported_at: now,
+    };
+    if (r.manualStatus !== undefined) {
+      row.manual_status = r.manualStatus;
+    }
+    return row;
+  });
+
+  const { error } = await supabase.from('ship_status_reports').upsert(rows, {
+    onConflict: 'faction_id,company_name,ship_registration',
+  });
+  if (error) throwApi('REPORT_FAILED', error.message);
+  return { ok: true };
+}
+
+export async function fetchShipStatuses(): Promise<ShipStatusResponse> {
+  const { data, error } = await supabase
+    .from('ship_status_reports')
+    .select('*')
+    .order('company_name');
+  if (error) throwApi('FETCH_FAILED', error.message);
+
+  const reports: ShipStatusReport[] = (data ?? []).map(r => ({
+    companyName: r.company_name,
+    shipRegistration: r.ship_registration,
+    shipName: r.ship_name ?? undefined,
+    condition: r.condition ?? undefined,
+    location: r.location ?? undefined,
+    isFlying: r.is_flying,
+    manualStatus: r.manual_status ?? undefined,
+    flightDestination: r.flight_destination ?? undefined,
+    flightEta: r.flight_eta ?? undefined,
+    cargoVolume: r.cargo_volume ?? undefined,
+    cargoWeight: r.cargo_weight ?? undefined,
+    reportedAt: r.reported_at,
+  }));
+  return { ok: true, reports };
+}
+
+export async function updateShipManualStatus(
+  shipRegistration: string,
+  manualStatus: string | null,
+): Promise<ApiSuccess> {
+  const myFaction = await supabase.rpc('get_my_faction_id' as never);
+  const myName = await supabase.rpc('get_my_company_name' as never);
+  const { error } = await supabase
+    .from('ship_status_reports')
+    .update({ manual_status: manualStatus })
+    .eq('faction_id', (myFaction.data as string) ?? '')
+    .eq('company_name', (myName.data as string) ?? '')
+    .eq('ship_registration', shipRegistration);
+  if (error) throwApi('UPDATE_FAILED', error.message);
+  return { ok: true };
+}
+
+// --- Transport Trips & Bookings ---
+
+export async function fetchTripsForRoute(routeId: string): Promise<TripsResponse> {
+  const [tripsResult, bookingsResult, membersResult] = await Promise.all([
+    supabase
+      .from('transport_trips')
+      .select('*')
+      .eq('route_id', routeId)
+      .in('status', ['open'])
+      .order('departure_time', { ascending: true }),
+    supabase.from('transport_bookings').select('*').order('created_at', { ascending: true }),
+    supabase.from('members').select('company_name, username'),
+  ]);
+  if (tripsResult.error) throwApi('FETCH_FAILED', tripsResult.error.message);
+
+  const usernameMap: Record<string, string> = {};
+  for (const m of membersResult.data ?? []) {
+    if (m.username) usernameMap[m.company_name] = m.username;
+  }
+
+  const bookingsByTrip: Record<string, TransportBooking[]> = {};
+  for (const b of bookingsResult.data ?? []) {
+    const booking: TransportBooking = {
+      id: b.id,
+      tripId: b.trip_id,
+      companyName: b.company_name,
+      username: usernameMap[b.company_name],
+      volume: b.volume,
+      weight: b.weight,
+      cargoDescription: b.cargo_description ?? undefined,
+      createdAt: b.created_at,
+    };
+    (bookingsByTrip[b.trip_id] ??= []).push(booking);
+  }
+
+  const trips: TransportTrip[] = (tripsResult.data ?? []).map(t => ({
+    id: t.id,
+    routeId: t.route_id,
+    companyName: t.company_name,
+    username: usernameMap[t.company_name],
+    departureTime: t.departure_time,
+    availableVolume: t.available_volume,
+    availableWeight: t.available_weight,
+    description: t.description ?? undefined,
+    status: t.status as TransportTrip['status'],
+    bookings: bookingsByTrip[t.id] ?? [],
+    createdAt: t.created_at,
+  }));
+  return { ok: true, trips };
+}
+
+export async function createTrip(
+  routeId: string,
+  data: {
+    departureTime: string;
+    availableVolume: number;
+    availableWeight: number;
+    description?: string;
+  },
+): Promise<ApiSuccess> {
+  const myFaction = await supabase.rpc('get_my_faction_id' as never);
+  const myName = await supabase.rpc('get_my_company_name' as never);
+  const { error } = await supabase.from('transport_trips').insert({
+    faction_id: (myFaction.data as string) ?? '',
+    route_id: routeId,
+    company_name: (myName.data as string) ?? '',
+    departure_time: data.departureTime,
+    available_volume: data.availableVolume,
+    available_weight: data.availableWeight,
+    description: data.description ?? null,
+  });
+  if (error) throwApi('CREATE_FAILED', error.message);
+  return { ok: true };
+}
+
+export async function updateTripStatus(
+  tripId: string,
+  status: 'closed' | 'cancelled',
+): Promise<ApiSuccess> {
+  const { error } = await supabase.from('transport_trips').update({ status }).eq('id', tripId);
+  if (error) throwApi('UPDATE_FAILED', error.message);
+  return { ok: true };
+}
+
+export async function createBooking(
+  tripId: string,
+  data: { volume: number; weight: number; cargoDescription?: string },
+): Promise<ApiSuccess> {
+  const myFaction = await supabase.rpc('get_my_faction_id' as never);
+  const myName = await supabase.rpc('get_my_company_name' as never);
+  const { error } = await supabase.from('transport_bookings').insert({
+    faction_id: (myFaction.data as string) ?? '',
+    trip_id: tripId,
+    company_name: (myName.data as string) ?? '',
+    volume: data.volume,
+    weight: data.weight,
+    cargo_description: data.cargoDescription ?? null,
+  });
+  if (error) throwApi('CREATE_FAILED', error.message);
+  return { ok: true };
+}
+
+export async function deleteBooking(bookingId: string): Promise<ApiSuccess> {
+  const { error } = await supabase.from('transport_bookings').delete().eq('id', bookingId);
+  if (error) throwApi('DELETE_FAILED', error.message);
+  return { ok: true };
+}
+
+// --- Plugin Users ---
+
+export async function reportPluginUser(username: string, companyName: string): Promise<ApiSuccess> {
+  const { error } = await supabase.from('plugin_users').upsert(
+    {
+      username,
+      company_name: companyName,
+      last_active: new Date().toISOString(),
+    },
+    { onConflict: 'username' },
+  );
+  if (error) throwApi('REPORT_FAILED', error.message);
+  return { ok: true };
+}
+
+export async function fetchPluginUsers(): Promise<PluginUsersResponse> {
+  const { data, error } = await supabase
+    .from('plugin_users')
+    .select('*')
+    .order('last_active', { ascending: false });
+  if (error) throwApi('FETCH_FAILED', error.message);
+
+  const users: PluginUser[] = (data ?? []).map(r => ({
+    username: r.username,
+    companyName: r.company_name,
+    lastActive: r.last_active,
+  }));
+  return { ok: true, users };
 }

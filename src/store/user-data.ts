@@ -47,9 +47,10 @@ export const initialUserData = deepFreeze({
       ['ACT', 'XIT ACT'],
       ['BURN', 'XIT BURN'],
       ['REP', 'XIT REP'],
-      ['SET', 'XIT SET'],
-      ['HELP', 'XIT HELP'],
-      ['JH', 'XIT JH'],
+      ['设置', 'XIT SET'],
+      ['帮助', 'XIT HELP'],
+      ['计划', 'XIT JH'],
+      ['琉璃', 'XIT FACTION'],
     ] as [string, string][],
     buffers: [] as [string, number, number][],
     audioVolume: 0.4,
@@ -79,6 +80,7 @@ export const initialUserData = deepFreeze({
   factionLastSeenBulletinAt: undefined as string | undefined,
   supabaseAuth: undefined as Record<string, string> | undefined,
   lastAutoProductionDate: undefined as string | undefined,
+  lastShipReportSnapshot: undefined as string | undefined,
 
   // 在 user-data-migrations.ts 中使用
   migrations: undefined,

@@ -17,6 +17,7 @@ interface Data {
   priceLimit: number;
   buyPartial: boolean;
   allowUnfilled: boolean;
+  skipMissing?: boolean;
 }
 
 export const CXPO_BUY = act.addActionStep<Data>({
@@ -125,6 +126,12 @@ export const CXPO_BUY = act.addActionStep<Data>({
       }
 
       if (filled.amount < amount && !data.allowUnfilled) {
+        if (data.skipMissing) {
+          log.warning(`${exchange} 上没有足够的材料购买 ${fixed0(amount)} ${ticker}，跳过该操作`);
+          shouldUnwatch = true;
+          skip();
+          return;
+        }
         if (!data.buyPartial) {
           let message = `${exchange} 上没有足够的材料购买 ${fixed0(amount)} ${ticker}`;
           if (isFinite(priceLimit)) {

@@ -10,14 +10,11 @@ async function onFooterReady(footer: HTMLElement) {
   createFragmentApp(() => (
     <div
       class={[$style.container, C.HeadItem.container, C.fonts.fontRegular, C.type.typeRegular]}
+      data-tooltip="琉璃主权资本集团内部使用。本插件为内部版本，非组织成员使用会造成不可逆的损失，请自行珍重"
+      data-tooltip-position="top"
       onClick={onClick}>
       <div class={[C.HeadItem.indicator, C.HeadItem.indicatorSuccess]} />
-      <div
-        class={[$style.label, C.HeadItem.label]}
-        data-tooltip="琉璃主权资本集团内部使用"
-        data-tooltip-position="top">
-        v. {config.version} 琉璃制 FOXV
-      </div>
+      <div class={[$style.label, C.HeadItem.label]}>v. {config.version} 琉璃制 FOXV</div>
     </div>
   )).before(userCount);
 }

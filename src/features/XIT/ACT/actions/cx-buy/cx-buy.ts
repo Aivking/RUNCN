@@ -62,29 +62,32 @@ act.addAction({
       let bidAmount = amount;
 
       if (filled && filled.amount < amount && !allowUnfilled) {
-        if (!buyPartial) {
+        if (ctx.globalOptions?.skipMissingMaterials) {
+          log.warning(`${exchange} 上没有足够的材料购买 ${fixed0(amount)} ${ticker}，执行时将跳过`);
+          bidAmount = amount;
+        } else if (!buyPartial) {
           let message = `${exchange} 上没有足够的材料购买 ${fixed0(amount)} ${ticker}`;
           if (isFinite(priceLimit)) {
             message += ` with price limit ${fixed02(priceLimit)}/u`;
           }
           fail(message);
           return;
-        }
+        } else {
+          const leftover = amount - filled.amount;
+          let message =
+            `${fixed0(leftover)} ${ticker} 将不会在 ${exchange} 上购买 ` +
+            `（${fixed0(filled.amount)}/${fixed0(amount)} 可用`;
+          if (isFinite(priceLimit)) {
+            message += ` with price limit ${fixed02(priceLimit)}/u`;
+          }
+          message += ')';
+          log.warning(message);
+          if (filled.amount === 0) {
+            continue;
+          }
 
-        const leftover = amount - filled.amount;
-        let message =
-          `${fixed0(leftover)} ${ticker} 将不会在 ${exchange} 上购买 ` +
-          `（${fixed0(filled.amount)}/${fixed0(amount)} 可用`;
-        if (isFinite(priceLimit)) {
-          message += ` with price limit ${fixed02(priceLimit)}/u`;
+          bidAmount = filled.amount;
         }
-        message += ')';
-        log.warning(message);
-        if (filled.amount === 0) {
-          continue;
-        }
-
-        bidAmount = filled.amount;
       }
 
       emitStep(
@@ -95,6 +98,7 @@ act.addAction({
           priceLimit: priceLimit,
           buyPartial: buyPartial,
           allowUnfilled: allowUnfilled,
+          skipMissing: ctx.globalOptions?.skipMissingMaterials,
         }),
       );
     }

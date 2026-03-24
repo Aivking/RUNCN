@@ -9,6 +9,7 @@ import FactionLogistics from './components/FactionLogistics.vue';
 import FactionTasks from './components/FactionTasks.vue';
 import FactionBulletin from './components/FactionBulletin.vue';
 import FactionDailyProduction from './components/FactionDailyProduction.vue';
+import FactionTransport from './components/FactionTransport.vue';
 import {
   isAuthenticated,
   login,
@@ -193,6 +194,7 @@ const tabs: Tab[] = [
   { id: 'TASKS', label: '任务', component: Placeholder },
   { id: 'BULLETIN', label: '公告', component: Placeholder },
   { id: 'PRODUCTION', label: '产出', component: Placeholder },
+  { id: 'TRANSPORT', label: '运输', component: Placeholder },
 ];
 
 const parameters = useXitParameters();
@@ -339,5 +341,8 @@ onMounted(() => {
 
     <!-- Production tab -->
     <FactionDailyProduction v-else-if="activeTab.id === 'PRODUCTION'" :my-role="myRole" />
+
+    <!-- Transport tab -->
+    <FactionTransport v-else-if="activeTab.id === 'TRANSPORT'" :my-role="myRole" />
   </div>
 </template>

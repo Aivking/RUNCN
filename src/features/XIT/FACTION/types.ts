@@ -184,3 +184,88 @@ export interface ProductionSummaryResponse {
   date: string;
   members: ProductionMemberSummary[];
 }
+
+// --- Phase 5 Types: Transport ---
+
+export interface TransportRoute {
+  id: string;
+  companyName: string;
+  username?: string;
+  departure: string;
+  destination: string;
+  roundTrip: boolean;
+  feePerTon: number;
+  feePerM3: number;
+  shipRegistrations: string[];
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TransportRoutesResponse {
+  ok: true;
+  routes: TransportRoute[];
+}
+
+export interface ShipStatusReport {
+  companyName: string;
+  shipRegistration: string;
+  shipName?: string;
+  condition?: number;
+  location?: string;
+  isFlying: boolean;
+  manualStatus?: string;
+  flightDestination?: string;
+  flightEta?: string;
+  cargoVolume?: number;
+  cargoWeight?: number;
+  reportedAt: string;
+}
+
+export interface ShipStatusResponse {
+  ok: true;
+  reports: ShipStatusReport[];
+}
+
+// --- Phase 6 Types: Transport Trips & Bookings ---
+
+export interface TransportTrip {
+  id: string;
+  routeId: string;
+  companyName: string;
+  username?: string;
+  departureTime: string;
+  availableVolume: number;
+  availableWeight: number;
+  description?: string;
+  status: 'open' | 'closed' | 'cancelled';
+  bookings: TransportBooking[];
+  createdAt: string;
+}
+
+export interface TransportBooking {
+  id: string;
+  tripId: string;
+  companyName: string;
+  username?: string;
+  volume: number;
+  weight: number;
+  cargoDescription?: string;
+  createdAt: string;
+}
+
+export interface TripsResponse {
+  ok: true;
+  trips: TransportTrip[];
+}
+
+export interface PluginUser {
+  username: string;
+  companyName: string;
+  lastActive: string;
+}
+
+export interface PluginUsersResponse {
+  ok: true;
+  users: PluginUser[];
+}

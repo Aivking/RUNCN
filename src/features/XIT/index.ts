@@ -23,6 +23,7 @@ import './HAUL/HAUL';
 import './HELP';
 import './HQUC';
 import './MATS';
+import './MMOD/MMOD';
 import './NOTE/NOTE';
 import './PLAN/PLAN';
 import './PLAN/JH';

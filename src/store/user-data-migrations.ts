@@ -17,6 +17,34 @@ function isCheckpoint(entry: MigrationEntry): entry is Checkpoint {
 // 日期仅供参考，不影响迁移顺序。
 const migrations: MigrationEntry[] = [
   [
+    '21.03.2026 Translate sidebar entries',
+    userData => {
+      const sidebar: [string, string][] = userData.settings.sidebar;
+      const setIdx = sidebar.findIndex(([, cmd]: [string, string]) => cmd === 'XIT SET');
+      if (setIdx >= 0) sidebar[setIdx][0] = '设置';
+
+      const helpIdx = sidebar.findIndex(([, cmd]: [string, string]) => cmd === 'XIT HELP');
+      if (helpIdx >= 0) sidebar[helpIdx][0] = '帮助';
+
+      const facIdx = sidebar.findIndex(([, cmd]: [string, string]) => cmd === 'XIT FACTION');
+      if (facIdx >= 0) sidebar[facIdx][0] = '琉璃';
+    },
+  ],
+  [
+    '21.03.2026 Replace JH with 计划 and add 组织 sidebar entry',
+    userData => {
+      const sidebar: [string, string][] = userData.settings.sidebar;
+      const jhIdx = sidebar.findIndex(([, cmd]: [string, string]) => cmd === 'XIT JH');
+      if (jhIdx >= 0) {
+        sidebar[jhIdx][0] = '计划';
+      }
+      if (!sidebar.some(([, cmd]: [string, string]) => cmd === 'XIT FACTION')) {
+        const targetIdx = jhIdx >= 0 ? jhIdx + 1 : sidebar.length;
+        sidebar.splice(targetIdx, 0, ['组织', 'XIT FACTION']);
+      }
+    },
+  ],
+  [
     '18.03.2026 Add mutedDesktopNotifications',
     userData => {
       if (!userData.settings.mutedDesktopNotifications) {

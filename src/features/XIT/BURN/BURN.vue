@@ -9,6 +9,8 @@ import LoadingSpinner from '@src/components/LoadingSpinner.vue';
 import MaterialRow from '@src/features/XIT/BURN/MaterialRow.vue';
 import { materialsStore } from '@src/infrastructure/prun-api/data/materials';
 import { useXitParameters } from '@src/hooks/use-xit-parameters';
+import { isAuthenticated, reportProduction } from '@src/features/XIT/FACTION/use-faction-api';
+import { userData } from '@src/store/user-data';
 import { sitesStore } from '@src/infrastructure/prun-api/data/sites';
 import { countDays } from '@src/features/XIT/BURN/utils';
 import InlineFlex from '@src/components/InlineFlex.vue';
@@ -161,6 +163,38 @@ function onExpandAllClick() {
     expand.value = planetBurn.value?.map(x => x.naturalId) ?? [];
   }
 }
+
+let uploadTimer: number | undefined;
+let hasReportedThisRender = false;
+
+watch(
+  planetBurn,
+  newVal => {
+    if (hasReportedThisRender) return;
+    if (!newVal) return;
+    const overall = newVal.find(x => x.planetName === '总览');
+    if (!overall) return;
+    if (!isAuthenticated()) return;
+
+    clearTimeout(uploadTimer);
+    uploadTimer = window.setTimeout(() => {
+      const items = Object.entries(overall.burn).map(([ticker, burnValue]) => ({
+        ticker,
+        quantity: Math.round((burnValue as any).dailyAmount),
+      }));
+
+      reportProduction(items)
+        .then(() => {
+          hasReportedThisRender = true;
+          // Optionally sync date just in case, but we don't block on it anymore
+          const today = new Date().toISOString().slice(0, 10);
+          userData.lastAutoProductionDate = today;
+        })
+        .catch(console.error);
+    }, 3000);
+  },
+  { deep: true },
+);
 </script>
 
 <template>

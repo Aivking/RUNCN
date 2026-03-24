@@ -1,6 +1,7 @@
 import { Logger } from '@src/features/XIT/ACT/runner/logger';
 
 export interface ActionPackageConfig {
+  globalOptions?: { skipMissingMaterials?: boolean };
   materialGroups: Record<string, unknown>[];
   actions: Record<string, unknown>[];
 }
@@ -17,6 +18,7 @@ export interface ActionRunnerContext<T> {
 export interface MaterialGroupGenerateContext<TConfig>
   extends ActionRunnerContext<UserData.MaterialGroupData> {
   config: TConfig;
+  globalOptions: { skipMissingMaterials?: boolean };
   setStatus: (status: string) => void;
 }
 
@@ -26,6 +28,7 @@ export type AssertFn = (condition: any, message: string) => asserts condition;
 export interface ActionStepGenerateContext<TConfig>
   extends ActionRunnerContext<UserData.ActionData> {
   config: TConfig;
+  globalOptions: { skipMissingMaterials?: boolean };
   fail: (message?: string) => void;
   assert: AssertFn;
   getMaterialGroup: (name: string | undefined) => Promise<Record<string, number> | undefined>;

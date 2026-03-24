@@ -55,8 +55,58 @@ const filteredMembers = computed(() => {
     .filter((m): m is ProductionMemberSummary => m !== null);
 });
 
+// 检测哪些卡片内容实际溢出了折叠高度
+const overflowingCards = ref(new Set<string>());
+const itemsWrapRefs = ref<Record<string, HTMLElement | null>>({});
+let observers: ResizeObserver[] = [];
+
+function setItemsWrapRef(el: HTMLElement | null, companyName: string) {
+  itemsWrapRefs.value[companyName] = el;
+}
+
+function checkOverflow(el: HTMLElement, companyName: string) {
+  // 只在折叠状态下检测（clientHeight 被 max-height 限制时才准确）
+  // 展开时跳过，保留已记录的溢出状态
+  if (el.clientHeight > 48) return;
+  const overflows = el.scrollHeight > el.clientHeight;
+  if (overflows) {
+    overflowingCards.value.add(companyName);
+  } else {
+    overflowingCards.value.delete(companyName);
+  }
+  // 触发响应式更新
+  overflowingCards.value = new Set(overflowingCards.value);
+}
+
+function setupOverflowObservers() {
+  observers.forEach(o => o.disconnect());
+  observers = [];
+  for (const [name, el] of Object.entries(itemsWrapRefs.value)) {
+    if (!el) continue;
+    const observer = new ResizeObserver(() => checkOverflow(el, name));
+    observer.observe(el);
+    observers.push(observer);
+    // 立即检测一次
+    checkOverflow(el, name);
+  }
+}
+
+watch(
+  () => filteredMembers.value.map(m => m.companyName).join(','),
+  async () => {
+    await nextTick();
+    setupOverflowObservers();
+  },
+  { immediate: false },
+);
+
 function sortedItems(items: ProductionMemberSummary['items']) {
-  const mats = items.map(i => materialsStore.getByTicker(i.ticker)).filter(m => m !== undefined);
+  const mats = items
+    .map(i => materialsStore.getByTicker(i.ticker))
+    .filter(m => m !== undefined) as Exclude<
+    ReturnType<typeof materialsStore.getByTicker>,
+    undefined
+  >[];
   const sorted = sortMaterials(mats);
   return sorted.map(m => items.find(i => i.ticker === m.ticker)!);
 }
@@ -130,7 +180,7 @@ function cancelEdit() {
 
 async function handleDeleteMemberProduction(companyName: string) {
   try {
-    await deleteProductionByMember(companyName, today);
+    await deleteProductionByMember(companyName);
     await loadData();
   } catch (e) {
     error.value = e instanceof FactionApiError ? e.response.message : '删除失败';
@@ -188,7 +238,9 @@ onMounted(loadData);
               ✕
             </PrunButton>
           </div>
-          <div :class="[$style.itemsWrap, isExpanded(member.companyName) ? '' : $style.collapsed]">
+          <div
+            :ref="el => setItemsWrapRef(el as HTMLElement | null, member.companyName)"
+            :class="[$style.itemsWrap, isExpanded(member.companyName) ? '' : $style.collapsed]">
             <div
               v-for="item in sortedItems(member.items)"
               :key="item.ticker"
@@ -208,7 +260,7 @@ onMounted(loadData);
             </div>
           </div>
           <div
-            v-if="!searchQuery.trim() && sortedItems(member.items).length > 14"
+            v-if="!searchQuery.trim() && overflowingCards.has(member.companyName)"
             :class="$style.expandBtn"
             @click="toggleExpand(member.companyName)">
             {{ expandedCards.has(member.companyName) ? '收起 ▲' : '展开 ▼' }}

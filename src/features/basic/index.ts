@@ -32,7 +32,7 @@ import './cxob-supply-demand-values/cxob-supply-demand-values';
 import './cxpc-chart-types/cxpc-chart-types';
 import './cxpo-auto-price';
 import './cxpo-bigger-buttons';
-import './faction-auto-report';
+
 import './cxpo-order-book/cxpo-order-book';
 import './exp-expert-eta';
 import './expand-sidebar-contract-list';
@@ -71,6 +71,7 @@ import './nots-material-ticker';
 import './nots-notification-type-label';
 import './nots-ship-arrival-inventory';
 import './other-context-notification-count';
+import './plugin-user-report';
 import './prevent-delete-button-misclicks';
 import './prod-burn-link';
 import './prod-order-eta';
