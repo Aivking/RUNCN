@@ -44,6 +44,8 @@ function init() {
   watchEffect(() => {
     if (shipReported) return;
     if (!shipsStore.fetched.value) return;
+    if (!flightsStore.fetched.value) return;
+    if (!storagesStore.fetched.value) return;
     if (!isAuthenticated()) return;
 
     const ships = shipsStore.all.value ?? [];

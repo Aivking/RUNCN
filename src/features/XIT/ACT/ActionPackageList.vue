@@ -10,6 +10,7 @@ import { userData } from '@src/store/user-data';
 import PrunLink from '@src/components/PrunLink.vue';
 import removeArrayElement from '@src/utils/remove-array-element';
 import { objectId } from '@src/utils/object-id';
+import { stripDeletedActions } from '@src/features/XIT/ACT/utils';
 import { vDraggable } from 'vue-draggable-plus';
 import { grip } from '@src/components/grip';
 import GripCell from '@src/components/grip/GripCell.vue';
@@ -38,6 +39,7 @@ function onCreateClick(ev: Event) {
 function onImportClick(ev: Event) {
   showTileOverlay(ev, ImportActionPackage, {
     onImport: json => {
+      stripDeletedActions(json);
       const existing = userData.actionPackages.find(x => x.global.name === json.global.name);
       if (existing) {
         const index = userData.actionPackages.indexOf(existing);

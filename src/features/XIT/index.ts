@@ -2,6 +2,7 @@ import './ACT/ACT';
 import './BURN/BURN';
 import './BURN/BURN_GEN';
 import './CALC';
+import './CART/CART';
 import './CHAT';
 import './CMDL/CMDL';
 import './CMDS';

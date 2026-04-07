@@ -17,6 +17,57 @@ function isCheckpoint(entry: MigrationEntry): entry is Checkpoint {
 // 日期仅供参考，不影响迁移顺序。
 const migrations: MigrationEntry[] = [
   [
+    '03.04.2026 Rename default cart name',
+    userData => {
+      if (!userData.cart) {
+        return;
+      }
+
+      if (!userData.cart.name || userData.cart.name === '\u8d2d\u7269\u8f66') {
+        userData.cart.name = 'Shopping Cart';
+      }
+    },
+  ],
+  [
+    '03.04.2026 Add shopping cart',
+    userData => {
+      if (!userData.cart) {
+        userData.cart = {
+          name: 'Shopping Cart',
+          exchange: '',
+          items: [],
+        };
+      } else {
+        userData.cart.name ??= 'Shopping Cart';
+        userData.cart.exchange ??= '';
+        userData.cart.items ??= [];
+      }
+
+      const sidebar: [string, string][] = userData.settings.sidebar;
+      if (!sidebar.some(([, cmd]: [string, string]) => cmd === 'XIT CART')) {
+        const factionIdx = sidebar.findIndex(([, cmd]: [string, string]) => cmd === 'XIT FACTION');
+        const targetIdx = factionIdx >= 0 ? factionIdx + 1 : sidebar.length;
+        sidebar.splice(targetIdx, 0, ['\u8d2d\u7269\u8f66', 'XIT CART']);
+      }
+    },
+  ],
+  [
+    '03.04.2026 Remove ship refuel actions',
+    userData => {
+      for (const pkg of userData.actionPackages ?? []) {
+        pkg.actions = (pkg.actions ?? []).filter((action: { type?: string }) => action.type !== 'Refuel');
+      }
+    },
+  ],
+  [
+    '25.03.2026 Rename BURN to 报告',
+    userData => {
+      const sidebar: [string, string][] = userData.settings.sidebar;
+      const idx = sidebar.findIndex(([, cmd]: [string, string]) => cmd === 'XIT BURN');
+      if (idx >= 0) sidebar[idx][0] = '报告';
+    },
+  ],
+  [
     '21.03.2026 Translate sidebar entries',
     userData => {
       const sidebar: [string, string][] = userData.settings.sidebar;

@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs grep:*)",
+      "Bash(xargs wc:*)",
+      "Bash(curl -s 'https://rest.fnar.net/building/allbuildings')",
+      "WebFetch(domain:handbook.apex.prosperousuniverse.com)",
+      "Bash(curl -s https://rest.fnar.net/global/workforceneeds)",
+      "Bash(npm run:*)",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(curl -s https://rest.fnar.net/building/allbuildings)",
+      "Bash(python3 -c \"import json,sys; data=json.load\\(sys.stdin\\); industries=set\\(\\); [industries.add\\(r[''''RecipeName''''].split\\('''' ''''\\)[0]\\) for b in data for r in b.get\\(''''Recipes'''',[]\\) if r[''''RecipeName'''']]; print\\(sorted\\(industries\\)[:30]\\)\")",
+      "Bash(curl -s https://rest.fnar.net/cogc/programs)",
+      "Bash(curl -s https://rest.fnar.net/cogc/allprograms)",
+      "Bash(curl -s https://rest.fnar.net/cogc)",
+      "Bash(python3 -c \":*)",
+      "Bash(python3 -c \"import json,sys; data=json.load\\(sys.stdin\\); habs=[b for b in data if any\\(k in b.get\\(''''BuildingType'''',''''''''\\) for k in [''''HABITATION'''']\\) or b.get\\(''''Ticker'''',''''''''\\) in [''''HB1'''',''''HB2'''',''''HB3'''',''''HB4'''',''''HB5'''',''''HBB'''',''''HBC'''',''''HBM'''',''''HBL'''']]; [print\\(b.get\\(''''Ticker''''\\), b.get\\(''''AreaCost''''\\), {t:b.get\\(t,0\\) for t in [''''Pioneers'''',''''Settlers'''',''''Technicians'''',''''Engineers'''',''''Scientists'''']}\\) for b in habs]\")",
+      "Bash(curl -s 'https://rest.fnar.net/building/allbuildings' -o /tmp/buildings.json)",
+      "Bash(npx vue-tsc:*)",
+      "Bash(convert --version)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_evaluate",
+      "Bash(cp \"C:/Users/Zenit/Desktop/新建文件夹 \\(5\\)/icon_16x16.png\" \"c:/Users/Zenit/Desktop/refined-prun/public/icons/icon16.png\")",
+      "Bash(cp \"C:/Users/Zenit/Desktop/新建文件夹 \\(5\\)/icon_32x32.png\" \"c:/Users/Zenit/Desktop/refined-prun/public/icons/icon32.png\")",
+      "Bash(cp \"C:/Users/Zenit/Desktop/新建文件夹 \\(5\\)/icon_48x48.png\" \"c:/Users/Zenit/Desktop/refined-prun/public/icons/icon48.png\")",
+      "Bash(cp \"C:/Users/Zenit/Desktop/新建文件夹 \\(5\\)/icon_128x128 \\(3\\).png\" \"c:/Users/Zenit/Desktop/refined-prun/public/icons/icon128.png\")",
+      "Bash(git fetch:*)",
+      "Bash(git merge:*)",
+      "Bash(git add:*)",
+      "Bash(pnpm run:*)",
+      "Bash(pnpm exec:*)",
+      "Bash(curl -s \"https://rest.fnar.net/planet/LS-014a\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\(''''BuildRequirements'''',[]\\),indent=2\\)\\)\")",
+      "Bash(curl -s https://rest.fnar.net/planet/LS-014a)"
+    ]
+  }
+}

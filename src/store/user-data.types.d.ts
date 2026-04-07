@@ -48,6 +48,17 @@ declare namespace UserData {
     };
   }
 
+  interface CartItem {
+    ticker: string;
+    amount: number;
+  }
+
+  interface ShoppingCartData {
+    name: string;
+    exchange: string;
+    items: CartItem[];
+  }
+
   type MaterialGroupType = 'Manual' | 'Resupply' | 'Repair';
 
   interface MaterialGroupData {
@@ -64,7 +75,7 @@ declare namespace UserData {
     includeInputs?: boolean;
   }
 
-  type ActionType = 'CX Buy' | 'MTRA' | 'Refuel';
+  type ActionType = 'CX Buy' | 'MTRA';
 
   interface ActionData {
     type: ActionType;
@@ -77,8 +88,6 @@ declare namespace UserData {
     exchange?: string;
     useCXInv?: boolean;
     priceLimits?: Record<string, number>;
-
-    buyMissingFuel?: boolean;
 
     origin?: string;
     dest?: string;

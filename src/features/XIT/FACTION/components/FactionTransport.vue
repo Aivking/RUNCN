@@ -61,15 +61,25 @@ const myShips = computed(() => shipsStore.all.value ?? []);
 
 const filteredRoutes = computed(() => {
   const q = searchQuery.value.trim().toLowerCase();
-  if (!q) return routes.value;
-  return routes.value.filter(
-    r =>
-      r.departure.toLowerCase().includes(q) ||
-      r.destination.toLowerCase().includes(q) ||
-      r.companyName.toLowerCase().includes(q) ||
-      (r.username && r.username.toLowerCase().includes(q)) ||
-      r.shipRegistrations.some(reg => reg.toLowerCase().includes(q)),
-  );
+  let list = routes.value;
+  if (q) {
+    list = list.filter(
+      r =>
+        r.departure.toLowerCase().includes(q) ||
+        r.destination.toLowerCase().includes(q) ||
+        r.companyName.toLowerCase().includes(q) ||
+        (r.username && r.username.toLowerCase().includes(q)) ||
+        r.shipRegistrations.some(reg => reg.toLowerCase().includes(q)),
+    );
+  }
+  // Routes with trips go first.
+  return [...list].sort((a, b) => {
+    const aTrips = getTrips(a.id).length;
+    const bTrips = getTrips(b.id).length;
+    if (aTrips > 0 && bTrips === 0) return -1;
+    if (aTrips === 0 && bTrips > 0) return 1;
+    return 0;
+  });
 });
 
 function getShipStatus(registration?: string): ShipStatusReport | undefined {
@@ -656,11 +666,11 @@ onMounted(() => {
               <div
                 v-if="canEdit(route)"
                 style="
-                  margin-top: 2px;
+                  margin-top: 1px;
                   display: flex;
                   align-items: center;
                   gap: 4px;
-                  font-size: 11px;
+                  font-size: 10px;
                   opacity: 0.7;
                 ">
                 状态:
